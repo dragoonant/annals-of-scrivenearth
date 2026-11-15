@@ -152,7 +152,7 @@ export function decide(v: GameState, seat: Seat, level: Difficulty, rnd: () => n
   const acts = legalActions(v);
   if (acts.length === 0) throw new Error('no legal action: the game is over');
   if (acts.length === 1) return acts[0];
-  const noiseAmp = level === 'easy' ? 4 : 0;
+  const noiseAmp = level === 'easy' ? 9 : 0; // Apprentice misjudges by up to 9 points: roughly a 4-cost unit
   const noise = (): number => (noiseAmp ? (rnd() - 0.5) * 2 * noiseAmp : 0);
 
   if (v.phase === 'mulligan') {
@@ -214,6 +214,7 @@ export function decide(v: GameState, seat: Seat, level: Difficulty, rnd: () => n
       if (gain > bestGain) { bestGain = gain; best = a; }
     }
   }
+  if (level === 'easy' && best.type === 'play' && v.phase === 'main' && rnd() < 0.2) return { type: 'pass' }; // and sometimes dawdles
   if (level === 'easy' && best.type === 'pass' && rnd() < 0.15) {
     // The Apprentice sometimes fires off whatever it can.
     const plays = acts.filter((a) => a.type === 'play');
