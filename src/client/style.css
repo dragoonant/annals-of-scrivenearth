@@ -152,6 +152,8 @@ h1, h2, h3, p { margin: 0; }
 .gem { display: inline-block; width: 1rem; height: 1.2rem; flex: none; background: hsl(var(--hue, 205) 85% 62%); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
 .artbox { display: block; position: absolute; inset: 0; z-index: 0; }
 .art { width: 100%; height: 100%; display: block; }
+img.art { object-fit: cover; object-position: 50% 32%; }
+.backdrop::before { content: ''; position: absolute; inset: 0; background: var(--backdrop-img, none) center / cover no-repeat; opacity: 0.16; mix-blend-mode: screen; pointer-events: none; }
 .pow, .hp { font-family: var(--head); font-weight: 700; }
 .up { color: var(--charge) !important; } .down { color: #ff8294 !important; }
 .kws { display: flex; flex-wrap: wrap; gap: 0.15rem; }
@@ -233,7 +235,8 @@ h1, h2, h3, p { margin: 0; }
 .a-action { grid-area: action; min-height: 0; } .a-hand { grid-area: hand; min-height: 0; position: relative; z-index: 4; }
 .a-opp > .side, .a-me > .side, .a-oppline > .line, .a-meline > .line, .a-battle > .battle, .a-stack > .stack, .a-action > .actionbar { height: 100%; }
 
-.back { width: 3.1rem; height: 4.3rem; margin-left: -1.2rem; flex: none; --cut: 0.7rem; background: linear-gradient(160deg, #1d3270, #0f1b46); }
+.back { width: 3.1rem; height: 4.3rem; margin-left: -1.2rem; flex: none; --cut: 0.7rem; background: var(--cardback-img, none) center / cover no-repeat, linear-gradient(160deg, #1d3270, #0f1b46); }
+.has-cardback .back-mark { display: none; }
 .back-mark { position: absolute; inset: 1rem 0.9rem; background: rgba(95, 242, 224, 0.5); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
 
 /* ---------- the HUD rail ---------- */
@@ -353,7 +356,7 @@ h1, h2, h3, p { margin: 0; }
 
 /* ---------- hand: a fan ---------- */
 .hand { display: flex; justify-content: center; align-items: flex-end; height: 100%; padding-bottom: 0; }
-.hand-card { width: var(--cw); height: var(--ch); flex: none; margin-left: calc(var(--ov, 0px) * -1); overflow: hidden; cursor: pointer; background: #0e1840; transform: translateY(var(--fy, 0)) rotate(var(--fr, 0deg)); transform-origin: 50% 130%; transition: transform 0.15s cubic-bezier(.2, .9, .2, 1); display: flex; flex-direction: column; --cut: 1.1rem; z-index: var(--z, 1); }
+.hand-card { width: var(--cw); height: var(--ch); flex: none; margin-left: calc(var(--ov, 0px) * -1); overflow: hidden; cursor: pointer; background: #0e1840; transform: translateY(var(--fy, 0)) rotate(var(--fr, 0deg)); transform-origin: 50% 110%; transition: transform 0.15s cubic-bezier(.2, .9, .2, 1); display: flex; flex-direction: column; --cut: 1.1rem; z-index: var(--z, 1); }
 .hand-card:first-child { margin-left: 0; }
 .hand-card::after { z-index: 6; } .hand-card::before { z-index: 7; }
 .hand-card.actable { transform: translateY(calc(var(--fy, 0rem) - 1rem)) rotate(var(--fr, 0deg)); }

@@ -44,12 +44,26 @@ export function loadArtManifest(url = './art/manifest.json'): Promise<void> {
       const res = await fetch(url, { cache: 'no-cache' });
       if (!res.ok) return;
       const data = (await res.json()) as unknown;
-      if (Array.isArray(data) && data.every((x) => typeof x === 'string')) manifest = new Set(data as string[]);
+      if (Array.isArray(data) && data.every((x) => typeof x === 'string')) {
+        manifest = new Set(data as string[]);
+        applySpecialArt();
+      }
     } catch {
       /* no manifest (404, an HTML fallback page, offline): every card keeps its sigil */
     }
   })();
   return manifestLoaded;
+}
+/** Non-card plates the manifest may list: 'cardback' (card backs) and 'board-backdrop' (behind the board). */
+function applySpecialArt(): void {
+  if (typeof document === 'undefined' || !manifest) return;
+  const root = document.documentElement;
+  for (const [id, prop] of [['cardback', '--cardback-img'], ['board-backdrop', '--backdrop-img']] as const) {
+    if (manifest.has(id)) {
+      root.style.setProperty(prop, `url('${new URL(`./art/${id}.webp`, document.baseURI).href}')`);
+      root.classList.add(`has-${id}`);
+    }
+  }
 }
 if (typeof window !== 'undefined' && typeof fetch === 'function') void loadArtManifest();
 
