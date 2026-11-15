@@ -688,7 +688,8 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
     const el = handCardEl(v, 0, hc.iid, hc.card);
     const off = i - (n - 1) / 2;
     el.style.setProperty('--fr', `${(off * Math.min(2.4, 14 / Math.max(n, 1))).toFixed(2)}deg`);
-    el.style.setProperty('--fy', `${(off * off * 0.09).toFixed(2)}rem`);
+    const maxOff = Math.max(1, (n - 1) / 2);
+    el.style.setProperty('--fy', `${((off * off - maxOff * maxOff) * 0.09 - 0.6).toFixed(2)}rem`); // the centre stands highest; nothing leaves the board
     el.style.setProperty('--z', String(i + 1));
     if (playable.has(hc.iid) || channelable.has(hc.iid)) el.classList.add('actable');
     if (ui.armed === hc.iid) el.classList.add('armed');

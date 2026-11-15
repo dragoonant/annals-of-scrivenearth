@@ -162,10 +162,12 @@ export class Director {
 
   private waitRaw(t: number): Promise<void> {
     if (this.skipping || t <= 0) return Promise.resolve();
+    this.lastProgress = Date.now(); // a long hold (the Ascension) is progress, not a stall for the watchdog
     return new Promise((res) => {
       const done = (): void => {
         clearTimeout(timer);
         this.cancelWait = null;
+        this.lastProgress = Date.now();
         res();
       };
       const timer = setTimeout(done, t);
@@ -475,7 +477,7 @@ export class Director {
     const dy = start.top + start.height / 2 - centre.y;
     this.anim(card, [{ opacity: 0, transform: `translate(-50%,-50%) translate(${dx}px,${dy}px) scale(.25)` }, { opacity: 1, transform: 'translate(-50%,-50%) scale(1)' }], 500);
     await this.wait(500);
-    await this.hold(1200);
+    await this.wait(1200);
     if (this.skipping) {
       card.remove();
       return;
@@ -508,9 +510,11 @@ export class Director {
   private async strike(e: LogEntry): Promise<void> {
     const a = unitNode(e.unit);
     const t = targetNode(e.tunit);
-    if (a && t) {
-      const ca = centerOf(boxOf(a)!);
-      const ct = centerOf(boxOf(t)!);
+    const ba = boxOf(a);
+    const bt = boxOf(t);
+    if (a && ba && bt) {
+      const ca = centerOf(ba);
+      const ct = centerOf(bt);
       let dx = (ct.x - ca.x) * 0.5;
       let dy = (ct.y - ca.y) * 0.5;
       const len = Math.hypot(dx, dy);

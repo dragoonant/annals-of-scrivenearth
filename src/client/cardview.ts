@@ -340,40 +340,57 @@ const hits = (a: { left: number; top: number; right: number; bottom: number }, x
 
 /**
  * Place the inspector box next to `anchor` and never over it: above the hand for a hand card, beside the unit
- * for a Line unit (the other side when the first does not fit), clamped to the viewport.
+ * for a Line unit (the other side, above or below when the first does not fit; narrower when only a narrow gap is
+ * free), clamped to the viewport.
  */
 export function placeInspector(box: HTMLElement, anchor: Element): void {
   const vw = window.innerWidth;
   const vh = window.innerHeight;
   const pad = 8;
-  const bw = box.offsetWidth;
-  const bh = box.offsetHeight;
+  const gap = 12;
+  box.style.width = '';
+  const fullW = box.offsetWidth;
   const r = anchor.getBoundingClientRect();
-  const clampX = (x: number): number => Math.max(pad, Math.min(vw - bw - pad, x));
-  const clampY = (y: number): number => Math.max(pad, Math.min(vh - bh - pad, y));
-  const cands: [number, number][] = [];
   const inHand = !!anchor.closest('[data-hand], .hand');
-  const cx = r.left + r.width / 2 - bw / 2;
-  const cy = r.top + r.height / 2 - bh / 2;
-  if (inHand) {
-    cands.push([clampX(cx), r.top - bh - 12], [clampX(r.right + 12), clampY(r.top - bh - 12)], [clampX(r.left - bw - 12), clampY(r.top - bh - 12)]);
-  } else {
-    cands.push([r.right + 12, clampY(cy)], [r.left - bw - 12, clampY(cy)], [clampX(cx), r.top - bh - 12], [clampX(cx), r.bottom + 12]);
+  interface Try { x: number; y: number; w: number; h: number }
+  const measure = (w: number): { w: number; h: number } => {
+    box.style.width = w === fullW ? '' : `${w}px`;
+    return { w: box.offsetWidth, h: box.offsetHeight };
+  };
+  const clampX = (x: number, w: number): number => Math.max(pad, Math.min(vw - w - pad, x));
+  const clampY = (y: number, hh: number): number => Math.max(pad, Math.min(vh - hh - pad, y));
+  const tries: (() => Try | null)[] = [];
+  const above = (): Try | null => { const m = measure(fullW); return { x: clampX(r.left + r.width / 2 - m.w / 2, m.w), y: r.top - m.h - gap, w: m.w, h: m.h }; };
+  const below = (): Try | null => { const m = measure(fullW); return { x: clampX(r.left + r.width / 2 - m.w / 2, m.w), y: r.bottom + gap, w: m.w, h: m.h }; };
+  const right = (): Try | null => {
+    const avail = vw - pad - (r.right + gap);
+    if (avail < 230) return null;
+    const m = measure(Math.min(fullW, avail));
+    return { x: r.right + gap, y: clampY(r.top + r.height / 2 - m.h / 2, m.h), w: m.w, h: m.h };
+  };
+  const left = (): Try | null => {
+    const avail = r.left - gap - pad;
+    if (avail < 230) return null;
+    const m = measure(Math.min(fullW, avail));
+    return { x: r.left - gap - m.w, y: clampY(r.top + r.height / 2 - m.h / 2, m.h), w: m.w, h: m.h };
+  };
+  if (inHand) tries.push(above, right, left);
+  else tries.push(right, left, above, below);
+  let best: Try | null = null;
+  let bestOver = Infinity;
+  for (const t of tries) {
+    const c = t();
+    if (!c) continue;
+    const inside = c.x >= pad - 0.5 && c.y >= pad - 0.5 && c.x + c.w <= vw - pad + 0.5 && c.y + c.h <= vh - pad + 0.5;
+    const over = hits(r, c.x, c.y, c.w, c.h) ? 1 + Math.max(0, Math.min(r.right, c.x + c.w) - Math.max(r.left, c.x)) * Math.max(0, Math.min(r.bottom, c.y + c.h) - Math.max(r.top, c.y)) : 0;
+    if (inside && over === 0) { best = c; bestOver = 0; break; }
+    const score = over + (inside ? 0 : 1e9);
+    if (score < bestOver) { best = c; bestOver = score; }
   }
-  let best: [number, number] | null = null;
-  for (const [x, y] of cands) {
-    if (x < pad || y < pad || x + bw > vw - pad || y + bh > vh - pad) continue;
-    if (hits(r, x, y, bw, bh)) continue;
-    best = [x, y];
-    break;
-  }
-  if (!best) {
-    // nothing fits cleanly: keep clear of the anchor as far as the viewport allows
-    const [x, y] = cands[0];
-    best = [clampX(x), inHand ? Math.max(pad, y) : clampY(y)];
-  }
-  box.style.left = `${Math.round(best[0])}px`;
-  box.style.top = `${Math.round(best[1])}px`;
+  if (!best) best = { x: pad, y: pad, w: fullW, h: box.offsetHeight };
+  const m = measure(best.w);
+  box.style.left = `${Math.round(clampX(best.x, m.w))}px`;
+  box.style.top = `${Math.round(clampY(best.y, m.h))}px`;
 }
 
 // The app opens the inspector (hover 300 ms / long-press) and gives it a first position; this re-places it with
