@@ -16,7 +16,7 @@ import { SILENT_LUFS, SR, measureFile, round } from './measure-lib.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const MANIFEST = path.join(ROOT, 'tools', 'audio', 'manifest.json');
-const MASTERS = path.join(ROOT, 'audio-masters');
+const MASTERS_DEFAULT = path.join(ROOT, 'audio-masters');
 const PUBLIC = path.join(ROOT, 'public', 'audio');
 /** Loudness targets (LUFS estimate from measure-lib): effects and voice at one level, music 6 dB under. */
 export const TARGET_LUFS = { sfx: -18, voice: -18, music: -24 };
@@ -24,9 +24,10 @@ const LIMIT = 0.891; // -1 dBFS
 
 let v;
 try {
-  v = parseArgs({ args: process.argv.slice(2), strict: true, allowPositionals: false, options: { 'dry-run': { type: 'boolean' }, only: { type: 'string' }, kind: { type: 'string' }, help: { type: 'boolean' } } }).values;
+  v = parseArgs({ args: process.argv.slice(2), strict: true, allowPositionals: false, options: { 'dry-run': { type: 'boolean' }, only: { type: 'string' }, kind: { type: 'string' }, masters: { type: 'string' }, help: { type: 'boolean' } } }).values;
 } catch (e) { console.error(`error: ${e.message}`); process.exit(2); }
-if (v.help) { console.log('Usage: node tools/audio/level.mjs [--dry-run] [--only id,id] [--kind music|sfx|voice]'); process.exit(0); }
+if (v.help) { console.log('Usage: node tools/audio/level.mjs [--dry-run] [--only id,id] [--kind music|sfx|voice] [--masters dir]   (dir defaults to audio-masters; eleven.mjs writes audio-masters/eleven)'); process.exit(0); }
+const MASTERS = v.masters ? path.resolve(ROOT, v.masters) : MASTERS_DEFAULT;
 for (const bin of ['ffmpeg', 'ffprobe']) if (spawnSync(bin, ['-version'], { stdio: 'ignore' }).status !== 0) { console.error(`error: ${bin} is not on PATH (winget install Gyan.FFmpeg).`); process.exit(2); }
 
 const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'));
@@ -36,7 +37,8 @@ const entries = [
   ...manifest.voice.map((x) => ({ kind: 'voice', ...x })),
 ].filter((e) => !v.kind || e.kind === v.kind);
 const only = v.only ? new Set(v.only.split(',').map((s) => s.trim()).filter(Boolean)) : null;
-const masterOf = (e) => path.join(MASTERS, `${e.id}.${e.kind === 'voice' ? 'wav' : 'flac'}`);
+// gen.mjs (Audio Studio) writes flac/wav; eleven.mjs writes mp3. The first that exists is the master.
+const masterOf = (e) => ['flac', 'wav', 'mp3'].map((x) => path.join(MASTERS, `${e.id}.${x}`)).find((p) => existsSync(p)) ?? path.join(MASTERS, `${e.id}.flac`);
 const outOf = (e) => path.join(PUBLIC, `${e.id}.ogg`);
 
 const prev = existsSync(path.join(MASTERS, 'measure.json')) ? JSON.parse(readFileSync(path.join(MASTERS, 'measure.json'), 'utf8')).files ?? {} : {};
@@ -51,13 +53,19 @@ for (const e of entries) {
   const m = measureFile(src);
   const silent = !Number.isFinite(m.lufs) || m.lufs < SILENT_LUFS;
   if (silent) flags.push(`${e.id}: ${Number.isFinite(m.lufs) ? m.lufs.toFixed(1) : '-inf'} LUFS is near silent; re-roll it (gen.mjs --force --reroll 1 --only ${e.id})`);
-  // trim
+  // trim: one-shots and voice close to the event; music only loses dead air over 0.1 s at the head and 0.5 s at the tail
+  // (a looping track must end where the sound ends, or the loop holds a pause).
   let start = 0;
   let end = m.samples;
-  if (e.kind !== 'music' && m.bounds) {
-    if (m.bounds.start > 0.03 * SR) start = Math.max(0, m.bounds.start - Math.round(0.01 * SR));
-    if (m.samples - m.bounds.end > 0.1 * SR) end = Math.min(m.samples, m.bounds.end + Math.round(0.03 * SR));
+  if (m.bounds) {
+    const [lead, keepLead, tail, keepTail] = e.kind === 'music' ? [0.1, 0.05, 0.5, 0.3] : [0.03, 0.01, 0.1, 0.03];
+    if (m.bounds.start > lead * SR) start = Math.max(0, m.bounds.start - Math.round(keepLead * SR));
+    if (m.samples - m.bounds.end > tail * SR) end = Math.min(m.samples, m.bounds.end + Math.round(keepTail * SR));
   }
+  // A looping track is made seamless: its first `xfade` seconds are lifted off the head and crossfaded over its tail, so the
+  // file ends in the material that leads back into its own start. The loop point is then sample 0. The crossfade is four
+  // beats at the manifest's bpm, which hides a phrase joint without being heard as a dip.
+  const xfade = e.loop && e.kind === 'music' && e.bpm ? round(240 / e.bpm, 3) : 0;
   const trimmedMs = Math.round(((m.samples - (end - start)) / SR) * 1000);
   const gainDb = silent ? 0 : round(TARGET_LUFS[e.kind] - m.lufs);
   const line = `${e.id.padEnd(22)} master peak ${String(round(m.peakDb)).padStart(6)} dB  lufs ${String(round(m.lufs)).padStart(6)}  crest ${String(round(m.crest)).padStart(5)}  ${round(m.seconds, 2)} s${trimmedMs ? `  trim ${trimmedMs} ms` : ''}  gain ${gainDb > 0 ? '+' : ''}${gainDb} dB`;
@@ -70,9 +78,14 @@ for (const e of entries) {
   const front = ['aresample=48000'];
   if (e.kind !== 'music' && m.channels === 2) front.push('pan=mono|c0=0.5*c0+0.5*c1');
   const encode = (filters, dest, codec = true) => {
-    const args = ['-y', '-v', 'error', '-i', src];
+    const args = ['-y', '-v', 'error'];
     if (start > 0 || end < m.samples) args.push('-ss', (start / SR).toFixed(4), '-t', ((end - start) / SR).toFixed(4));
-    args.push('-af', filters.join(','), '-ac', e.kind === 'music' ? '2' : '1', '-ar', '48000');
+    args.push('-i', src);
+    if (xfade) {
+      const graph = `[0:a]asplit[h][b];[h]atrim=0:${xfade},asetpts=PTS-STARTPTS[head];[b]atrim=${xfade},asetpts=PTS-STARTPTS[body];[body][head]acrossfade=d=${xfade}:c1=tri:c2=tri,${filters.join(',')}[out]`;
+      args.push('-filter_complex', graph, '-map', '[out]');
+    } else args.push('-af', filters.join(','));
+    args.push('-ac', e.kind === 'music' ? '2' : '1', '-ar', '48000');
     if (codec) args.push('-c:a', 'libopus', '-b:a', e.kind === 'music' ? '96k' : '80k');
     args.push(dest);
     const r = spawnSync('ffmpeg', args, { encoding: 'utf8' });
@@ -97,8 +110,8 @@ for (const e of entries) {
     spawnSync(process.platform === 'win32' ? 'cmd' : 'rm', process.platform === 'win32' ? ['/c', 'del', '/q', tmp] : ['-f', tmp]);
   }
   report[e.id] = { kind: e.kind, master: { peakDb: round(m.peakDb), lufs: round(m.lufs), rmsDb: round(m.rmsDb), crest: round(m.crest), seconds: round(m.seconds, 2) },
-    delivered: { peakDb: round(o.peakDb), lufs: round(o.lufs), rmsDb: round(o.rmsDb), crest: round(o.crest), seconds: round(o.seconds, 2) }, trimmedMs, gainDb, compressed, silent };
-  console.log(`${line}  ->  ${round(o.lufs)} LUFS, peak ${round(o.peakDb)} dB, crest ${round(o.crest)}, ${round(o.seconds, 2)} s${compressed ? '  (compressed)' : ''}`);
+    delivered: { peakDb: round(o.peakDb), lufs: round(o.lufs), rmsDb: round(o.rmsDb), crest: round(o.crest), seconds: round(o.seconds, 2) }, trimmedMs, gainDb, compressed, silent, ...(xfade ? { loopCrossfadeS: xfade } : {}), source: path.basename(src) };
+  console.log(`${line}  ->  ${round(o.lufs)} LUFS, peak ${round(o.peakDb)} dB, crest ${round(o.crest)}, ${round(o.seconds, 2)} s${compressed ? '  (compressed)' : ''}${xfade ? `  (loop, ${xfade} s crossfade)` : ''}`);
 }
 for (const f of flags) console.error(`FLAG ${f}`);
 console.log(`${n} master(s) processed${n === 0 ? ' (nothing generated yet)' : ''}.`);
@@ -116,4 +129,4 @@ console.log(`effects: gated loudness spread ${summary.sfxLufsSpanDb} dB (mean ${
 writeFileSync(path.join(MASTERS, 'measure.json'), JSON.stringify({ generatedAt: new Date().toISOString(), targets: TARGET_LUFS, summary, flags, files: report }, null, 1));
 const ids = [...manifest.music, ...manifest.sfx, ...manifest.voice].map((x) => x.id).filter((id) => existsSync(path.join(PUBLIC, `${id}.ogg`)));
 writeFileSync(path.join(PUBLIC, 'manifest.json'), JSON.stringify(ids));
-console.log(`public/audio/manifest.json lists ${ids.length} ids; measurements in audio-masters/measure.json. NOT VERIFIED BY EAR.`);
+console.log(`public/audio/manifest.json lists ${ids.length} ids; measurements in ${path.relative(ROOT, path.join(MASTERS, "measure.json")).split(path.sep).join("/")}. NOT VERIFIED BY EAR.`);
