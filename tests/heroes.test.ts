@@ -211,4 +211,27 @@ describe('heroes', () => {
     expect(s.players[1].spire).toBe(20 - 6 - 3);
     place(s, 0, 'zz-grunt');
   });
+
+  it('R-S1 a conditional aura reads power after plain auras (audit: Aruvi + an ally raised to 5 by another aura)', () => {
+    const s = board({ line: [['coil-aruvi', 'prism-ysolde', 'zz-grunt'], []] });
+    s.players[0].ascended = ['coil-aruvi', 'prism-ysolde'];
+    const g = unit(s, 0, 'zz-grunt');
+    g.mods.push({ power: 2, health: 0, dur: 'perm' }); // 4 power on its own
+    expect(st(s, g).power).toBe(5); // +1 from Ysolde's aura
+    expect(st(s, g).keywords).toContain('pierce');
+    s.players[0].ascended = ['coil-aruvi'];
+    expect(st(s, g).keywords).not.toContain('pierce');
+  });
+
+  it('R-S2 a Strike buff cannot save a unit that took lethal damage (audit: Brakk Apex)', () => {
+    const s = board({ line: [['coil-brakk'], ['zz-ogre']] });
+    s.players[0].heroes = ['coil-brakk'];
+    s.players[0].ascended = ['coil-brakk'];
+    const b = unit(s, 0, 'coil-brakk');
+    b.dmg = 7; // 1 health left
+    attack(s, [b], [[unit(s, 1, 'zz-ogre'), b]]);
+    resolveCombat(s);
+    expect(s.players[0].line.length).toBe(0);
+    expect(s.players[1].line.length).toBe(0);
+  });
 });

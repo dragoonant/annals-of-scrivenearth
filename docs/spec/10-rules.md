@@ -76,8 +76,9 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 - **R-D7 Drain.** "Drain N from X" deals N damage to X, then repairs your Spire by the damage dealt. Damage dealt is
   the full amount that landed (after Ward and Plated), even if the unit had less health left.
 - **R-D8 Stasis.** Putting a unit that is already in Stasis into Stasis does nothing and is not counted.
-- **R-S1 Stats.** Printed face, then lasting and this-round buffs, then auras. Power is never below 0.
-- **R-S2 State check.** After every effect: units with 0 or less health, or marked destroyed, are destroyed (the acting
+- **R-S1 Stats.** Printed face, then lasting and this-round buffs, then auras that apply to everyone they name, then
+  auras with a condition on the unit (such as "allies with 5+ power"), which read the stats so far. Power is never below 0.
+- **R-S2 State check.** After every effect, and before any waiting triggered ability resolves: units with 0 or less health, or marked destroyed, are destroyed (the acting
   player's first, left to right); then "survived damage" is noted; then heroes are checked for ascension; then Spires.
   This repeats until nothing changes.
 - **R-S3 Triggers.** Triggered abilities resolve immediately, in the order they were caused, with no stack and no answer.
@@ -87,7 +88,7 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 | Id | Keyword | Rule |
 |---|---|---|
 | R-K1 | **Vanguard** | When attacking, strikes before its blocker. If the blocker is destroyed it does not strike back. |
-| R-K2 | **Pierce** | Strike damage beyond the blocker's remaining health hits the enemy Spire. |
+| R-K2 | **Pierce** | Strike damage beyond the blocker's remaining health hits the enemy Spire. The excess is counted from the damage that lands: a blocker's Ward negates the whole strike, and Plated takes 1 off it. |
 | R-K3 | **Aerial** | Can be blocked only by Aerial or Spotter units. |
 | R-K4 | **Spotter** | Can block Aerial units. |
 | R-K5 | **Plated** | Takes 1 less damage from every source. |

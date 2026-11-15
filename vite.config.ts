@@ -5,5 +5,5 @@ export default defineConfig({
   build: { outDir: 'dist', target: 'es2022' },
   server: { port: Number(process.env.PW_PORT ?? 5173), strictPort: true },
   preview: { port: Number(process.env.PW_PORT ?? 5173), strictPort: true },
-  test: { include: ['tests/**/*.test.ts'], testTimeout: 60000 },
+  test: { include: ['tests/**/*.test.ts'], testTimeout: 60000, setupFiles: ['tests/setup-mutate.ts'] },
 });

@@ -96,15 +96,20 @@ function baseStats(s: GameState, u: Unit): Stats {
 export function stats(s: GameState, u: Unit): Stats {
   const st = baseStats(s, u);
   const kws = new Set(st.keywords);
-  for (const p of s.players) {
-    for (const src of p.line) {
-      if (src.silenced) continue;
-      const f = face(s, src.owner, src.card);
-      for (const a of f.auras) {
-        if (!auraHits(s, src, a, u)) continue;
-        st.power += a.power ?? 0;
-        st.health += a.health ?? 0;
-        if (a.kw) for (const k of a.kw) kws.add(k);
+  // Two passes so "allies with 5+ power have ..." sees power from plain auras: unfiltered auras first, then
+  // filtered auras, whose filters read the stats after the first pass (they never see each other).
+  for (const filtered of [false, true]) {
+    const before: Stats = { ...st, keywords: [...kws] };
+    for (const p of s.players) {
+      for (const src of p.line) {
+        if (src.silenced) continue;
+        for (const a of face(s, src.owner, src.card).auras) {
+          if (!!a.filter !== filtered) continue;
+          if (!auraHits(s, src, a, u, before)) continue;
+          st.power += a.power ?? 0;
+          st.health += a.health ?? 0;
+          if (a.kw) for (const k of a.kw) kws.add(k);
+        }
       }
     }
   }
@@ -114,12 +119,12 @@ export function stats(s: GameState, u: Unit): Stats {
   return st;
 }
 
-function auraHits(s: GameState, src: Unit, a: Aura, u: Unit): boolean {
+function auraHits(s: GameState, src: Unit, a: Aura, u: Unit, before: Stats): boolean {
   if (a.to === 'self' && u !== src) return false;
   if (a.to === 'allies' && u.owner !== src.owner) return false;
   if (a.to === 'otherAllies' && (u.owner !== src.owner || u === src)) return false;
   if (a.to === 'enemies' && u.owner === src.owner) return false;
-  if (a.filter && !matches(s, u, a.filter, true)) return false;
+  if (a.filter && !matches(s, u, a.filter, true, before)) return false;
   if (a.cond && !evalCond(s, src.owner, a.cond, src)) return false;
   return true;
 }
@@ -129,8 +134,8 @@ export function hasKw(s: GameState, u: Unit, kw: Keyword): boolean {
 }
 
 /** Does a unit match a filter? `noAura` reads stats before auras (used inside aura evaluation). */
-export function matches(s: GameState, u: Unit, f: Filter, noAura = false): boolean {
-  const st = noAura ? baseStats(s, u) : stats(s, u);
+export function matches(s: GameState, u: Unit, f: Filter, noAura = false, given?: Stats): boolean {
+  const st = given ?? (noAura ? baseStats(s, u) : stats(s, u));
   const d = def(u.card);
   if (f.maxPower !== undefined && st.power > f.maxPower) return false;
   if (f.minPower !== undefined && st.power < f.minPower) return false;

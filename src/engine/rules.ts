@@ -295,15 +295,18 @@ function settle(s: GameState): void {
   for (;;) {
     if (over(s)) { queue = []; hurt.clear(); return; }
     if (++guard > 500) throw new Error('settle did not finish (trigger loop)');
+    // R-S2: destruction is checked before any waiting trigger runs, so a "Strike: I get +1|+1" cannot save a unit
+    // that has already taken lethal damage.
+    const changed = stateCheck(s);
+    if (over(s)) { queue = []; hurt.clear(); return; }
     const next = queue.shift();
     if (next) {
       const seat = next.unit.owner;
       if (next.ability.cond && !evalCond(s, seat, next.ability.cond, next.unit)) continue;
       runOps(s, { seat, self: next.unit, trigger: next.trigger, targets: next.targets, via: next.unit.card }, next.ability.ops);
-      stateCheck(s);
       continue;
     }
-    if (!stateCheck(s) && queue.length === 0) return;
+    if (!changed) return;
   }
 }
 

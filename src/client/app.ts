@@ -4,20 +4,23 @@ import { view } from '../engine/view';
 import { DIFFICULTIES } from '../ai/ai';
 import type { Difficulty } from '../ai/ai';
 import { Director, onEvents } from './director';
-import { Runner, Session, clearSave, deckCatalog, readStoredSave } from './game';
+import { Runner, Session, bugReport, clearSave, deckCatalog, downloadText, readStoredSave } from './game';
 import type { DeckChoice, SaveState } from './game';
 import { fitHand, handleBoardClick, handleBoardKey, newBoardUI, renderBoard, renderMulligan } from './board';
 import type { BoardHost } from './board';
 import { backdrop, renderEnd, renderHowTo, renderModal, renderSetup, renderTitle } from './screens';
 import type { Modal, SetupSel } from './screens';
+import { Builder, blankState } from './deckbuilder';
+import { decorate, refuses, renderReady } from './tutorial';
+import { TUTORIAL_HERO, TUTORIAL_NAMES, TutorialFlow, tutorialSetup } from '../data/tutorial';
 import { h, inspectorContent } from './cardview';
 import { loadSettings, readParams, saveSettings } from './settings';
 import type { Params, Settings, Speed } from './settings';
 import { premadeDecks } from '../data/decks';
 import { audition, installAudioUnlock, setMuted, setVolume } from '../audio/audio';
 
-export type Screen = 'title' | 'setup' | 'mulligan' | 'board' | 'end' | 'howto';
-const SCREENS: Screen[] = ['title', 'setup', 'mulligan', 'board', 'end', 'howto'];
+export type Screen = 'title' | 'setup' | 'mulligan' | 'board' | 'end' | 'howto' | 'builder';
+const SCREENS: Screen[] = ['title', 'setup', 'mulligan', 'board', 'end', 'howto', 'builder'];
 
 declare global {
   interface Window {
@@ -42,6 +45,12 @@ export class App {
   private director: Director;
   private ui = newBoardUI();
   private catalog: DeckChoice[] = [];
+  private deckProblem: string | null = null;
+  private builder: Builder;
+  /** The guided first match, when one is running (never saved, never uses the AI). */
+  private tut: TutorialFlow | null = null;
+  private tutMsg: string | null = null;
+  private tutTimer = 0;
   private sel: SetupSel = { me: 0, foe: 1, diff: 'normal' };
   private modal: Modal | null = null;
   private saveState: SaveState = { kind: 'none' };
@@ -62,12 +71,13 @@ export class App {
     this.fxEl = h('div', { class: 'fx' });
     this.inspEl = h('div', { class: 'inspector-host' });
     this.root.append(this.screenEl, this.overlayEl, this.fxEl, this.inspEl, h('div', { class: 'rotate' }, h('b', { text: 'Rotate your device' }), h('span', { text: 'Annals of Scrivenearth is played in landscape.' })));
+    this.builder = new Builder({ leave: () => this.go('title') });
     this.director = new Director(this.fxEl, this.root);
     this.director.speed = this.params.speed ?? this.settings.speed;
     this.director.onRender = () => this.requestRender();
     this.director.onIdle = () => {
       this.requestRender();
-      this.runner?.pump();
+      this.pump();
     };
   }
 
@@ -75,7 +85,7 @@ export class App {
     installAudioUnlock();
     setVolume(this.settings.volume);
     setMuted(this.settings.muted);
-    this.catalog = deckCatalog(this.params);
+    this.refreshCatalog();
     document.body.dataset.premade = String(premadeDecks().length);
     this.sel.diff = this.settings.difficulty;
     this.sel.foe = this.catalog.length > 1 ? 1 : 0;
@@ -87,7 +97,8 @@ export class App {
     this.installHooks();
     this.layout();
     this.saveState = readStoredSave();
-    if (this.params.skiptitle && this.catalog.length > 0) this.startGame();
+    if (this.params.tutorial) this.startTutorial();
+    else if (this.params.skiptitle && this.catalog.length > 0) this.startGame();
     else if (this.params.skiptitle) this.go('setup');
     else this.go('title');
     if (this.params.demo === 'ascend') this.demoAscend();
@@ -100,7 +111,19 @@ export class App {
     this.screen = screen;
     this.modal = null;
     if (screen === 'title') this.saveState = readStoredSave();
+    if (screen === 'setup') this.refreshCatalog(); // decks saved in the builder appear at once
+    if (screen === 'builder') this.builder.open();
     this.requestRender();
+  }
+
+  /** Premade decks plus the saved ones; keeps the chosen decks pointing at something that exists. */
+  private refreshCatalog(): void {
+    const c = deckCatalog(this.params);
+    this.catalog = c.decks;
+    this.deckProblem = c.problem;
+    const last = Math.max(0, this.catalog.length - 1);
+    this.sel.me = Math.min(this.sel.me, last);
+    this.sel.foe = Math.min(this.sel.foe, last);
   }
 
   requestRender(): void {
@@ -128,7 +151,7 @@ export class App {
   private host: BoardHost = {
     view: () => this.director.presented,
     locked: () => this.director.busy,
-    act: (a) => this.commit(a),
+    act: (a) => this.playerAct(a),
     rerender: () => this.requestRender(),
   };
 
@@ -142,7 +165,10 @@ export class App {
         content = renderTitle(this.saveState, this.settings, this.params.devdecks);
         break;
       case 'setup':
-        content = renderSetup(this.catalog, this.sel, this.params.devdecks);
+        content = renderSetup(this.catalog, this.sel, this.params.devdecks, this.deckProblem);
+        break;
+      case 'builder':
+        content = this.builder.root;
         break;
       case 'howto':
         content = renderHowTo();
@@ -155,7 +181,7 @@ export class App {
         break;
       case 'end': {
         if (!this.endView || !this.session) throw new Error('end screen without a finished game');
-        content = renderEnd(this.endView, this.session.meta.deckNames);
+        content = renderEnd(this.endView, this.session.meta.deckNames, !this.session.ephemeral);
         break;
       }
       default:
@@ -164,6 +190,7 @@ export class App {
     content.classList.add('screen-body');
     this.screenEl.replaceChildren(content);
     if (this.screen === 'board' || this.screen === 'mulligan') fitHand(this.screenEl);
+    if (this.tut && this.screen === 'board') this.renderTutorial();
     // storage warning on every screen if saving failed
     if (this.session && !this.session.storageOk) {
       this.screenEl.append(h('div', { class: 'storage-warn', text: 'This browser is not storing saves' }));
@@ -238,12 +265,22 @@ export class App {
     this.ui = newBoardUI();
     this.endView = null;
     this.director.reset(session.state);
-    this.runner = new Runner(session, this.director, this.params, level);
-    this.runner.commit = (a) => this.commit(a);
+    // the tutorial's opponent plays its script: no AI runner
+    if (this.tut) this.runner = null;
+    else {
+      this.runner = new Runner(session, this.director, this.params, level);
+      this.runner.commit = (a) => this.commit(a);
+    }
     this.modal = null;
     this.screen = session.state.phase === 'mulligan' ? 'mulligan' : 'board';
     this.requestRender();
-    this.runner.pump();
+    this.pump();
+  }
+
+  /** Let whoever is not the human move: the AI runner, or the tutorial's script. */
+  private pump(): void {
+    if (this.tut) this.pumpTutorial();
+    else this.runner?.pump();
   }
 
   /** Apply an action through the director (the only way state changes). */
@@ -251,8 +288,76 @@ export class App {
     if (!this.session) throw new Error('no game in progress');
     const r = this.session.apply(a);
     if (r.ok) this.director.enqueue(r.events, this.session.state);
-    this.runner?.pump();
+    this.pump();
     return r;
+  }
+
+  // ---------- the guided first match ----------
+  startTutorial(): void {
+    this.tut = new TutorialFlow();
+    this.tutMsg = null;
+    const session = Session.start(tutorialSetup(), { deckNames: TUTORIAL_NAMES, difficulty: 'normal' }, true);
+    this.attach(session, 'normal');
+  }
+
+  private leaveTutorial(): void {
+    window.clearTimeout(this.tutTimer);
+    this.tut = null;
+    this.tutMsg = null;
+    this.leaveGame();
+  }
+
+  /** The human's action. In the tutorial only the lesson's own action goes through; anything else is answered, not ignored. */
+  private playerAct(a: Action): Result {
+    const t = this.tut;
+    if (!t || !this.session) return this.commit(a);
+    const g = t.gate(a, this.session.state);
+    if (!g.ok) {
+      this.tutMsg = g.why;
+      this.requestRender();
+      return { ok: false, error: g.why, events: [] };
+    }
+    const r = this.commit(a);
+    if (r.ok) {
+      this.tutMsg = null;
+      t.accepted();
+      this.pump();
+    }
+    return r;
+  }
+
+  /** The opponent's scripted replies, one at a time, only when the board is at rest. */
+  private pumpTutorial(): void {
+    const t = this.tut;
+    const s = this.session;
+    if (!t || !s || this.tutTimer || s.state.phase === 'over' || t.queue.length === 0) return;
+    const delay = this.director.speed === 'instant' ? 0 : this.director.speed === 'quick' ? 250 : 700;
+    this.tutTimer = window.setTimeout(() => {
+      this.tutTimer = 0;
+      if (!this.tut || !this.session) return;
+      if (this.director.busy) return; // onIdle pumps again
+      if (this.session.state.priority !== 1) throw new Error('Tutorial script: the opponent is queued to act but it is not its priority');
+      const a = this.tut.nextOpp(this.session.state);
+      if (!a) return;
+      const r = this.commit(a);
+      if (!r.ok) throw new Error(`Tutorial script: the opponent's action was refused (${r.error ?? ''})`);
+      this.requestRender();
+    }, delay);
+  }
+
+  /** Coach panel, highlights and dimming for the board; the "You're ready" panel when the script has run out. */
+  private renderTutorial(): void {
+    const t = this.tut;
+    if (!t || !this.session || !this.director.hasState()) return;
+    const v = this.director.presented;
+    const finished = t.finished && t.queue.length === 0 && !this.director.busy;
+    if (finished) {
+      const hero = this.session.state.players[0].ascended.includes(TUTORIAL_HERO) ? 'Jax Windlash' : 'Your hero';
+      this.screenEl.append(renderReady(hero === 'Jax Windlash' ? 'Jax Windlash' : hero));
+      return;
+    }
+    const waiting = this.director.busy || t.queue.length > 0 || v.priority !== 0 || v.phase === 'over' || this.session.state.priority !== 0;
+    decorate(this.screenEl, { flow: t, v, ui: this.ui, waiting, message: this.tutMsg });
   }
 
   private leaveGame(): void {
@@ -265,15 +370,16 @@ export class App {
 
   private emptyState(): GameState {
     // a throwaway state so the director holds nothing from the finished game
-    return { v: 1, rng: 1, round: 0, initiative: 0, priority: 0, phase: 'mulligan', passes: 0, stack: [], stackStarter: null, combat: null, players: [this.blank(), this.blank()], nextId: 1, winner: null, endReason: null, log: [], acted: [0, 0] };
-  }
-  private blank(): GameState['players'][0] {
-    return { spire: 20, charge: 0, maxCharge: 0, reserve: 0, deck: [], hand: [], line: [], scrap: [], seen: {}, seenRound: {}, ascended: [], heroes: [], canAttack: false, mulliganed: false, deckList: [] };
+    return blankState();
   }
 
   // ---------- input ----------
   private onUi(el: HTMLElement): void {
     const k = el.dataset.ui!;
+    if (k.startsWith('b-')) {
+      this.builder.click(el);
+      return;
+    }
     const v = el.dataset.v;
     switch (k) {
       case 'new':
@@ -296,7 +402,34 @@ export class App {
         this.requestRender();
         return;
       case 'builder':
+        this.go('builder');
         return;
+      case 'tutorial':
+        this.startTutorial();
+        return;
+      case 'tut-skip':
+        this.leaveTutorial();
+        this.go('title');
+        return;
+      case 'tut-title':
+        this.leaveTutorial();
+        this.go('title');
+        return;
+      case 'tut-new':
+        this.leaveTutorial();
+        this.go('setup');
+        return;
+      case 'tut-builder':
+        this.leaveTutorial();
+        this.go('builder');
+        return;
+      case 'bugreport': {
+        if (!this.session) return;
+        const r = bugReport(this.session);
+        downloadText(r.name, r.json);
+        el.textContent = 'Bug report saved';
+        return;
+      }
       case 'discard':
         clearSave();
         this.saveState = readStoredSave();
@@ -369,7 +502,7 @@ export class App {
         this.renderOverlay();
         return;
       case 'menu':
-        this.modal = { kind: 'menu', confirmConcede: false };
+        this.modal = this.tut ? { kind: 'tutmenu' } : { kind: 'menu', confirmConcede: false };
         this.renderOverlay();
         return;
       case 'concede':
@@ -388,7 +521,7 @@ export class App {
         this.requestRender();
         return;
       case 'title':
-        if (this.screen === 'end') clearSave();
+        if (this.screen === 'end' && !this.session?.ephemeral) clearSave();
         this.leaveGame();
         this.go('title');
         return;
@@ -485,12 +618,28 @@ export class App {
       this.director.skip();
       if (e.key === 'Escape') {
         if (this.inspKey) this.hideInspector();
+        else if (this.screen === 'builder' && this.builder.closeDialog()) return;
         else if (this.modal) {
           this.modal = null;
           this.renderOverlay();
         } else if (this.screen === 'board' && handleBoardKey(e, this.host, this.ui)) return;
       }
     });
+    // tutorial: a click on a game input that is not the lesson is answered with a coach line instead of going through
+    document.addEventListener(
+      'click',
+      (e) => {
+        const t = e.target as HTMLElement | null;
+        if (!this.tut || this.screen !== 'board' || this.modal || !t || !root.contains(t)) return;
+        if (!refuses(t) || !this.session) return;
+        e.stopPropagation();
+        e.preventDefault();
+        const st = this.tut.step;
+        this.tutMsg = this.tut.queue.length > 0 ? 'Wait for the opponent to finish.' : (st?.hint ?? 'The tutorial is over.');
+        this.requestRender();
+      },
+      true,
+    );
     document.addEventListener('click', (e) => {
       if (this.suppressClick) {
         this.suppressClick = false;
@@ -558,7 +707,7 @@ export class App {
       act: (a) => {
         const s = this.need();
         if (s.state.priority !== 0) return { ok: false, error: 'Not your turn to act', events: [] };
-        return this.commit(a);
+        return this.playerAct(a);
       },
       seat: 0,
       onEvents,

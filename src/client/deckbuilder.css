@@ -140,3 +140,49 @@
 #root.mode-short .bd-pick { max-height: 22rem; }
 #root.mode-short .bd-pickrow { padding: 0.4rem 1rem; }
 #root.mode-short .deck-plan, #root.mode-short .bd-dialog p { font-size: 1rem; }
+
+/* ---------- New game: deck tiles and difficulty (polish) ---------- */
+.deck > .ftags, .deck > .deck-plan { grid-column: 1; }
+.deck .peek { grid-row: 1 / span 4; }
+.deck-mine { font-family: var(--head); font-size: 0.95rem; letter-spacing: 0.14em; color: var(--sky0); background: var(--charge); padding: 0.05rem 0.6rem; clip-path: polygon(0.4rem 0, 100% 0, calc(100% - 0.4rem) 100%, 0 100%); }
+.storage-line { align-self: flex-start; font-family: var(--head); font-size: 1.2rem; padding: 0.5rem 1.2rem; background: var(--reserve); color: #1a1200; }
+.diffrow { display: flex; align-items: stretch; gap: 0.8rem; flex-wrap: wrap; }
+.diffrow .lbl { align-self: center; }
+.diffcard { --cut: 0.9rem; flex: 1 1 22rem; max-width: 36rem; display: flex; flex-direction: column; gap: 0.2rem; text-align: left; padding: 0.7rem 1.4rem; cursor: pointer; }
+.diffcard b { font-family: var(--head); font-size: 1.5rem; letter-spacing: 0.06em; text-transform: uppercase; }
+.diffcard span { font-size: 1.15rem; line-height: 1.3; color: var(--ink2); }
+.diffcard.on { --edge-c: var(--charge); background: linear-gradient(155deg, rgba(95, 242, 224, 0.2), rgba(214, 236, 255, 0.06)); }
+.diffcard.on b { color: var(--charge); }
+.diffcard:hover { --edge-c: #fff; }
+#root.mode-short .diffcard { padding: 0.35rem 0.9rem; flex-basis: 16rem; } #root.mode-short .diffcard b { font-size: 1.1rem; } #root.mode-short .diffcard span { font-size: 0.9rem; }
+#root.mode-short .deck-plan { font-size: 0.9rem; } #root.mode-short .ftag { font-size: 0.9rem; }
+#root.mode-tall .diffcard { flex-basis: 100%; max-width: none; }
+
+/* ---------- End screen (polish) ---------- */
+.end { overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(190, 225, 255, 0.4) transparent; justify-content: flex-start; padding-top: 3rem; }
+.end-rounds { display: flex; gap: 2.4rem; justify-content: center; flex-wrap: wrap; font-family: var(--head); letter-spacing: 0.06em; }
+.end-col { gap: 0.7rem; }
+.end-spire { display: flex; align-items: baseline; gap: 1rem; }
+.end-spire b { font-family: var(--head); font-size: 3.2rem; line-height: 1; }
+.end-spire i { font-style: normal; font-family: var(--head); font-size: 1rem; letter-spacing: 0.16em; color: var(--ink2); }
+.end-heroes { display: flex; flex-direction: column; gap: 0.35rem; max-height: 17rem; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(190, 225, 255, 0.4) transparent; padding-right: 0.3rem; }
+.end-heroes .row-type { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.end-heroes .row-name { flex: none; max-width: 15rem; }
+.end-heroes .row-n { color: var(--charge); }
+.end-heroes .row.asc .row-n { color: var(--asc); }
+.end-stats { display: flex; flex-direction: column; gap: 0.2rem; border-top: 1px solid rgba(190, 225, 255, 0.25); padding-top: 0.6rem; }
+.end-stat { display: flex; justify-content: space-between; font-size: 1.25rem; color: var(--ink2); }
+.end-stat b { font-family: var(--head); font-size: 1.5rem; color: var(--ink); }
+.end-btns { flex-wrap: wrap; justify-content: center; }
+.end-btns .big-btn { width: 22rem; align-items: center; }
+#root.mode-short .end { padding-top: 0.8rem; gap: 0.4rem; }
+#root.mode-short .end-head { font-size: 2.6rem; }
+#root.mode-short .end-who { font-size: 1.4rem; } #root.mode-short .end-why, #root.mode-short .end-rounds { font-size: 1.05rem; }
+#root.mode-short .end-cols { gap: 0.8rem; }
+#root.mode-short .end-col { padding: 0.5rem 1rem; gap: 0.3rem; }
+#root.mode-short .end-col h3 { font-size: 1.05rem; margin: 0; }
+#root.mode-short .end-spire b { font-size: 1.8rem; } #root.mode-short .end-spire i { font-size: 0.8rem; }
+#root.mode-short .end-heroes { max-height: 7.6rem; } #root.mode-short .end-stats { padding-top: 0.3rem; }
+#root.mode-short .end-stat { font-size: 0.95rem; } #root.mode-short .end-stat b { font-size: 1.1rem; }
+#root.mode-short .end-btns { margin-top: 0.2rem; gap: 0.6rem; } #root.mode-short .end-btns .big-btn { width: 15rem; padding: 0.4rem 1rem; }
+#root.mode-short .end-btns .big-btn { flex-direction: row; justify-content: center; }

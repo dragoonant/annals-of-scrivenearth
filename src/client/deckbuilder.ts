@@ -21,7 +21,7 @@ const DEFAULT_NAME = 'New deck';
 
 /** A throwaway state so the shared card face can be drawn outside a game. */
 export function blankState(): GameState {
-  const blank = (): GameState['players'][0] => ({ spire: 20, charge: 0, maxCharge: 0, reserve: 0, deck: [], hand: [], line: [], scrap: [], seen: {}, seenRound: {}, ascended: [], heroes: [], canAttack: false, mulliganed: false, deckList: [] });
+  const blank = (): GameState['players'][0] => ({ spire: 20, charge: 0, maxCharge: 0, reserve: 0, deck: [], hand: [], line: [], scrap: [], seen: {}, seenRound: {}, ascended: [], heroes: [], canAttack: false, extraAttacks: 0, mulliganed: false, deckList: [] });
   return { v: 1, rng: 1, round: 0, initiative: 0, priority: 0, phase: 'main', passes: 0, stack: [], stackStarter: null, combat: null, players: [blank(), blank()], nextId: 1, winner: null, endReason: null, log: [], acted: [0, 0] };
 }
 
