@@ -33,4 +33,126 @@ export const prism: CardDef[] = [
       ],
     },
   },
+  // ---------- units ----------
+  {
+    id: 'prism-glasswarden', name: 'Glass Warden', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 3,
+    keywords: ['plated'], tribe: 'warden', text: 'Plated.',
+  },
+  {
+    id: 'prism-lampkeeper', name: 'Lamp-Keeper', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 2,
+    keywords: ['spotter'], tribe: 'warden', text: 'Spotter. Dusk: repair the weakest ally by 1.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'heal', to: 'weakestAlly', n: 1 }] }],
+  },
+  {
+    id: 'prism-facet-initiate', name: 'Facet Initiate', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 2,
+    tribe: 'lens-wright', text: 'Deploy: give an ally +0|+1.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'buff', to: 'target0', health: 1 }] }],
+  },
+  {
+    id: 'prism-tierguard', name: 'Tier Guard', faction: 'prism', type: 'unit', cost: 2, power: 2, health: 2,
+    keywords: ['ward'], tribe: 'warden', text: 'Ward. Resonant: I have +1|+1.',
+    auras: [{ to: 'self', power: 1, health: 1, cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'prism-bracewright', name: 'Bracewright', faction: 'prism', type: 'unit', cost: 2, power: 1, health: 3,
+    keywords: ['dueler'], tribe: 'lens-wright', text: 'Dueler. When I survive damage, repair me by 1.',
+    abilities: [{ on: 'survive', ops: [{ op: 'heal', to: 'self', n: 1 }] }],
+  },
+  {
+    id: 'prism-pane-mender', name: 'Pane-Mender', faction: 'prism', type: 'unit', cost: 2, power: 1, health: 3,
+    tribe: 'lens-wright', text: 'Deploy: repair an ally by 4.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'heal', to: 'target0', n: 4 }] }],
+  },
+  {
+    id: 'prism-crystal-bulwark', name: 'Crystal Bulwark', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 4,
+    keywords: ['plated'], tribe: 'construct', text: 'Plated.',
+  },
+  {
+    id: 'prism-chorus-warden', name: 'Chorus Warden', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 3,
+    tribe: 'warden', text: 'Other allies have +0|+1. Resonant: I have +1|+1.',
+    auras: [
+      { to: 'otherAllies', health: 1 },
+      { to: 'self', power: 1, health: 1, cond: { c: 'resonant' } },
+    ],
+  },
+  {
+    id: 'prism-sentinel-lens', name: 'Sentinel Lens', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 3,
+    keywords: ['spotter'], tribe: 'construct', text: 'Spotter. Deploy: give an ally Ward.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'grant', to: 'target0', kw: ['ward'] }] }],
+  },
+  {
+    id: 'prism-aegis-colossus', name: 'Aegis Colossus', faction: 'prism', type: 'unit', cost: 4, power: 3, health: 4,
+    keywords: ['plated', 'dueler'], tribe: 'construct', text: 'Plated, Dueler.',
+  },
+  {
+    id: 'prism-vault-captain', name: 'Vault Captain', faction: 'prism', type: 'unit', cost: 4, power: 2, health: 4,
+    keywords: ['plated'], tribe: 'warden', text: 'Plated. Other allies have +1|+0.',
+    auras: [{ to: 'otherAllies', power: 1 }],
+  },
+  {
+    id: 'prism-spire-keeper', name: 'Spire Keeper', faction: 'prism', type: 'unit', cost: 5, power: 3, health: 5,
+    keywords: ['plated'], tribe: 'warden', text: 'Plated. Dusk: repair your Spire by 2.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'heal', to: 'mySpire', n: 2 }] }],
+  },
+  {
+    id: 'prism-lightwall-matron', name: 'Lightwall Matron', faction: 'prism', type: 'unit', cost: 6, power: 3, health: 6,
+    keywords: ['spotter'], tribe: 'warden', text: 'Spotter. Other allies have +1|+1.',
+    auras: [{ to: 'otherAllies', power: 1, health: 1 }],
+  },
+  {
+    id: 'prism-tier-sovereign', name: 'Tier Sovereign', faction: 'prism', type: 'unit', cost: 7, power: 5, health: 8,
+    keywords: ['plated'], tribe: 'warden', text: 'Plated. Deploy: give every other ally Ward.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'grant', to: 'otherAllies', kw: ['ward'] }] }],
+  },
+  // ---------- glyphs ----------
+  {
+    id: 'prism-hold-the-line', name: 'Hold the Line', faction: 'prism', type: 'glyph', cost: 1, speed: 'flash',
+    text: 'Give an ally Plated this round.',
+    targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'grant', to: 'target0', kw: ['plated'], dur: 'round' }],
+  },
+  {
+    id: 'prism-mirror-ward', name: 'Mirror Ward', faction: 'prism', type: 'glyph', cost: 2, speed: 'flash',
+    text: 'Give an ally Ward.',
+    targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'grant', to: 'target0', kw: ['ward'] }],
+  },
+  {
+    id: 'prism-choir-of-facets', name: 'Choir of Facets', faction: 'prism', type: 'glyph', cost: 3, speed: 'flash',
+    text: 'Give every ally +1|+1 this round. Resonant: also repair every ally by 2.',
+    ops: [
+      { op: 'buff', to: 'allies', power: 1, health: 1, dur: 'round' },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'heal', to: 'allies', n: 2 }] },
+    ],
+  },
+  {
+    id: 'prism-patch-the-pane', name: 'Patch the Pane', faction: 'prism', type: 'glyph', cost: 1, speed: 'swift',
+    text: 'Repair an ally by 4.',
+    targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'heal', to: 'target0', n: 4 }],
+  },
+  {
+    id: 'prism-call-out', name: 'Call Out', faction: 'prism', type: 'glyph', cost: 2, speed: 'swift',
+    text: 'Give an ally Dueler and +0|+2 this round.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'grant', to: 'target0', kw: ['dueler'], dur: 'round' }, { op: 'buff', to: 'target0', health: 2, dur: 'round' }],
+  },
+  {
+    id: 'prism-lightwall-oath', name: 'Lightwall Oath', faction: 'prism', type: 'glyph', cost: 3, speed: 'swift',
+    text: 'Give an ally +0|+2 and Plated.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', health: 2 }, { op: 'grant', to: 'target0', kw: ['plated'] }],
+  },
+  {
+    id: 'prism-spire-mantle', name: 'Spire Mantle', faction: 'prism', type: 'glyph', cost: 5, speed: 'swift',
+    text: 'Repair your Spire by 5 and give every ally Ward.',
+    ops: [{ op: 'heal', to: 'mySpire', n: 5 }, { op: 'grant', to: 'allies', kw: ['ward'] }],
+  },
+  {
+    id: 'prism-tier-rally', name: 'Tier Rally', faction: 'prism', type: 'glyph', cost: 4, speed: 'ritual',
+    text: 'Give every ally +1|+1.',
+    ops: [{ op: 'buff', to: 'allies', power: 1, health: 1 }],
+  },
+  {
+    id: 'prism-crystal-dawn', name: 'Crystal Dawn', faction: 'prism', type: 'glyph', cost: 6, speed: 'ritual',
+    text: 'Give every ally +2|+2, then repair every ally fully. Repair your Spire by 3.',
+    ops: [{ op: 'buff', to: 'allies', power: 2, health: 2 }, { op: 'heal', to: 'allies', n: 99 }, { op: 'heal', to: 'mySpire', n: 3 }],
+  },
 ];
