@@ -65,3 +65,28 @@ Judgement calls and things to listen for:
 Both studios, the ComfyUI they started and the two voice engines were stopped by PID. Branch `gpu/assets` pushed twice
 (art, then audio), each time after `git pull --rebase`. Commits carry only `public/art/**`, `public/audio/**`, the two
 changed subject clauses, the `tools/audio/*.mjs` scripts and this file.
+
+## 4. ElevenLabs pass (2026-11-15, replaces the Audio Studio delivery)
+
+The owner supplied a one-day ElevenLabs key (Starter tier) and asked for the music and sounds to be run through it. The
+same 49 ids were rendered with `tools/audio/eleven.mjs` into `audio-masters/eleven/` (gitignored), then levelled by the
+same `level.mjs --masters audio-masters/eleven` and written over `public/audio/`. The Audio Studio delivery is kept in
+commit 0f69a93 and, on EVILAEGIS, in `audio-masters/studio-delivery/`. The key was only ever in the environment.
+
+| | |
+|---|---|
+| Music | Eleven Music `music_v2_5`, one call per track, `force_instrumental`, prompt = manifest prompt + bpm + key + a loop or ending instruction; 192 kbps MP3 masters. 5-13 s a track |
+| Effects | Sound Effects `eleven_text_to_sound_v3`, two takes an effect at the manifest duration, `prompt_influence` 0.45; the louder take with the sharper transient is the master, both kept. 3-7 s a pair |
+| Voices | Voice Design `eleven_ttv_v3` from the manifest instruct plus a 100-200 character in-character paragraph (table in `eleven.mjs`); first of three previews taken (all three kept as `<id>.preview*.mp3`); voice saved, the line spoken with `eleven_v3` (tags: Jax and Corvane `[shouting]`, Kessa and Sable `[mischievously]`), voice deleted again (Starter has 10 slots; the `generated_voice_id`s are in `log.json` to recreate any of them). 14-33 s a hero |
+| Brakk | `voice/coil-brakk` is a 4 s Sound Effects render of the roar instruct (two takes), not speech |
+| Credits | 11,651 of 40,512 for everything including re-rolls, about 27,000 left. The account counter updates late, so per-call figures in `log.json` are approximate; the run totals are right |
+| Result | 49 files, 8.5 MB. Music -24 LUFS; voice within 0.4 dB (mean -18.0); effects mean -18.2 LUFS with a 5 dB spread (see below) |
+| Loops | title, calm, battle, tense are marked `loop: true` in the manifest and made seamless: the first four beats (240/bpm s) are lifted off the head and crossfaded over the tail, so the file ends in the material that leads into sample 0. 1.9-2.9 s crossfades; tracks lose that much length |
+| Trim | music now loses dead air over 0.1 s at the head and 0.5 s at the tail (before this, music was never trimmed: the studio `music/title` master carried 26 s of silence that the client looped as a pause). Effects and voice trimmed as before |
+
+Re-rolls and judgement calls:
+- The effects model reads "soft", "dry" and "close" as a level and returned `sfx/play` and `sfx/pass` at -44 to -58 LUFS three times running. `eleven.mjs` now retries any effect under -30 LUFS once with ", loud, close-miked, recorded at full level" (that fixed `resolve`, `charge`, `maxCharge`), and carries its own prompt text for those two ids (a fingernail tap on glass; a card slapped flat on glass). The manifest text is unchanged for the Audio Studio.
+- Four one-shots are 0.1-0.45 s clicks after trimming (`draw`, `play`, `dmg`, `pass`) and stop 2-3 dB under target at the limiter even after the compressor pass; that is the whole 5 dB spread. Nine effects went through the compressor pass. Everything else is within 1.3 dB.
+- `music/defeat` came back 12 dB quieter than the other tracks and was lifted 6 dB; nothing was limited on any music.
+- Voice previews were chosen blind (the first of three). Kessa, Maren, Ilvane and Aruvi came back 4-6 dB hotter than the rest and were pulled down; Oren is the quietest hero. The 48 kHz PCM/WAV output formats need the Pro tier, so masters are 128 kbps MP3 (192 for music), decoded once into the Opus delivery.
+- Nothing was listened to. "Not verified by ear." The Settings sound test plays every id.
