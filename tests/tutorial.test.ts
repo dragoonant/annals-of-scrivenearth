@@ -31,9 +31,9 @@ describe('tutorial script', () => {
     expect(st.noShuffle).toBe(true);
     expect(st.skipMulligan).toBe(true);
     expect(st.first).toBe(0);
-    // the first card listed is the first card drawn
+    // the first card listed is the first card drawn (4 in hand plus the round-1 draw)
     const g = createGame(st);
-    expect(g.players[0].hand.map((h) => h.card)).toEqual(TUTORIAL_DECK_YOU.slice(0, 4));
+    expect(g.players[0].hand.map((h) => h.card)).toEqual(TUTORIAL_DECK_YOU.slice(0, 5));
   });
 
   it('replays end to end: every scripted action is legal, the hero Ascends on the last step, the game is not over', () => {

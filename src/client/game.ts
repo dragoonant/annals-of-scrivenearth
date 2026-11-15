@@ -7,17 +7,18 @@ import { makeSave, readSave, SAVE_KEY } from '../engine/save';
 import type { SaveEnvelope, SaveMeta } from '../engine/save';
 import { checkDeck } from '../engine/validate';
 import { collectible, premadeDecks } from '../data/decks';
+import { loadDecks } from '../deckbuilder/model';
 import { chooseAction, randomAction } from '../ai/ai';
 import type { Difficulty } from '../ai/ai';
 import { rngFrom } from './art';
 import type { Director } from './director';
 import type { Params } from './settings';
 
-export const DECKS_KEY = 'scrivenearth-decks';
-
 // ---------- deck catalogue ----------
 export interface DeckChoice extends DeckList {
   dev?: boolean;
+  /** A deck saved in the builder (as opposed to a premade one). */
+  custom?: boolean;
 }
 
 /** Two 40-card test decks made by repeating whatever collectible cards exist. Development only, bypasses checkDeck. */
@@ -32,26 +33,29 @@ export function devDecks(): DeckChoice[] {
   return [make(0, 'Dev deck A (test only)'), make(Math.floor(pool.length / 2) + 1, 'Dev deck B (test only)')];
 }
 
-export function customDecks(): DeckChoice[] {
-  try {
-    const raw = localStorage.getItem(DECKS_KEY);
-    if (!raw) return [];
-    const arr = JSON.parse(raw) as unknown;
-    if (!Array.isArray(arr)) return [];
-    const out: DeckChoice[] = [];
-    for (const d of arr as { name?: unknown; cards?: unknown }[]) {
-      if (typeof d?.name !== 'string' || !Array.isArray(d.cards) || !d.cards.every((c) => typeof c === 'string')) continue;
-      if (checkDeck(d.cards as string[]).ok) out.push({ name: d.name, cards: d.cards as string[] });
-    }
-    return out;
-  } catch {
-    return [];
-  }
+export interface CustomDecks {
+  decks: DeckChoice[];
+  /** Why saved decks are missing or hidden; null when all is well. Shown as a visible line, never dropped silently. */
+  problem: string | null;
 }
 
-export function deckCatalog(params: Params): DeckChoice[] {
-  if (params.devdecks) return devDecks();
-  return [...premadeDecks(), ...customDecks()];
+/** Saved decks from the builder. Only legal ones can be played; the rest are counted in `problem`. */
+export function customDecks(): CustomDecks {
+  const r = loadDecks(localStorage);
+  const decks: DeckChoice[] = [];
+  let illegal = 0;
+  for (const d of r.decks) {
+    if (checkDeck(d.cards).ok) decks.push({ name: d.name, cards: d.cards, custom: true });
+    else illegal += 1;
+  }
+  const notes = [r.problem, illegal ? `${illegal} saved deck${illegal === 1 ? ' is' : 's are'} not legal and cannot be played; open ${illegal === 1 ? 'it' : 'them'} in the deck builder to fix.` : null].filter((x): x is string => !!x);
+  return { decks, problem: notes.length ? notes.join(' ') : null };
+}
+
+export function deckCatalog(params: Params): { decks: DeckChoice[]; problem: string | null } {
+  if (params.devdecks) return { decks: devDecks(), problem: null };
+  const c = customDecks();
+  return { decks: [...premadeDecks(), ...c.decks], problem: c.problem };
 }
 
 // ---------- saves ----------
@@ -89,10 +93,12 @@ export class Session {
     public meta: SaveMeta,
     public actions: Action[],
     public state: GameState,
+    /** The tutorial: never writes, and never clears, the saved game slot. */
+    public ephemeral = false,
   ) {}
 
-  static start(setup: Setup, meta: SaveMeta): Session {
-    const s = new Session(setup, meta, [], createGame(setup));
+  static start(setup: Setup, meta: SaveMeta, ephemeral = false): Session {
+    const s = new Session(setup, meta, [], createGame(setup), ephemeral);
     s.persist(); // before the first render (owner rule 22)
     return s;
   }
@@ -106,12 +112,14 @@ export class Session {
     const r = applyAction(this.state, a);
     if (!r.ok) return r;
     this.actions.push(a);
+    if (this.ephemeral) return r;
     if (this.state.phase === 'over') clearSave();
     else this.persist();
     return r;
   }
 
   persist(): void {
+    if (this.ephemeral) return;
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(makeSave(this.setup, this.meta, this.actions, this.state)));
     } catch {
@@ -195,4 +203,32 @@ export class Runner {
     } while (this.director.speed === 'instant' && !this.director.busy && this.machineTurn() && performance.now() - t0 < 12);
     this.pump();
   }
+}
+
+// ---------- bug report ----------
+/** Everything needed to replay a game: the seed, the setup, every action, and the final snapshot (the save envelope). */
+export function bugReport(session: Session, now = new Date()): { name: string; json: string } {
+  const env = makeSave(session.setup, session.meta, session.actions, session.state, now);
+  const report = {
+    kind: 'annals-of-scrivenearth bug report',
+    userAgent: navigator.userAgent,
+    createdAt: now.toISOString(),
+    seed: session.setup.seed,
+    setup: session.setup,
+    actions: session.actions,
+    save: env,
+  };
+  return { name: `scrivenearth-bug-${session.setup.seed}-${session.actions.length}.json`, json: JSON.stringify(report, null, 1) };
+}
+
+/** Hand a text file to the browser as a download. */
+export function downloadText(name: string, text: string): void {
+  const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

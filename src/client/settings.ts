@@ -42,6 +42,8 @@ export interface Params {
   skiptitle: boolean;
   devdecks: boolean;
   demo: string | null;
+  /** ?tutorial=1: open the guided first match at once. */
+  tutorial: boolean;
 }
 
 export function readParams(search: string): Params {
@@ -63,5 +65,6 @@ export function readParams(search: string): Params {
     skiptitle: q.get('skiptitle') === '1',
     devdecks: q.get('devdecks') === '1',
     demo: q.get('demo'),
+    tutorial: q.get('tutorial') === '1',
   };
 }

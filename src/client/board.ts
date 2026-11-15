@@ -1,11 +1,13 @@
 // The board and the mulligan, drawn from the presented view of seat 0. Every affordance comes from the engine's
-// legalActions / whyNot* / targetChoices; every number from stats(), costOf(), face(). A full re-render per change.
+// legalActions / whyNot* / targetChoices; every number from stats(), costOf(), face(). A full re-render per change,
+// plus a targeting overlay (SVG) that is redrawn on hover without re-rendering.
 import type { Action, GameState, Result, Seat, Unit } from '../engine/types';
 import { LIMITS } from '../engine/types';
 import { legalActions, targetChoices, whyNotBlockAction, whyNotChannel, whyNotDeclare, whyNotPlay } from '../engine/rules';
-import { costOf, def, face, findUnit, targetSpecs } from '../engine/query';
-import { cardBack, handCardEl, h, heroProgress, lineSegsEl, unitDisplay, unitEl } from './cardview';
+import { costOf, def, face, findUnit, stats, targetSpecs } from '../engine/query';
+import { cardBack, handCardEl, h, heroProgress, lineSegsEl, svgSpan, unitEl } from './cardview';
 import { spireSvg } from './art';
+import { fxScale } from './fx';
 import { targetPrompt } from './text';
 
 export interface BoardUI {
@@ -83,6 +85,64 @@ export function passLabel(v: GameState): string {
 
 function cardName(v: GameState, seat: Seat, id: string): string {
   return face(v, seat, id).name;
+}
+
+// ---------- combat forecast (pure) ----------
+export interface Forecast {
+  pairIndex: number;
+  att: string;
+  blk: string | null;
+  kind: 'open' | 'blocked' | 'gone';
+  /** The attacker's power, and the blocker's (null when nothing blocks it). */
+  aPower: number;
+  bPower: number | null;
+  /** Health left on each side before the strikes. */
+  aHp: number;
+  bHp: number | null;
+  /** Damage that reaches the defending Spire from this pair. */
+  spire: number;
+  attDestroyed: boolean | null;
+  blkDestroyed: boolean | null;
+  /** The blocker's Ward will absorb the attacker's strike. */
+  blkWard: boolean;
+  attWard: boolean;
+  text: string;
+}
+
+/**
+ * What this pair will do if the strikes resolved now, read only from stats() and the rules for power, remaining
+ * health, Plated (R-K5), Ward (R-K7), Vanguard (R-K1), Corrosive (R-K12) and Pierce (R-K2). Glyphs cast in the
+ * combat window can change it. Null when the pair or its attacker is gone.
+ */
+export function forecast(v: GameState, pairIndex: number): Forecast | null {
+  const pr = v.combat?.pairs[pairIndex];
+  if (!pr) return null;
+  const att = findUnit(v, pr.att);
+  if (!att) return null;
+  const a = stats(v, att);
+  const base = { pairIndex, att: pr.att, blk: pr.blk, aPower: a.power, aHp: a.hp };
+  const pierce = a.keywords.includes('pierce');
+  if (pr.blk === null) {
+    return { ...base, kind: 'open', bPower: null, bHp: null, spire: a.power, attDestroyed: null, blkDestroyed: null, blkWard: false, attWard: false, text: `${a.power} to the Spire` };
+  }
+  const blk = pr.blk ? findUnit(v, pr.blk) : undefined;
+  if (!blk) {
+    // R-B7: the blocker is gone: only Pierce gets through
+    const sp = pierce ? a.power : 0;
+    return { ...base, kind: 'gone', bPower: null, bHp: null, spire: sp, attDestroyed: false, blkDestroyed: null, blkWard: false, attWard: false, text: sp > 0 ? `${sp} to the Spire (Pierce)` : 'Blocker gone: no damage' };
+  }
+  const b = stats(v, blk);
+  const toBlk = a.power <= 0 ? 0 : blk.ward ? 0 : Math.max(0, a.power - (b.keywords.includes('plated') ? 1 : 0));
+  const blkDestroyed = toBlk >= b.hp || (a.keywords.includes('corrosive') && toBlk > 0);
+  const excess = pierce ? Math.max(0, toBlk - b.hp) : 0;
+  // R-K1: a Vanguard attacker that destroys its blocker takes no strike back
+  const strikesBack = b.power > 0 && !(a.keywords.includes('vanguard') && blkDestroyed);
+  const toAtt = !strikesBack ? 0 : att.ward ? 0 : Math.max(0, b.power - (a.keywords.includes('plated') ? 1 : 0));
+  const attDestroyed = toAtt >= a.hp || (b.keywords.includes('corrosive') && toAtt > 0);
+  return {
+    ...base, kind: 'blocked', bPower: b.power, bHp: b.hp, spire: excess, attDestroyed, blkDestroyed, blkWard: blk.ward && a.power > 0, attWard: att.ward && strikesBack,
+    text: `${a.power} vs ${b.power} · attacker ${attDestroyed ? 'is destroyed' : 'survives'} · blocker ${blkDestroyed ? 'is destroyed' : 'survives'}${excess > 0 ? ` · ${excess} to the Spire` : ''}`,
+  };
 }
 
 // ---------- clicks ----------
@@ -191,6 +251,7 @@ export function handleBoardClick(e: Event, host: BoardHost, ui: BoardUI): void {
     }
     return host.rerender();
   }
+  if (t.closest('.pslot')) return;
   if (unitElm) {
     const iid = unitElm.dataset.unit!;
     const owner = Number(unitElm.dataset.seat) as Seat;
@@ -283,11 +344,127 @@ export function handleBoardKey(e: KeyboardEvent, host: BoardHost, ui: BoardUI): 
   return false;
 }
 
+// ---------- targeting overlay ----------
+// An SVG layer inside .board. It draws (1) a line from the armed card to the hovered legal target, a "1" mark on a
+// first-chosen target, and (2) a line from each glyph on the stack to its targets: the newest item's always, any
+// other on hover. It is redrawn on pointer movement without re-rendering the board.
+const SVGNS = 'http://www.w3.org/2000/svg';
+let cur: { host: BoardHost; ui: BoardUI } | null = null;
+let hoverTarget: string | null = null;
+let hoverSid: string | null = null;
+let hoverInstalled = false;
+
+function elOfId(id: string): HTMLElement | null {
+  if (id.startsWith('spire')) return document.querySelector<HTMLElement>(`[data-spire="${id.slice(5)}"]`);
+  return document.querySelector<HTMLElement>(`[data-unit="${id}"]`) ?? document.querySelector<HTMLElement>(`[data-sid="${id}"]`);
+}
+
+function installHover(): void {
+  if (hoverInstalled || typeof document === 'undefined') return;
+  hoverInstalled = true;
+  document.addEventListener('pointerover', (e) => {
+    const el = e.target as Element | null;
+    const u = el?.closest?.('[data-unit]') as HTMLElement | null;
+    const sp = el?.closest?.('[data-spire]') as HTMLElement | null;
+    const st = el?.closest?.('[data-sid]') as HTMLElement | null;
+    const id = u ? u.dataset.unit! : sp ? `spire${sp.dataset.spire}` : st ? st.dataset.sid! : null;
+    const sid = st ? st.dataset.sid! : null;
+    if (id === hoverTarget && sid === hoverSid) return;
+    hoverTarget = id;
+    hoverSid = sid;
+    redrawOverlay();
+  });
+}
+
+function svgEl<K extends keyof SVGElementTagNameMap>(tag: K, attrs: Record<string, string>): SVGElementTagNameMap[K] {
+  const el = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+function drawLink(svg: SVGSVGElement, org: DOMRect, a: { x: number; y: number }, b: { x: number; y: number }, cls: string): void {
+  const x1 = a.x - org.left;
+  const y1 = a.y - org.top;
+  const x2 = b.x - org.left;
+  const y2 = b.y - org.top;
+  const mx = (x1 + x2) / 2;
+  const my = (y1 + y2) / 2 - Math.min(60, Math.hypot(x2 - x1, y2 - y1) * 0.18);
+  const d = `M${x1.toFixed(1)},${y1.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${x2.toFixed(1)},${y2.toFixed(1)}`;
+  svg.append(svgEl('path', { d, class: `tl-glow ${cls}`, fill: 'none' }), svgEl('path', { d, class: `tl-line ${cls}`, fill: 'none' }));
+  const s = 7;
+  svg.append(svgEl('polygon', { class: `tl-end ${cls}`, points: `${x2},${y2 - s} ${x2 + s},${y2} ${x2},${y2 + s} ${x2 - s},${y2}` }));
+}
+
+const topCenter = (r: DOMRect): { x: number; y: number } => ({ x: r.left + r.width / 2, y: r.top + Math.min(10, r.height * 0.1) });
+const midCenter = (r: DOMRect): { x: number; y: number } => ({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+
+export function redrawOverlay(): void {
+  const board = typeof document === 'undefined' ? null : document.querySelector<HTMLElement>('.board');
+  if (!board || !cur) return;
+  let svg = board.querySelector<SVGSVGElement>(':scope > svg.tgt-layer');
+  if (!svg) {
+    svg = svgEl('svg', { class: 'tgt-layer' });
+    board.append(svg);
+  }
+  svg.replaceChildren();
+  const v = cur.host.view();
+  const ui = cur.ui;
+  const org = board.getBoundingClientRect();
+  // 1. the armed card and its targets
+  if (ui.armed && !cur.host.locked()) {
+    const src = document.querySelector<HTMLElement>(`[data-hand="${ui.armed}"]`);
+    const tg = armedTargets(v, ui);
+    if (src) {
+      const from = topCenter(src.getBoundingClientRect());
+      const marks = [...ui.picked];
+      if (ui.scrap) marks.unshift(ui.scrap);
+      marks.forEach((id, i) => {
+        const el = elOfId(id);
+        if (!el) return;
+        const r = el.getBoundingClientRect();
+        if (ui.scrap && i === 0) drawLink(svg!, org, from, midCenter(r), 'scrap');
+        else {
+          drawLink(svg!, org, from, midCenter(r), 'amber picked');
+          const n = i + 1 - (ui.scrap ? 1 : 0);
+          const bx = r.left + r.width / 2 - org.left;
+          const by = r.top - org.top;
+          svg!.append(svgEl('polygon', { class: 'tl-badge', points: `${bx},${by - 12} ${bx + 12},${by} ${bx},${by + 12} ${bx - 12},${by}` }));
+          const tx = svgEl('text', { class: 'tl-badge-n', x: String(bx), y: String(by + 5), 'text-anchor': 'middle' });
+          tx.textContent = String(n);
+          svg!.append(tx);
+        }
+      });
+      if (hoverTarget && tg.legal.has(hoverTarget)) {
+        const el = elOfId(hoverTarget);
+        if (el) drawLink(svg, org, from, midCenter(el.getBoundingClientRect()), 'amber live');
+      }
+    }
+  }
+  // 2. the stack: the newest item always, any other on hover
+  const drawn = new Set<string>();
+  const items = v.stack;
+  const show = [items[items.length - 1]?.sid, hoverSid].filter((x): x is string => !!x);
+  for (const sid of show) {
+    if (drawn.has(sid)) continue;
+    drawn.add(sid);
+    const it = items.find((x) => x.sid === sid);
+    const srcEl = document.querySelector<HTMLElement>(`[data-sid="${sid}"]`);
+    if (!it || !srcEl) continue;
+    const sr = srcEl.getBoundingClientRect();
+    const from = { x: sr.left, y: sr.top + sr.height / 2 };
+    for (const tid of it.targets) {
+      const el = elOfId(tid);
+      if (!el) continue;
+      drawLink(svg, org, from, midCenter(el.getBoundingClientRect()), it.owner === 0 ? 'mine' : 'theirs');
+    }
+  }
+}
+
 // ---------- drawing ----------
 function cells(n: number, max: number, cls: string): HTMLElement {
   const box = h('span', { class: `cells ${cls}` });
   const total = Math.max(max, n);
-  for (let i = 0; i < total; i++) box.append(h('span', { class: `cell ${i < n ? 'on' : ''} ${i >= max ? 'extra' : ''}` }));
+  for (let i = 0; i < total; i++) box.append(h('span', { class: `cell ${i < n ? 'on' : ''} ${i >= max ? 'extra' : ''}`, data: { i } }));
   return box;
 }
 
@@ -313,51 +490,80 @@ function sidePanel(v: GameState, seat: Seat, tg: Targets, canTargetSpire: boolea
   const p = v.players[seat];
   const spireTarget = canTargetSpire && tg.legal.has(`spire${seat}`);
   const damaged = p.spire < LIMITS.spire;
+  const holds = v.initiative === seat && v.round > 0;
   return h(
     'div',
-    { class: `side facet ${seat === 0 ? 'me' : 'opp'}`, data: { side: seat } },
+    { class: `side facet ${seat === 0 ? 'me' : 'opp'} ${holds ? 'holds' : ''}`, data: { side: seat } },
     h('span', { class: 'conduit' }),
     h(
       'div',
-      { class: `s-spire ${spireTarget ? 'is-target' : ''} ${damaged ? 'damaged' : ''}`, data: { spire: seat } },
-      (() => { const s = h('span', { class: 'spire-art' }); s.innerHTML = spireSvg(p.spire); return s; })(),
-      h('span', { class: 's-int' }, h('b', { text: String(p.spire) }), h('i', { text: 'SPIRE' })),
+      { class: 's-top' },
+      h(
+        'div',
+        { class: `s-spire ${spireTarget ? 'is-target' : ''} ${damaged ? 'damaged' : ''}`, data: { spire: seat } },
+        svgSpan('spire-art', spireSvg(p.spire)),
+        h('span', { class: 's-int' }, h('b', { text: String(p.spire) }), h('i', { text: 'SPIRE' })),
+      ),
+      h('div', { class: 's-flags' },
+        h('div', { class: 's-who', text: seat === 0 ? 'YOU' : 'OPPONENT' }),
+        holds ? h('span', { class: 'init', text: 'INITIATIVE' }) : null,
+        p.canAttack && v.phase !== 'over' ? h('span', { class: 'canatk', text: 'CAN ATTACK' }) : null,
+      ),
     ),
-    h('div', { class: 's-who', text: seat === 0 ? 'YOU' : 'OPPONENT' }),
-    v.initiative === seat && v.round > 0 ? h('span', { class: 'init', text: 'INITIATIVE' }) : null,
-    h(
-      'div',
-      { class: 's-cells' },
-      h('span', { class: 's-lbl', text: 'CHARGE' }),
-      cells(p.charge, p.maxCharge, 'charge'),
-      h('span', { class: 's-num', text: `${p.charge}/${p.maxCharge}` }),
-    ),
+    h('div', { class: 's-cells' }, h('span', { class: 's-lbl', text: 'CHARGE' }), cells(p.charge, p.maxCharge, 'charge'), h('span', { class: 's-num', text: `${p.charge}/${p.maxCharge}` })),
     h('div', { class: 's-cells' }, h('span', { class: 's-lbl', text: 'RESERVE' }), cells(p.reserve, LIMITS.reserve, 'reserve'), h('span', { class: 's-num', text: String(p.reserve) })),
     h(
       'div',
       { class: 's-counts' },
-      h('span', { class: 'cnt' }, h('i', { text: 'DECK' }), h('b', { text: String(p.deck.length) })),
-      h('span', { class: 'cnt' }, h('i', { text: 'HAND' }), h('b', { text: String(p.hand.length) })),
+      h('span', { class: 'cnt cnt-deck' }, h('i', { text: 'DECK' }), h('b', { text: String(p.deck.length) })),
+      h('span', { class: 'cnt cnt-hand' }, h('i', { text: 'HAND' }), h('b', { text: String(p.hand.length) })),
       h('button', { class: 'cnt scrapbtn', data: { ui: 'scrap' } }, h('i', { text: 'SCRAP' }), h('b', { text: String(p.scrap.length) })),
     ),
     heroChips(v, seat),
   );
 }
 
-function forecast(v: GameState, att: Unit, blk: Unit): HTMLElement {
-  const a = unitDisplay(v, att);
-  const b = unitDisplay(v, blk);
-  const aLeft = Math.max(0, a.hp - b.power);
-  const bLeft = Math.max(0, b.hp - a.power);
+/** The forecast chip drawn on the conduit of a pair. */
+function chipEl(f: Forecast): HTMLElement {
+  if (f.kind === 'open') return h('span', { class: 'fchip open' }, h('b', { text: `${f.spire} to the Spire` }));
+  if (f.kind === 'gone') return h('span', { class: 'fchip gone' }, h('b', { text: f.spire > 0 ? `${f.spire} to the Spire` : 'no damage' }), h('i', { text: f.spire > 0 ? 'Pierce' : 'blocker gone' }));
+  const aFate = f.attDestroyed ? 'dies' : 'lives';
+  const bFate = f.blkDestroyed ? 'dies' : 'lives';
   return h(
     'span',
-    { class: 'forecast' },
-    h('span', { class: 'fc' }, h('i', { text: `hits ${a.power}` }), h('b', { class: aLeft === 0 ? 'dies' : '', text: aLeft === 0 ? 'falls' : `${aLeft} left` })),
-    h('span', { class: 'fc' }, h('i', { text: `hits ${b.power}` }), h('b', { class: bLeft === 0 ? 'dies' : '', text: bLeft === 0 ? 'falls' : `${bLeft} left` })),
+    { class: 'fchip blocked' },
+    h('b', {}, h('span', { class: `fa ${aFate}`, text: String(f.aPower) }), ' vs ', h('span', { class: `fb ${bFate}`, text: String(f.bPower) })),
+    h('i', {}, h('span', { class: `fa ${aFate}`, text: f.attDestroyed ? 'attacker destroyed' : 'attacker survives' }), h('span', { class: 'fsep', text: ' · ' }), h('span', { class: `fb ${bFate}`, text: f.blkDestroyed ? 'blocker destroyed' : 'blocker survives' }), f.spire > 0 ? h('span', { class: 'fspire', text: ` · ${f.spire} to the Spire` }) : null),
   );
 }
 
+// FLIP: units and stack items that moved since the last render slide from where they were (attackers into the battle
+// row, blockers opposite their attacker). Skipped at instant speed and on a resize.
+let lastSize = '';
+function captureRects(): Map<string, DOMRect> {
+  const m = new Map<string, DOMRect>();
+  if (typeof document === 'undefined') return m;
+  document.querySelectorAll<HTMLElement>('.board [data-unit], .board [data-sid]').forEach((el) => {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0) m.set(el.dataset.unit ? `u:${el.dataset.unit}` : `s:${el.dataset.sid}`, r);
+  });
+  return m;
+}
+function playFlip(before: Map<string, DOMRect>): void {
+  if (fxScale() <= 0 || before.size === 0) return;
+  document.querySelectorAll<HTMLElement>('.board [data-unit], .board [data-sid]').forEach((el) => {
+    const old = before.get(el.dataset.unit ? `u:${el.dataset.unit}` : `s:${el.dataset.sid}`);
+    if (!old) return;
+    const r = el.getBoundingClientRect();
+    const dx = old.left - r.left;
+    const dy = old.top - r.top;
+    if (Math.abs(dx) < 3 && Math.abs(dy) < 3) return;
+    el.animate([{ transform: `translate(${dx}px, ${dy}px) scale(${old.width / r.width}, ${old.height / r.height})` }, { transform: 'none' }], { duration: 260 * fxScale(), easing: 'cubic-bezier(.2,.9,.2,1)' });
+  });
+}
+
 export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
+  const before = captureRects(); // the previous board is still mounted: where everything was
   const v = host.view();
   const mine = v.players[0];
   const opp = v.players[1];
@@ -381,6 +587,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
     inCombatIds.add(p.att);
     if (p.blk) inCombatIds.add(p.blk);
   }
+  const first = ui.picked[0];
 
   const board = h('div', { class: 'board' });
   board.append(h('div', { class: 'a-opp' }, sidePanel(v, 1, tg, interactive)), h('div', { class: 'a-me' }, sidePanel(v, 0, tg, interactive)));
@@ -408,36 +615,38 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
       if (seat === 0 && (declarable.has(u.iid) || blockers.has(u.iid))) cls.push('actable');
       if (tg.legal.has(u.iid) || duelOptions.has(u.iid)) cls.push('is-target');
       if (ui.blockUnit === u.iid || ui.duelFor === u.iid) cls.push('selected');
+      if (first === u.iid || ui.scrap === u.iid) cls.push('picked');
       el.append(unitEl(v, u, cls.join(' ')));
     }
     return el;
   };
   board.append(h('div', { class: 'a-oppline' }, lineEl(1)), h('div', { class: 'a-meline' }, lineEl(0)));
 
-  // battle row
+  // battle row: each pair is a column, the opponent's unit above and yours below, joined by a conduit with its chip
   const battle = h('div', { class: 'battle facet' });
   if (v.combat && v.combat.pairs.length) {
-    const pairs = h('div', { class: `pairs ${v.combat.pairs.length > 3 ? 'many' : ''}` });
+    const pairs = h('div', { class: `pairs n${v.combat.pairs.length}` });
     const attackerSeat = v.combat.attacker;
-    for (const pr of v.combat.pairs) {
+    v.combat.pairs.forEach((pr, idx) => {
       const att = findUnit(v, pr.att);
-      if (!att) continue;
+      if (!att) return;
       const blk = pr.blk ? findUnit(v, pr.blk) : undefined;
+      const fc = forecast(v, idx);
       const aCls: string[] = ['mini', 'attacking'];
       if (attackerSeat === 0 && v.phase === 'declare') aCls.push('actable');
       if (ui.blockAtt === att.iid) aCls.push('selected');
       if (v.phase === 'block' && attackerSeat === 1 && pr.blk === null && ui.blockUnit) aCls.push('is-target');
-      const pair = h('div', { class: `pair ${blk ? 'blocked' : ''}` }, unitEl(v, att, aCls.join(' ')));
-      pair.append(h('span', { class: 'link' }));
-      if (blk) {
-        pair.append(unitEl(v, blk, `mini blocking ${pr.forced ? 'forced' : ''} ${ui.blockUnit === blk.iid ? 'selected' : ''}`));
-        if (v.phase === 'block' || v.phase === 'combat') pair.append(forecast(v, att, blk));
-      } else {
-        const d = unitDisplay(v, att);
-        pair.append(h('div', { class: 'nob' }, h('b', { text: v.phase === 'declare' ? 'to be' : 'open' }), h('i', { text: v.phase === 'declare' ? 'blocked' : `${d.power} to Spire` })));
-      }
-      pairs.append(pair);
-    }
+      const attEl = unitEl(v, att, aCls.join(' '));
+      let blkEl: HTMLElement | null = null;
+      if (blk) blkEl = unitEl(v, blk, `mini blocking ${pr.forced ? 'forced' : ''} ${ui.blockUnit === blk.iid ? 'selected' : ''}`);
+      const empty = (label: string): HTMLElement => h('div', { class: 'pslot', text: label });
+      const topEl = attackerSeat === 1 ? attEl : blkEl ?? empty(attackerSeat === 0 ? (v.phase === 'declare' ? 'its blocker' : pr.blk === '' ? 'no blocker' : 'open') : 'blocker');
+      const botEl = attackerSeat === 0 ? attEl : blkEl ?? empty('your blocker');
+      const mid = h('div', { class: `pmid ${blk ? 'blocked' : ''} ${fc?.kind ?? ''}` }, h('span', { class: 'link' }));
+      if (fc && v.phase !== 'declare') mid.append(chipEl(fc));
+      else if (v.phase === 'declare') mid.append(h('span', { class: 'fchip open' }, h('b', { text: 'to be blocked' })));
+      pairs.append(h('div', { class: `pair ${blk ? 'blocked' : ''} ${attackerSeat === 1 ? 'foe-att' : 'my-att'}`, data: { pair: idx } }, topEl, mid, botEl));
+    });
     battle.append(pairs);
   } else {
     battle.append(h('div', { class: 'battle-empty', text: 'BATTLE ROW' }));
@@ -447,7 +656,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
   // stack
   const stack = h('div', { class: 'stack facet' }, h('div', { class: 'stack-h', text: 'STACK' }));
   if (v.stack.length === 0) stack.append(h('div', { class: 'stack-empty', text: 'No glyphs waiting' }));
-  for (const it of [...v.stack].reverse()) {
+  v.stack.slice().reverse().forEach((it, i) => {
     const d = def(it.card);
     const tnames = it.targets.map((id) => {
       if (id === 'spire0') return 'Your Spire';
@@ -460,29 +669,54 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
     stack.append(
       h(
         'div',
-        { class: `sitem facet ${tg.legal.has(it.sid) ? 'is-target' : ''}`, data: { sid: it.sid, card: it.card, seat: it.owner }, style: { '--hue': '205' } },
+        { class: `sitem facet ${it.owner === 0 ? 'mine' : 'theirs'} ${i === 0 ? 'newest' : ''} ${tg.legal.has(it.sid) ? 'is-target' : ''}`, data: { sid: it.sid, card: it.card, seat: it.owner }, style: { '--hue': '205' } },
         h('span', { class: 'si-top' }, h('span', { class: 'si-who', text: it.owner === 0 ? 'YOU' : 'OPP' }), h('span', { class: 'si-name', text: d.name }), h('span', { class: 'si-speed', text: d.speed ?? '' })),
         tnames.length ? h('span', { class: 'si-tgt' }, h('span', { class: 'sline' }), h('span', { text: tnames.join(', ') })) : null,
       ),
     );
-  }
+  });
   board.append(h('div', { class: 'a-stack' }, stack));
 
   // action bar
   board.append(h('div', { class: 'a-action' }, actionBar(v, ui, interactive, tg, channelable, playable)));
 
-  // hand
+  // hand: a fan, consistent card size, playable cards rise and carry the actable edge
   const hand = h('div', { class: 'hand', data: { count: mine.hand.length } });
-  for (const hc of mine.hand) {
+  const n = mine.hand.length;
+  mine.hand.forEach((hc, i) => {
     const el = handCardEl(v, 0, hc.iid, hc.card);
+    const off = i - (n - 1) / 2;
+    el.style.setProperty('--fr', `${(off * Math.min(2.4, 14 / Math.max(n, 1))).toFixed(2)}deg`);
+    el.style.setProperty('--fy', `${(off * off * 0.09).toFixed(2)}rem`);
+    el.style.setProperty('--z', String(i + 1));
     if (playable.has(hc.iid) || channelable.has(hc.iid)) el.classList.add('actable');
     if (ui.armed === hc.iid) el.classList.add('armed');
     hand.append(el);
-  }
+  });
   board.append(h('div', { class: 'a-hand' }, hand));
 
   board.classList.toggle('nostack', v.stack.length === 0);
+
+  // after mount: the overlay, the FLIP slide
+  cur = { host, ui };
+  installHover();
+  const size = `${window.innerWidth}x${window.innerHeight}`;
+  const resized = size !== lastSize;
+  lastSize = size;
+  requestAnimationFrame(() => {
+    redrawOverlay();
+    if (!resized) playFlip(before);
+  });
   return board;
+}
+
+function respondLine(v: GameState): string {
+  const who = v.priority === 0 ? 'You' : 'The opponent';
+  const att = v.combat?.attacker;
+  const first = att === undefined ? '' : att === 0 ? ' You attacked, so you act first.' : ' The opponent attacked, so they act first.';
+  return v.passes >= 1
+    ? `Combat window: ${who} may respond; the other side has passed. A Swift or Flash glyph, or pass to strike.`
+    : `Combat window: ${who} may respond with a Swift or Flash glyph, or pass.${first}`;
 }
 
 function actionBar(v: GameState, ui: BoardUI, interactive: boolean, tg: Targets, channelable: Set<string>, playable: Set<string>): HTMLElement {
@@ -493,7 +727,10 @@ function actionBar(v: GameState, ui: BoardUI, interactive: boolean, tg: Targets,
   let line: string;
   if (v.phase === 'over') line = 'The game is over.';
   else if (v.priority === 1) {
-    line = v.phase === 'block' ? 'The opponent is choosing blocks…' : v.stack.length ? 'The opponent is responding…' : 'The opponent is thinking…';
+    line = v.phase === 'block' ? 'The opponent is choosing blocks…'
+      : v.phase === 'declare' ? 'The opponent is choosing attackers…'
+      : v.phase === 'combat' ? 'Combat window: the opponent may respond with a Swift or Flash glyph, or pass.'
+      : v.stack.length ? 'The opponent is responding…' : 'The opponent is thinking…';
   } else if (!interactive) line = 'Resolving…';
   else if (ui.armed) {
     const hc = mine.hand.find((x) => x.iid === ui.armed);
@@ -527,7 +764,7 @@ function actionBar(v: GameState, ui: BoardUI, interactive: boolean, tg: Targets,
     const blocked = v.combat.pairs.filter((p) => p.blk).length;
     line = ui.blockUnit ? 'Now click the attacker it blocks.' : ui.blockAtt ? 'Now click one of your units to block it.' : `The opponent attacks with ${total}. Click one of your units, then the attacker it blocks.`;
     btns.append(h('button', { class: 'btn primary', data: { action: 'blocks' }, text: `Lock blocks (${blocked} of ${total} blocked)` }));
-  } else if (v.phase === 'combat') line = 'Blocks are locked. Cast a Swift or Flash glyph, or let the strike happen.';
+  } else if (v.phase === 'combat') line = respondLine(v);
   else if (v.stack.length) line = 'Glyphs are waiting. Answer with a Swift or Flash glyph, or let them resolve.';
   else line = mine.canAttack ? 'Your move: play a card, click a unit to attack, or pass.' : 'Your move: play a card or pass.';
   status.append(h('span', { class: 'status-line', text: line }));

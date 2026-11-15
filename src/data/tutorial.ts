@@ -169,7 +169,7 @@ export const TUTORIAL_STEPS: Step[] = [
     text: 'The opponent chose not to block, so Jax will hit their Spire. Before strikes land both of you may cast glyphs; you have none worth casting, so press No response: strike.',
     click: { kind: 'button', action: 'pass' }, focus: ['foe-spire'], allow: presses('pass'),
     hint: 'Press No response: strike.',
-    after: [{ t: 'pass' }],
+    after: [{ t: 'pass' }, { t: 'pass' }],
   },
   {
     id: 'end-round-3', topic: 'Unspent Charge',
