@@ -1,6 +1,7 @@
 // AI entry point. The AI is only ever given view(state, seat) (R-V1).
 import type { Action, GameState, Seat } from '../engine/types';
 import { legalActions } from '../engine/rules';
+import { decide } from './brain';
 
 export type Difficulty = 'easy' | 'normal' | 'hard';
 export const DIFFICULTIES: { id: Difficulty; name: string; blurb: string }[] = [
@@ -16,7 +17,7 @@ export function randomAction(v: GameState, rnd: () => number): Action {
   return acts[Math.floor(rnd() * acts.length)];
 }
 
-/** Placeholder until src/ai/brain.ts lands: replaced by the utility AI. */
-export function chooseAction(v: GameState, _seat: Seat, _level: Difficulty, rnd: () => number = Math.random): Action {
-  return randomAction(v, rnd);
+/** The AI's move for `seat`, given only that seat's view. */
+export function chooseAction(v: GameState, seat: Seat, level: Difficulty, rnd: () => number = Math.random): Action {
+  return decide(v, seat, level, rnd);
 }
