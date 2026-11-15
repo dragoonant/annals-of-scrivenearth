@@ -23,6 +23,9 @@ The only place a decision lives. `by` is `owner` (with the owner's words) or `de
 | D17 | 2026-11-15 | The owner will make the repo public and point Pages at `gh-pages`. | owner |
 | D18 | 2026-11-15 | This session has push access to `dragoonant/tabletop-kb` and keeps this game's entry current (rule 19). | owner |
 | D19 | 2026-11-15 | Tidewardens' weak AI-versus-AI results (BALANCE B-3) are left alone until the owner has played Tide. | default |
+| D20 | 2026-11-15 | The first-pass client is rejected on looks: "Yikes. That's ugly as hell. I hope you're going to improve it." What is wrong, in the owner's picks: the placeholder card art, the flat empty board, and the card frames and type. The crystal magitech concept itself stands. | owner |
+| D21 | 2026-11-15 | Finish quality is measured against **Shadowforge** (its rebuilt look: board art, HUD, card view, animation layer); the look stays this game's own. | owner |
+| D22 | 2026-11-15 | Overnight: merge each gated stage to `main`, and merge `gpu/assets` (EVILAEGIS art and audio) into the session branch as it lands, without waiting. Leave a morning summary with screenshots and numbered questions. | owner |
 
 ## Cut order if a session runs short
 Cut first: audio polish, deck-builder niceties (filters, import/export), the third AI tier, phone-portrait polish.
@@ -30,5 +33,5 @@ Never cut: per-card behaviour tests, the save, open-information viewers, prompts
 the hero ascension moment.
 
 ## Open questions for the owner
-1. The name of the Claude session on EVILAEGIS (opened in a clone of this repo) so this session can message it (D9).
+1. (Answered 2026-11-15: the EVILAEGIS session "Asset generation setup" was sent the job in HANDOFF-GPU.md.)
 2. Pages: repo public, Settings -> Pages -> Source "Deploy from a branch", branch `gh-pages` (D17).
