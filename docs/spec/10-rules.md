@@ -22,7 +22,8 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
   resolves and the missing ones are skipped. A target that left the Line and came back is a new object and is gone.
 - **R-G10 Targets.** A card that asks for targets must be given one for every slot that has a legal choice, each a
   different object. A glyph needs at least its first target to be cast; later slots with no legal choice are left
-  empty and that part of the effect is skipped. A unit may always be played; its Deploy skips empty slots.
+  empty and that part of the effect is skipped. A glyph that makes two units fight needs both. A unit may always be played;
+  its Deploy skips empty slots.
 
 ## Charge (R-C)
 - **R-C1.** At the start of each round your maximum Charge rises by 1 (cap 10) and your Charge refills.

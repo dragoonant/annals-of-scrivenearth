@@ -152,7 +152,7 @@ export const TUTORIAL_STEPS: Step[] = [
   // ----- round 3: your Initiative, 3 Charge -----
   {
     id: 'declare-jax', topic: 'Attack',
-    text: 'Round 3: you hold the Initiative, so you may attack once this round. Click Jax to put him in the battle row. Click him again to take him back.',
+    text: 'Round 3: you hold the Initiative, so you may attack once this round. Click Jax to put him in the battle row.',
     click: { kind: 'declare', unit: me(JAX) }, focus: ['initiative'], allow: declares(me(JAX)),
     hint: 'Click Jax, your hero on the Line, to attack with him.',
     after: [],

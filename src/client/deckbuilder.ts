@@ -94,6 +94,7 @@ export class Builder {
   private grid!: HTMLElement;
   private shown!: HTMLElement;
   private whyLine!: HTMLElement;
+  private hoverEl!: HTMLElement;
   private countEl!: HTMLElement;
   private legalEl!: HTMLElement;
   private statsEl!: HTMLElement;
@@ -133,8 +134,8 @@ export class Builder {
   // ---------- building the skeleton ----------
   private build(): HTMLElement {
     const root = h('div', { class: 'builder' });
-    this.nameInput = h('input', { class: 'bd-name', attrs: { type: 'text', maxlength: '40', placeholder: 'Deck name', 'aria-label': 'Deck name', autocomplete: 'off', spellcheck: 'false' }, data: { ui: 'b-name' } });
-    this.searchInput = h('input', { class: 'bd-search', attrs: { type: 'search', placeholder: 'Search name or rules text', 'aria-label': 'Search cards', autocomplete: 'off', spellcheck: 'false' }, data: { ui: 'b-search' } });
+    this.nameInput = h('input', { class: 'bd-name', attrs: { type: 'text', maxlength: '40', placeholder: 'Deck name', 'aria-label': 'Deck name', autocomplete: 'off', spellcheck: 'false' }, data: { field: 'name' } });
+    this.searchInput = h('input', { class: 'bd-search', attrs: { type: 'search', placeholder: 'Search name or rules text', 'aria-label': 'Search cards', autocomplete: 'off', spellcheck: 'false' }, data: { field: 'search' } });
     this.nameInput.addEventListener('input', () => {
       this.name = this.nameInput.value;
       this.dirty = true;
@@ -149,8 +150,9 @@ export class Builder {
     this.filterEl = h('div', { class: 'bd-filters' });
     this.whyLine = h('div', { class: 'bd-why', attrs: { role: 'status', 'aria-live': 'polite' } });
     this.shown = h('span', { class: 'bd-shown' });
+    this.hoverEl = h('div', { class: 'bd-hoverwhy', attrs: { 'aria-live': 'polite' } });
     this.grid = h('div', { class: 'bd-grid' });
-    const left = h('div', { class: 'bd-left' }, this.filterEl, h('div', { class: 'bd-msgrow' }, this.whyLine, this.shown), this.grid);
+    const left = h('div', { class: 'bd-left' }, this.filterEl, h('div', { class: 'bd-msgrow' }, this.whyLine, this.shown), this.hoverEl, this.grid);
 
     // right: the deck
     this.countEl = h('div', { class: 'bd-count' });
@@ -185,6 +187,7 @@ export class Builder {
       const t = (e.target as Element).closest?.<HTMLElement>('.bd-tile');
       if (t) this.hover(t.dataset.id!);
     });
+    this.grid.addEventListener('pointerleave', () => { this.hoverEl.textContent = ''; });
     root.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const t = e.target as HTMLElement;
@@ -277,7 +280,7 @@ export class Builder {
 
   private hover(id: string): void {
     const why = whyNotAdd(this.cards, id);
-    this.setMsg(why ? `${def(id).name}: ${why}.` : `Click to add ${def(id).name}.`, why ? 'bad' : '');
+    this.hoverEl.textContent = why ? `${def(id).name} cannot be added: ${why}.` : '';
   }
 
   private setMsg(text: string, kind: '' | 'bad' | 'ok' = ''): void {
@@ -598,7 +601,7 @@ export class Builder {
       }
       case 'import': {
         title = 'Import a deck code';
-        const ta = h('textarea', { class: 'bd-code', attrs: { rows: '4', placeholder: 'Paste a deck code here, e.g. My deck|storm-jax*3,...', 'aria-label': 'Deck code', spellcheck: 'false' }, data: { ui: 'b-code-in' } });
+        const ta = h('textarea', { class: 'bd-code', attrs: { rows: '4', placeholder: 'Paste a deck code here, e.g. My deck|storm-jax*3,...', 'aria-label': 'Deck code', spellcheck: 'false' }, data: { field: 'code-in' } });
         ta.value = this.importText;
         ta.addEventListener('input', () => { this.importText = ta.value; });
         body = [ta, d.problem ? h('div', { class: 'bd-err', text: d.problem }) : h('p', { class: 'hint', text: 'A code looks like name|card*count,card*count. Every card must exist and appear at most 3 times.' }), this.mkBtn('Import', 'b-import-go', 'btn primary')];
@@ -607,7 +610,7 @@ export class Builder {
       case 'export': {
         title = 'Export this deck';
         const code = exportDeck({ name: this.name.trim() || DEFAULT_NAME, cards: this.cards });
-        const ta = h('textarea', { class: 'bd-code', attrs: { rows: '5', readonly: '', 'aria-label': 'Deck code', spellcheck: 'false' }, data: { ui: 'b-code-out' } });
+        const ta = h('textarea', { class: 'bd-code', attrs: { rows: '5', readonly: '', 'aria-label': 'Deck code', spellcheck: 'false' }, data: { field: 'code-out' } });
         ta.value = code;
         ta.addEventListener('focus', () => ta.select());
         body = [ta, h('p', { class: 'hint', text: 'Copy this code to share the deck. Import code turns it back into a deck.' }), this.mkBtn('Select all', 'b-select-code', 'btn')];

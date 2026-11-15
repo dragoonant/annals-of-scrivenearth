@@ -121,6 +121,11 @@ export class Director {
     try {
       while (this.queue.length) {
         const it = this.queue.shift()!;
+        if (this.shown && this.shown.phase === 'mulligan' && it.after.phase !== 'mulligan' && this.scale > 0 && !this.skipping) {
+          // the opening hands are settled: show the board at once, so the first round banner plays over it
+          this.shown = it.after;
+          await this.refresh();
+        }
         for (const e of it.events) {
           if (this.skipping) break;
           await this.play(e, it);

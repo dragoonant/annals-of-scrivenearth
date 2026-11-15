@@ -744,7 +744,7 @@ export function whyNotPlay(s: GameState, seat: Seat, iid: string): string | null
   }
   if (have < cost) return `Needs ${cost} Charge (you have ${have} with Reserve)`;
   if (d.castIf && !evalCond(s, seat, d.castIf)) return 'Its condition is not met';
-  if ((d.targets?.length ?? 0) > 0 && legalTargets(s, seat, d.targets![0]).length === 0) return 'No legal target';
+  if ((d.targets?.length ?? 0) > 0 && targetChoices(s, seat, iid).length === 0) return 'No legal target';
   return null;
 }
 
@@ -762,7 +762,7 @@ export function targetChoices(s: GameState, seat: Seat, iid: string): string[][]
     if (next.length === 0) {
       // R-G10: fill as many target slots as have a legal target. A unit may be played with none (its deploy then
       // does nothing for the missing slots); a glyph needs at least its first.
-      return d.type === 'glyph' && combos[0].length === 0 ? [] : combos;
+      return d.type === 'glyph' && (combos[0].length === 0 || d.needsAllTargets) ? [] : combos;
     }
     combos = next;
     if (combos.length > 400) break;

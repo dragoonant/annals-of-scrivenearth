@@ -229,6 +229,8 @@ export interface CardDef {
   speed?: Speed;
   targets?: TargetSpec[];
   ops?: Op[];
+  /** Glyph needs a legal target for EVERY slot (a fight needs both fighters); default is R-G10 partial targets. */
+  needsAllTargets?: boolean;
   /** Glyph may only be cast if this holds. */
   castIf?: Cond;
   /** A clause the data cannot express yet. A card with this set is refused by every deck (never playable). */
