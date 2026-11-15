@@ -17,7 +17,7 @@ import { h, inspectorContent } from './cardview';
 import { loadSettings, readParams, saveSettings } from './settings';
 import type { Params, Settings, Speed } from './settings';
 import { premadeDecks } from '../data/decks';
-import { audition, installAudioUnlock, setMuted, setVolume } from '../audio/audio';
+import { audition, installAudioUnlock, loadSamples, setMuted, setMusic, setVolume, type MusicMood } from '../audio/audio';
 
 export type Screen = 'title' | 'setup' | 'mulligan' | 'board' | 'end' | 'howto' | 'builder';
 const SCREENS: Screen[] = ['title', 'setup', 'mulligan', 'board', 'end', 'howto', 'builder'];
@@ -83,6 +83,8 @@ export class App {
 
   start(): void {
     installAudioUnlock();
+    // Generated effects, voices and music (public/audio). A missing manifest means none were delivered: synth only.
+    void loadSamples().then(() => this.syncMusic()).catch((e: unknown) => { console.error(e); });
     setVolume(this.settings.volume);
     setMuted(this.settings.muted);
     this.refreshCatalog();
@@ -155,8 +157,23 @@ export class App {
     rerender: () => this.requestRender(),
   };
 
+  /** Music follows the screen and the state of the match (read from the presented state, never rules maths). */
+  private syncMusic(): void {
+    let mood: MusicMood = 'title';
+    if (this.params.speed === 'instant') mood = 'none';
+    else if (this.screen === 'board' || this.screen === 'mulligan') {
+      const v = this.director.presented;
+      const low = v ? Math.min(v.players[0].spire, v.players[1].spire) : 20;
+      mood = low <= 7 ? 'tense' : v && v.combat ? 'battle' : 'calm';
+    } else if (this.screen === 'end' && this.endView) {
+      mood = this.endView.winner === 0 ? 'victory' : 'defeat';
+    }
+    void setMusic(mood).catch((e: unknown) => { console.error(e); });
+  }
+
   render(): void {
     this.syncScreen();
+    this.syncMusic();
     this.layout();
     this.root.dataset.screen = this.screen;
     let content: HTMLElement;
