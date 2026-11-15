@@ -1,24 +1,41 @@
 import { describe, expect, it } from 'vitest';
-import { act, attack, board, pass, play, resolveCombat, st, unit } from '../helpers';
+import { act, applyAction, attack, board, pass, play, resolveCombat, st, unit } from '../helpers';
 import type { GameState } from '../../src/engine/types';
 
 const names = (s: GameState, seat: 0 | 1): string[] => s.players[seat].line.map((u) => u.card);
 const resonant = (s: GameState): void => { s.players[0].ascended = ['storm-jax']; };
 
 describe('storm cards', () => {
-  it('storm-signalkite: Aerial, so a plain blocker cannot stop it', () => {
+  it('storm-signalkite: Aerial, so a ground blocker is never offered the chance to block', () => {
     const s = board({ line: [['storm-signalkite'], ['zz-grunt']] });
-    attack(s, [unit(s, 0, 'storm-signalkite')], []);
+    const k = unit(s, 0, 'storm-signalkite');
+    act(s, { type: 'declare', unit: k.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // no block phase: nothing can legally block it
+    expect(applyAction(s, { type: 'block', unit: unit(s, 1, 'zz-grunt').iid, att: k.iid }).ok).toBe(false);
     resolveCombat(s);
     expect(s.players[1].spire).toBe(19);
+    // contrast: a ground attacker does get blocked
+    const t = board({ line: [['zz-grunt'], ['zz-grunt']] });
+    act(t, { type: 'declare', unit: unit(t, 0, 'zz-grunt').iid });
+    act(t, { type: 'attack' });
+    expect(t.phase).toBe('block');
   });
 
-  it('storm-tickettaker: Vanguard; Spire strike draws a card', () => {
-    const s = board({ line: [['storm-tickettaker'], []] });
-    const before = s.players[0].hand.length;
-    attack(s, [unit(s, 0, 'storm-tickettaker')]);
+  it('storm-tickettaker: Vanguard kills a 1-health blocker first; Spire strike draws a card', () => {
+    const s = board({ line: [['storm-tickettaker'], ['ember-sparkbot']] });
+    const k = unit(s, 0, 'storm-tickettaker');
+    attack(s, [k], [[unit(s, 1, 'ember-sparkbot'), k]]);
     resolveCombat(s);
-    expect(s.players[0].hand.length).toBe(before + 1);
+    expect(names(s, 1)).toEqual([]);
+    expect(k.dmg).toBe(0); // without Vanguard the Sparkbot strikes back and kills it
+    expect(s.players[0].hand.length).toBe(0); // blocked: no Spire strike, no draw
+    const t = board({ line: [['storm-tickettaker'], []] });
+    const before = t.players[0].hand.length;
+    attack(t, [unit(t, 0, 'storm-tickettaker')]);
+    resolveCombat(t);
+    expect(t.players[0].hand.length).toBe(before + 1);
+    expect(t.players[1].spire).toBe(19);
   });
 
   it('storm-flagbearer: Assault gives attacking allies +1|+0 this round', () => {
@@ -28,29 +45,53 @@ describe('storm cards', () => {
     expect(s.players[1].spire).toBe(20 - 2 - 3);
   });
 
-  it('storm-railglider: Aerial and Vanguard', () => {
-    const s = board({ line: [['storm-railglider'], ['zz-aerial']] });
+  it('storm-railglider: Vanguard kills a 2-health Aerial blocker before it strikes; Aerial dodges ground blockers', () => {
+    const s = board({ line: [['storm-railglider'], ['storm-wingmate']] });
     const g = unit(s, 0, 'storm-railglider');
-    attack(s, [g], [[unit(s, 1, 'zz-aerial'), g]]);
+    attack(s, [g], [[unit(s, 1, 'storm-wingmate'), g]]);
     resolveCombat(s);
-    // Vanguard strikes first for 2 into a 3-health blocker; the blocker survives and kills the glider.
-    expect(unit(s, 1, 'zz-aerial').dmg).toBe(2);
-    expect(st(s, g).keywords).toEqual(expect.arrayContaining(['aerial', 'vanguard']));
+    expect(names(s, 1)).toEqual([]);
+    expect(g.dmg).toBe(0); // without Vanguard the Wingmate (2 power) kills the 1-health glider
+    const t = board({ line: [['storm-railglider'], ['zz-grunt']] });
+    act(t, { type: 'declare', unit: unit(t, 0, 'storm-railglider').iid });
+    act(t, { type: 'attack' });
+    expect(t.phase).toBe('combat');
   });
 
-  it('storm-gustcaller: Dawn gives a random ally +1|+0 this round', () => {
-    const s = board({ line: [['storm-gustcaller', 'zz-wall'], []] });
-    pass(s); pass(s);
-    // Only one possible random ally (the wall)
-    expect(st(s, unit(s, 0, 'zz-wall')).power).toBe(1);
+  it('storm-gustcaller: Dawn gives another random ally +1|+0 this round, never itself', () => {
+    const lone = board({ line: [['storm-gustcaller'], []] });
+    pass(lone); pass(lone);
+    expect(lone.round).toBe(2);
+    expect(st(lone, unit(lone, 0, 'storm-gustcaller')).power).toBe(1); // no other ally: nobody gets it
+    const got = [0, 0];
+    for (let seed = 1; seed <= 30; seed++) {
+      const s = board({ seed, line: [['storm-gustcaller', 'zz-wall', 'zz-grunt'], []] });
+      pass(s); pass(s);
+      expect(s.round).toBe(2);
+      expect(st(s, unit(s, 0, 'storm-gustcaller')).power).toBe(1);
+      const w = st(s, unit(s, 0, 'zz-wall')).power;
+      const g = st(s, unit(s, 0, 'zz-grunt')).power;
+      expect((w - 0) + (g - 2)).toBe(1); // exactly one +1 handed out
+      got[w === 1 ? 0 : 1] += 1;
+    }
+    expect(got[0]).toBeGreaterThan(0);
+    expect(got[1]).toBeGreaterThan(0);
   });
 
-  it('storm-dispatcher: Deploy gives an ally +2|+0 and Aerial this round', () => {
+  it('storm-dispatcher: Deploy gives an ally +2|+0 and Aerial this round; the target must be an ally', () => {
     const s = board({ hand: [['storm-dispatcher'], []], line: [['zz-grunt'], ['zz-grunt']] });
     const g = unit(s, 0, 'zz-grunt');
+    const hand = s.players[0].hand[0].iid;
+    expect(applyAction(s, { type: 'play', iid: hand, targets: [unit(s, 1, 'zz-grunt').iid] }).ok).toBe(false);
     play(s, 'storm-dispatcher', [g.iid]);
-    expect(st(s, g).power).toBe(4);
+    expect(st(s, g)).toMatchObject({ power: 4 });
     expect(st(s, g).keywords).toContain('aerial');
+    expect(st(s, unit(s, 1, 'zz-grunt')).power).toBe(2);
+    resolveCombat(s);
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(st(s, g).power).toBe(2); // "this round": fades
+    expect(st(s, g).keywords).not.toContain('aerial');
   });
 
   it('storm-galecourier: Aerial; Spire strike adds 1 more Spire damage', () => {
@@ -73,23 +114,42 @@ describe('storm cards', () => {
     expect(names(s, 0)).toEqual(['storm-squadcaller', 'storm-wingmate']);
   });
 
-  it('storm-railmarshal: Assault rallies when few attackers were declared, not when many', () => {
+  it('storm-railmarshal: Assault rallies when 2 or fewer attackers are declared, not when 3 or more', () => {
     const s = board({ line: [['storm-railmarshal'], []] });
     attack(s, [unit(s, 0, 'storm-railmarshal')]);
     resolveCombat(s);
     expect(s.players[0].canAttack).toBe(true);
+    pass(s);
+    act(s, { type: 'declare', unit: unit(s, 0, 'storm-railmarshal').iid }); // the extra attack is really usable
+    const u = board({ line: [['storm-railmarshal', 'zz-grunt'], []] });
+    attack(u, [unit(u, 0, 'storm-railmarshal'), unit(u, 0, 'zz-grunt')]);
+    resolveCombat(u);
+    expect(u.players[0].canAttack).toBe(true); // 2 declared: still rallies
+    pass(u);
+    attack(u, [unit(u, 0, 'storm-railmarshal')]);
+    resolveCombat(u);
+    expect(u.players[0].canAttack).toBe(false); // 3 declared this round, cumulative: no further rally
     const t = board({ line: [['storm-railmarshal', 'zz-grunt', 'zz-grunt'], []] });
     attack(t, [unit(t, 0, 'storm-railmarshal'), unit(t, 0, 'zz-grunt', 0), unit(t, 0, 'zz-grunt', 1)]);
     resolveCombat(t);
     expect(t.players[0].canAttack).toBe(false);
+    expect(t.players[0].extraAttacks).toBe(0);
   });
 
-  it('storm-thunderkite: Aerial, Vanguard 4|3', () => {
+  it('storm-thunderkite: Aerial and Vanguard 4|3', () => {
     const s = board({ line: [['storm-thunderkite'], ['zz-grunt']] });
-    attack(s, [unit(s, 0, 'storm-thunderkite')]);
+    const k = unit(s, 0, 'storm-thunderkite');
+    act(s, { type: 'declare', unit: k.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // Aerial: the ground blocker cannot block
     resolveCombat(s);
     expect(s.players[1].spire).toBe(16);
-    expect(st(s, unit(s, 0, 'storm-thunderkite')).keywords).toEqual(expect.arrayContaining(['aerial', 'vanguard']));
+    const t = board({ line: [['storm-thunderkite'], ['storm-wingmate']] });
+    const u = unit(t, 0, 'storm-thunderkite');
+    attack(t, [u], [[unit(t, 1, 'storm-wingmate'), u]]);
+    resolveCombat(t);
+    expect(names(t, 1)).toEqual([]);
+    expect(u.dmg).toBe(0); // Vanguard: the 2-power Wingmate died before striking
   });
 
   it('storm-stormcaller: Assault gives attacking allies +1|+0 and Aerial this round', () => {
@@ -123,11 +183,14 @@ describe('storm cards', () => {
     expect(s.players[1].spire).toBe(20 - 6 - 2);
   });
 
-  it('storm-tailwind: an ally gets +1|+1 this round', () => {
-    const s = board({ hand: [['storm-tailwind'], []], line: [['zz-grunt'], []] });
+  it('storm-tailwind: an ally gets +1|+1 this round, then it fades', () => {
+    const s = board({ hand: [['storm-tailwind'], []], line: [['zz-grunt'], ['zz-grunt']] });
     const g = unit(s, 0, 'zz-grunt');
     play(s, 'storm-tailwind', [g.iid]);
     expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    pass(s); pass(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
   });
 
   it('storm-updraft: an ally gets +1|+0 and Aerial this round', () => {
@@ -135,19 +198,51 @@ describe('storm cards', () => {
     const g = unit(s, 0, 'zz-grunt');
     play(s, 'storm-updraft', [g.iid]);
     expect(st(s, g).power).toBe(3);
-    attack(s, [g]);
+    expect(st(s, g).keywords).toContain('aerial');
+    act(s, { type: 'declare', unit: g.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // the ground Grunt is not offered a block
+    expect(applyAction(s, { type: 'block', unit: unit(s, 1, 'zz-grunt').iid, att: g.iid }).ok).toBe(false);
     resolveCombat(s);
-    expect(s.players[1].spire).toBe(17); // the Grunt could not block an Aerial attacker
+    expect(s.players[1].spire).toBe(17);
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(st(s, g).power).toBe(2); // fades with the round
+    expect(st(s, g).keywords).not.toContain('aerial');
   });
 
-  it('storm-crosswind: puts an enemy unit in Stasis so it cannot block', () => {
-    const s = board({ hand: [['storm-crosswind'], []], line: [['zz-grunt'], ['zz-grunt']] });
+  it('storm-crosswind: an enemy unit in Stasis cannot block (and the other still can)', () => {
+    const s = board({ hand: [['storm-crosswind'], []], line: [['zz-grunt'], ['zz-grunt', 'zz-wall']] });
     const e = unit(s, 1, 'zz-grunt');
+    const w = unit(s, 1, 'zz-wall');
     play(s, 'storm-crosswind', [e.iid]);
     expect(e.stasis).toBe(true);
-    attack(s, [unit(s, 0, 'zz-grunt')]);
+    expect(w.stasis).toBe(false);
+    const a = unit(s, 0, 'zz-grunt');
+    act(s, { type: 'declare', unit: a.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('block');
+    expect(applyAction(s, { type: 'block', unit: e.iid, att: a.iid }).ok).toBe(false);
+    expect(applyAction(s, { type: 'block', unit: w.iid, att: a.iid }).ok).toBe(true);
+    // with the only blocker in Stasis there is no block phase and the Spire is hit
+    const t = board({ hand: [['storm-crosswind'], []], line: [['zz-grunt'], ['zz-grunt']] });
+    play(t, 'storm-crosswind', [unit(t, 1, 'zz-grunt').iid]);
+    act(t, { type: 'declare', unit: unit(t, 0, 'zz-grunt').iid });
+    act(t, { type: 'attack' });
+    expect(t.phase).toBe('combat');
+    resolveCombat(t);
+    expect(t.players[1].spire).toBe(18);
+  });
+
+  it('storm-crosswind: Stasis on a blocker mid-combat leaves the attacker blocked and no damage is dealt either way', () => {
+    const s = board({ hand: [['storm-crosswind'], []], line: [['zz-grunt'], ['zz-grunt']] });
+    const a = unit(s, 0, 'zz-grunt');
+    const b = unit(s, 1, 'zz-grunt');
+    attack(s, [a], [[b, a]]);
+    play(s, 'storm-crosswind', [b.iid]);
     resolveCombat(s);
-    expect(s.players[1].spire).toBe(18);
+    expect(s.players[1].spire).toBe(20);
+    expect(a.dmg + b.dmg).toBe(0);
   });
 
   it('storm-galesurge: allies get +2|+0 this round', () => {
@@ -164,12 +259,32 @@ describe('storm cards', () => {
     attack(s, [g]);
     resolveCombat(s);
     expect(s.players[0].canAttack).toBe(false);
+    expect(applyAction(s, { type: 'declare', unit: g.iid }).ok).toBe(false);
     pass(s); // defender passes priority back
     play(s, 'storm-reroute');
     pass(s);
     expect(s.players[0].canAttack).toBe(true);
     pass(s); // the opponent holds priority after the glyph resolves
     act(s, { type: 'declare', unit: g.iid });
+    act(s, { type: 'attack' });
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(20 - 2 - 2);
+  });
+
+  it('storm-reroute: cast before attacking it still grants one more attack this round (R-B1)', () => {
+    const s = board({ hand: [['storm-reroute'], []], line: [['zz-grunt', 'zz-grunt'], []] });
+    play(s, 'storm-reroute');
+    pass(s);
+    expect(s.players[0].extraAttacks).toBe(1);
+    pass(s);
+    attack(s, [unit(s, 0, 'zz-grunt', 0)]);
+    resolveCombat(s);
+    expect(s.players[0].canAttack).toBe(true); // the banked attack is now available
+    pass(s);
+    attack(s, [unit(s, 0, 'zz-grunt', 1)]);
+    resolveCombat(s);
+    expect(s.players[0].canAttack).toBe(false);
+    expect(s.players[1].spire).toBe(16);
   });
 
   it('storm-skyhook: returns an enemy unit to its owner\'s hand', () => {
@@ -180,14 +295,32 @@ describe('storm cards', () => {
     expect(s.players[1].hand.map((h) => h.card)).toEqual(['ember-ashrunner']);
   });
 
-  it('storm-jetstream: allies gain Aerial this round; Resonant also rallies', () => {
-    const s = board({ hand: [['storm-jetstream'], []], line: [['zz-grunt'], []] });
+  it('storm-jetstream: allies gain Aerial this round; no extra attack unless Resonant', () => {
+    const s = board({ hand: [['storm-jetstream'], []], line: [['zz-grunt'], ['zz-grunt']] });
     play(s, 'storm-jetstream');
     pass(s);
     expect(st(s, unit(s, 0, 'zz-grunt')).keywords).toContain('aerial');
-    expect(s.players[0].canAttack).toBe(true); // already true before attacking; rally adds nothing
+    expect(s.players[0].extraAttacks).toBe(0); // not Resonant: nothing banked
+    pass(s); // priority comes back to the Initiative holder
+    const g = unit(s, 0, 'zz-grunt');
+    act(s, { type: 'declare', unit: g.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // Aerial really applies
+    resolveCombat(s);
+    expect(s.players[0].canAttack).toBe(false);
+    // after attacking, not Resonant: still no second attack
+    const u = board({ hand: [['storm-jetstream'], []], line: [['zz-grunt'], []] });
+    attack(u, [unit(u, 0, 'zz-grunt')]);
+    resolveCombat(u);
+    pass(u);
+    play(u, 'storm-jetstream');
+    pass(u);
+    expect(u.players[0].canAttack).toBe(false);
+  });
+
+  it('storm-jetstream: Resonant also lets you attack again (after attacking, and banked before)', () => {
     const t = board({ hand: [['storm-jetstream'], []], line: [['storm-jax', 'zz-grunt'], []] });
-    t.players[0].ascended = ['storm-jax'];
+    resonant(t);
     attack(t, [unit(t, 0, 'zz-grunt')]);
     resolveCombat(t);
     expect(t.players[0].canAttack).toBe(false);
@@ -195,6 +328,11 @@ describe('storm cards', () => {
     play(t, 'storm-jetstream');
     pass(t);
     expect(t.players[0].canAttack).toBe(true);
+    const b = board({ hand: [['storm-jetstream'], []], line: [['storm-jax', 'zz-grunt'], []] });
+    resonant(b);
+    play(b, 'storm-jetstream');
+    pass(b);
+    expect(b.players[0].extraAttacks).toBe(1);
   });
 
   it('storm-airmail: Ritual draws 2 cards', () => {
@@ -212,5 +350,54 @@ describe('storm cards', () => {
     expect(st(s, g).power).toBe(4);
     expect(st(s, g).keywords).toContain('vanguard');
     expect(s.players[0].hand.length).toBe(1);
+  });
+
+  it('storm-corvane: base Assault gives attacking allies (itself included) +1|+0, non-attackers nothing', () => {
+    const s = board({ line: [['storm-corvane', 'zz-grunt', 'zz-wall'], []] });
+    attack(s, [unit(s, 0, 'storm-corvane'), unit(s, 0, 'zz-grunt')]);
+    expect(st(s, unit(s, 0, 'storm-corvane')).power).toBe(5);
+    expect(st(s, unit(s, 0, 'zz-grunt')).power).toBe(3);
+    expect(st(s, unit(s, 0, 'zz-wall')).power).toBe(0);
+    expect(st(s, unit(s, 0, 'zz-grunt')).keywords).not.toContain('vanguard');
+  });
+
+  it('storm-corvane: ascended Assault gives attacking allies +2|+0 and Vanguard this round (not to non-attackers)', () => {
+    const s = board({ line: [['storm-corvane', 'zz-grunt', 'zz-wall'], ['zz-grunt']] });
+    s.players[0].heroes = ['storm-corvane'];
+    s.players[0].ascended = ['storm-corvane'];
+    const g = unit(s, 0, 'zz-grunt');
+    const c = unit(s, 0, 'storm-corvane');
+    attack(s, [c, g]);
+    expect(st(s, g).power).toBe(4);
+    expect(st(s, g).keywords).toContain('vanguard');
+    expect(st(s, c).power).toBe(7);
+    expect(st(s, unit(s, 0, 'zz-wall')).power).toBe(0);
+    expect(st(s, unit(s, 0, 'zz-wall')).keywords).not.toContain('vanguard');
+    resolveCombat(s);
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(st(s, g).power).toBe(2); // "this round"
+    expect(st(s, g).keywords).not.toContain('vanguard');
+  });
+
+  it('storm-corvane: ascended Vanguard really strikes first', () => {
+    const s = board({ line: [['storm-corvane', 'zz-grunt'], ['zz-grunt']] });
+    s.players[0].heroes = ['storm-corvane'];
+    s.players[0].ascended = ['storm-corvane'];
+    const g = unit(s, 0, 'zz-grunt');
+    attack(s, [unit(s, 0, 'storm-corvane'), g], [[unit(s, 1, 'zz-grunt'), g]]);
+    resolveCombat(s);
+    expect(names(s, 1)).toEqual([]);
+    expect(g.dmg).toBe(0); // Vanguard killed the blocker before it struck back
+  });
+
+  it('storm-jax: Ascend lets you attack again even if the owner has not attacked yet (R-B1)', () => {
+    const s = board({ hand: [['zz-bolt'], []], line: [['storm-jax', 'zz-grunt'], []] });
+    s.players[0].heroes = ['storm-jax'];
+    s.players[0].seen.spireDamage = 7;
+    play(s, 'zz-bolt', ['spire1']);
+    pass(s);
+    expect(s.players[0].ascended).toContain('storm-jax');
+    expect(s.players[0].extraAttacks).toBe(1);
   });
 });

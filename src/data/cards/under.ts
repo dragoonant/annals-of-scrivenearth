@@ -77,7 +77,7 @@ export const under: CardDef[] = [
   },
   {
     id: 'under-furnacehand', name: 'Furnace Hand', faction: 'under', type: 'unit', cost: 3, power: 4, health: 4, tribe: 'syndicate',
-    text: 'Deploy: destroy an allied unit.',
+    text: 'Deploy: destroy another allied unit.',
     abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'destroy', to: 'target0' }] }],
   },
   {
@@ -141,7 +141,7 @@ export const under: CardDef[] = [
   },
   {
     id: 'under-snuffedfuse', name: 'Snuffed Fuse', faction: 'under', type: 'glyph', cost: 3, speed: 'swift',
-    text: 'Destroy an enemy unit with 3 or less power.',
+    text: 'Choose an enemy unit with 3 or less power. Destroy it.',
     targets: [{ what: 'unit', side: 'enemy', filter: { maxPower: 3 } }], ops: [{ op: 'destroy', to: 'target0' }],
   },
   {

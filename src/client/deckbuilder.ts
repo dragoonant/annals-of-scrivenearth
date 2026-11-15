@@ -219,7 +219,7 @@ export class Builder {
     }
     const typeRow = h('div', { class: 'bd-frow' }, h('span', { class: 'lbl', text: 'TYPE' }));
     for (const t of TYPES) typeRow.append(this.chip(t.name, 'b-type', t.id, f.types.has(t.id)));
-    const top = h('div', { class: 'bd-ftop' }, facRow, typeRow, this.searchInput, this.mkBtn('Clear filters', 'b-clear', 'btn small ghost'));
+    const top = h('div', { class: 'bd-ftop' }, facRow, typeRow, this.searchInput, this.mkBtn('Cost and keyword', 'b-more', 'btn small bd-morebtn'), this.mkBtn('Clear filters', 'b-clear', 'btn small ghost'));
     const costRow = h('div', { class: 'bd-frow' }, h('span', { class: 'lbl', text: 'COST' }));
     for (const c of COSTS) costRow.append(this.chip(c === 7 ? '7+' : String(c), 'b-cost', String(c), f.cost === c));
     const kwRow = h('div', { class: 'bd-frow bd-kws' }, h('span', { class: 'lbl', text: 'KEYWORD' }));
@@ -462,6 +462,7 @@ export class Builder {
       case 'b-type': toggle(f.types, v as CardDef['type']); return this.refilter();
       case 'b-cost': f.cost = f.cost === Number(v) ? null : Number(v); return this.refilter();
       case 'b-kw': f.keyword = f.keyword === v ? null : v; return this.refilter();
+      case 'b-more': this.filterEl.classList.toggle('more'); return;
       case 'b-clear':
         this.filters = { factions: new Set(), types: new Set(), cost: null, keyword: null, text: '' };
         this.searchInput.value = '';

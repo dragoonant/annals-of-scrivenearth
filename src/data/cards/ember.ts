@@ -80,10 +80,10 @@ export const ember: CardDef[] = [
   },
   {
     id: 'ember-arcwelder', name: 'Arc Welder', faction: 'ember', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'smith',
-    text: 'Deploy: deal 2 to an enemy unit. Resonant: deal 1 more.',
+    text: 'Deploy: deal 2 to an enemy unit. Resonant: deal 3 instead.',
     abilities: [{
       on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }],
-      ops: [{ op: 'damage', to: 'target0', n: 2 }, { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'damage', to: 'target0', n: 1 }] }],
+      ops: [{ op: 'if', cond: { c: 'resonant' }, then: [{ op: 'damage', to: 'target0', n: 3 }], else: [{ op: 'damage', to: 'target0', n: 2 }] }],
     }],
   },
   {

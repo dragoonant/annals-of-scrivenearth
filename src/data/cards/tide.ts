@@ -58,7 +58,7 @@ export const tide: CardDef[] = [
   },
   {
     id: 'tide-eddycourier', name: 'Eddy Courier', faction: 'tide', type: 'unit', cost: 2, power: 2, health: 2, tribe: 'mage',
-    text: 'Deploy: return an allied unit to your hand.',
+    text: 'Deploy: return another allied unit to your hand.',
     abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'recall', to: 'target0' }] }],
   },
   {
@@ -74,7 +74,7 @@ export const tide: CardDef[] = [
   },
   {
     id: 'tide-hushwateradept', name: 'Hushwater Adept', faction: 'tide', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'mage',
-    text: 'When you cast a glyph, put the weakest enemy in Stasis.',
+    text: 'When you cast a glyph, put the weakest enemy in Stasis. If it is already in Stasis, nothing happens.',
     abilities: [{ on: 'glyphCast', ops: [{ op: 'stasis', to: 'weakestEnemy' }] }],
   },
   {
@@ -103,7 +103,7 @@ export const tide: CardDef[] = [
   },
   {
     id: 'tide-frostmeremagistrate', name: 'Frostmere Magistrate', faction: 'tide', type: 'unit', cost: 6, power: 4, health: 6, tribe: 'mage',
-    text: 'Deploy: put two enemy units in Stasis.',
+    text: 'Deploy: put up to two enemy units in Stasis.',
     abilities: [{
       on: 'deploy',
       targets: [{ what: 'unit', side: 'enemy' }, { what: 'unit', side: 'enemy' }],
@@ -149,7 +149,7 @@ export const tide: CardDef[] = [
   },
   {
     id: 'tide-sluiceclose', name: 'Sluice Close', faction: 'tide', type: 'glyph', cost: 4, speed: 'swift',
-    text: 'Put two enemy units in Stasis.',
+    text: 'Put up to two enemy units in Stasis.',
     targets: [{ what: 'unit', side: 'enemy' }, { what: 'unit', side: 'enemy' }],
     ops: [{ op: 'stasis', to: 'target0' }, { op: 'stasis', to: 'target1' }],
   },

@@ -57,7 +57,7 @@ export const storm: CardDef[] = [
   },
   {
     id: 'storm-gustcaller', name: 'Gust Caller', faction: 'storm', type: 'unit', cost: 2, power: 1, health: 2, tribe: 'courier',
-    text: 'Dawn: a random ally gets +1|+0 this round.',
+    text: 'Dawn: another random ally gets +1|+0 this round.',
     abilities: [{ on: 'dawn', ops: [{ op: 'buff', to: 'randomAlly', power: 1, dur: 'round' }] }],
   },
   {
