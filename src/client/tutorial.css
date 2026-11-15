@@ -1,12 +1,12 @@
 /* The guided first match: a coach panel, highlight rings, and dimmed inputs. Same facets and tokens as the board. */
 .tut-layer { position: absolute; inset: 0; z-index: 40; pointer-events: none; }
-.tut-ring { position: absolute; background: transparent !important; --cut: 0.9rem; pointer-events: none; }
-.tut-ring.hl { --edge-c: var(--asc); animation: tutring 1.1s ease-in-out infinite; }
-.tut-ring.hl::before { background: var(--asc); }
-.tut-ring.look { --edge-c: var(--charge); opacity: 0.8; animation: tutlook 2s ease-in-out infinite; }
-.tut-ring::after { display: none; }
-@keyframes tutring { 0%, 100% { opacity: 1; transform: scale(1); filter: drop-shadow(0 0 0.4rem rgba(255, 243, 176, 0.9)); } 50% { opacity: 0.55; transform: scale(1.04); filter: drop-shadow(0 0 1rem rgba(255, 243, 176, 0.9)); } }
-@keyframes tutlook { 0%, 100% { opacity: 0.85; } 50% { opacity: 0.35; } }
+.tut-ring { position: absolute; pointer-events: none; }
+.tut-ring-in { position: absolute; inset: 0; border: 0.35rem solid var(--asc); background: rgba(255, 243, 176, 0.08); clip-path: polygon(1rem 0, 100% 0, 100% calc(100% - 1rem), calc(100% - 1rem) 100%, 0 100%, 0 1rem); }
+.tut-ring.hl { animation: tutring 1.1s ease-in-out infinite; filter: drop-shadow(0 0 0.8rem rgba(255, 243, 176, 0.95)); }
+.tut-ring.look { opacity: 0.85; animation: tutlook 2s ease-in-out infinite; }
+.tut-ring.look .tut-ring-in { border: 0.2rem solid var(--charge); background: rgba(95, 242, 224, 0.06); }
+@keyframes tutring { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.035); } }
+@keyframes tutlook { 0%, 100% { opacity: 0.9; } 50% { opacity: 0.4; } }
 
 /* the lesson's own control glows; everything else on the board is visibly set aside (and answers with a coach line) */
 .tut-hl { --edge-c: var(--asc) !important; box-shadow: inset 0 0 1.8rem rgba(255, 243, 176, 0.5) !important; }
@@ -14,14 +14,14 @@
 .tut-dim.actable { box-shadow: none; }
 .tut-dim:hover { opacity: 0.55; }
 
-.tut-coach { position: absolute; z-index: 41; width: 34rem; max-width: calc(100vw - 1.6rem); padding: 1rem 1.4rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; pointer-events: auto;
+.tut-coach { position: absolute; z-index: 41; width: 30rem; max-width: calc(100vw - 1.6rem); padding: 1rem 1.4rem 1rem; display: flex; flex-direction: column; gap: 0.6rem; pointer-events: auto;
   background: linear-gradient(155deg, rgba(20, 34, 82, 0.97), rgba(12, 22, 60, 0.97)); --edge-c: var(--asc); --cut: 1.2rem; }
 .tut-coach.waiting { --edge-c: rgba(190, 225, 255, 0.55); }
 .tc-head { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; font-family: var(--head); letter-spacing: 0.16em; font-size: 1rem; padding-left: 0.6rem; }
 .tc-step { color: var(--ink2); }
 .tc-topic { color: var(--asc); font-weight: 700; }
 .tut-coach.waiting .tc-topic { color: var(--ink2); }
-.tc-text { font-size: 1.45rem; line-height: 1.4; color: var(--ink); }
+.tc-text { font-size: 1.4rem; line-height: 1.4; color: var(--ink); }
 .tc-fix { font-size: 1.3rem; line-height: 1.35; color: var(--reserve); padding: 0.5rem 0.9rem; background: rgba(255, 209, 102, 0.12); border-left: 3px solid var(--reserve); animation: tcfix 0.5s ease-out; }
 @keyframes tcfix { 0% { transform: translateX(-0.6rem); background: rgba(255, 209, 102, 0.45); } 40% { transform: translateX(0.4rem); } 100% { transform: none; } }
 .tc-foot { display: flex; align-items: center; gap: 1rem; }
@@ -35,7 +35,7 @@
 .tut-ready-btns { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.4rem; }
 .tut-ready-btns .btn.big { font-size: 1.7rem; padding: 1.1rem 3rem; }
 
-#root.mode-short .tut-coach { width: 31rem; padding: 0.6rem 1rem 0.7rem; gap: 0.35rem; --cut: 0.8rem; }
+#root.mode-short .tut-coach { width: 30rem; padding: 0.6rem 1rem 0.7rem; gap: 0.35rem; --cut: 0.8rem; }
 #root.mode-short .tc-text { font-size: 1.1rem; line-height: 1.3; }
 #root.mode-short .tc-fix { font-size: 1rem; padding: 0.3rem 0.7rem; }
 #root.mode-short .tc-head { font-size: 0.85rem; }

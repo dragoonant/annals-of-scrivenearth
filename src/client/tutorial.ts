@@ -104,7 +104,7 @@ export function decorate(screen: HTMLElement, ctx: CoachCtx): void {
     }
     const ring = (el: HTMLElement, cls: string): void => {
       const b = boxOf(el, rem * 0.5);
-      layer.append(h('div', { class: `tut-ring facet ${cls}`, style: { left: `${b.l}px`, top: `${b.t}px`, width: `${b.r - b.l}px`, height: `${b.b - b.t}px` } }));
+      layer.append(h('div', { class: `tut-ring ${cls}`, style: { left: `${b.l}px`, top: `${b.t}px`, width: `${b.r - b.l}px`, height: `${b.b - b.t}px` } }, h('span', { class: 'tut-ring-in' })));
       avoid.push(boxOf(el, rem * 0.9));
     };
     for (const el of all(screen, p.hl)) {
