@@ -1,0 +1,63 @@
+/* Visual pass against the Shadowforge benchmark (PLAN D20, D21): painted backdrops, a lit playfield,
+   heavier card frames. Loaded after style.css; only overrides, no layout maths. */
+
+/* ---------- painted backdrops ---------- */
+:root.has-title-skyline .skyline, :root.has-board-backdrop .skyline { display: none; }
+:root.has-title-skyline #root:is([data-screen='title'], [data-screen='setup'], [data-screen='howto'], [data-screen='builder']) .backdrop::before {
+  background-image: var(--title-img); opacity: 1; mix-blend-mode: normal; background-position: 50% 62%;
+}
+:root.has-title-skyline #root:is([data-screen='title'], [data-screen='setup'], [data-screen='howto'], [data-screen='builder']) .backdrop::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 38%, rgba(8, 13, 38, 0.15) 0%, rgba(8, 13, 38, 0.72) 70%, rgba(6, 9, 28, 0.94) 100%),
+    linear-gradient(180deg, rgba(8, 13, 38, 0.55) 0%, rgba(8, 13, 38, 0) 30%, rgba(8, 13, 38, 0.6) 100%);
+}
+:root.has-title-skyline #root:is([data-screen='setup'], [data-screen='howto'], [data-screen='builder']) .backdrop::after {
+  background: linear-gradient(180deg, rgba(8, 13, 38, 0.86), rgba(8, 13, 38, 0.93));
+}
+:root.has-board-backdrop #root:is([data-screen='board'], [data-screen='mulligan'], [data-screen='end']) .backdrop::before {
+  opacity: 0.62; mix-blend-mode: normal;
+}
+:root.has-board-backdrop #root:is([data-screen='board'], [data-screen='mulligan'], [data-screen='end']) .backdrop::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  /* a lit table: bright in the middle where the fight is, falling off to the edges */
+  background: radial-gradient(75% 60% at 55% 46%, rgba(120, 190, 255, 0.16) 0%, rgba(8, 13, 38, 0.2) 55%, rgba(5, 8, 26, 0.78) 100%);
+}
+
+/* ---------- title ---------- */
+#root[data-screen='title'] .wordmark, #root[data-screen='title'] h1 { filter: drop-shadow(0 0.4rem 1.6rem rgba(4, 8, 30, 0.9)); }
+
+/* ---------- unit frames: a faction-lit inner edge and weight at the foot ---------- */
+.unit {
+  box-shadow:
+    inset 0 0 0 0.2rem hsl(var(--hue, 205) 85% 72% / 0.5),
+    inset 0 0 1.4rem hsl(var(--hue, 205) 90% 60% / 0.22);
+}
+.unit .artbox { opacity: 1; }
+.unit .u-name { text-shadow: 0 0.1rem 0.5rem rgba(4, 8, 30, 0.95); letter-spacing: 0.02em; }
+.unit.asc { box-shadow: inset 0 0 0 0.25rem rgba(255, 243, 176, 0.9), inset 0 0 2rem rgba(255, 243, 176, 0.5); }
+.slot { background: rgba(8, 14, 40, 0.42); }
+
+/* ---------- hand cards: same faction edge, crisper plates ---------- */
+.hand-card { box-shadow: inset 0 0 0 0.18rem hsl(var(--hue, 205) 85% 72% / 0.45); }
+.hand-card .c-top { background: linear-gradient(90deg, rgba(5, 9, 28, 0.96), hsl(var(--hue, 205) 60% 22% / 0.92)); }
+
+/* ---------- panels sit on the painted table instead of floating in fog ---------- */
+#root[data-screen='board'] .facet.panel, #root[data-screen='board'] .rail .facet { background-color: rgba(9, 15, 44, 0.78); }
+
+/* ---------- second look: readable menu over the painted spire, calmer table, bigger units ---------- */
+#root[data-screen='title'] .btn, #root[data-screen='title'] button.facet { background-color: rgba(8, 14, 42, 0.74); backdrop-filter: blur(3px); }
+:root.has-board-backdrop #root:is([data-screen='board'], [data-screen='mulligan'], [data-screen='end']) .backdrop::before { opacity: 0.34; filter: blur(1.5px); }
+#root.mode-wide { --uw: 13.4rem; --uh: 15rem; }
+.unit::before { z-index: 9; }
+.unit .u-frame { display: none; }
+.unit::after { box-shadow: none; }
+/* the faction edge must sit above the art (the art box covers an inset shadow on the card itself) */
+.unit .artbox::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  box-shadow: inset 0 0 0 0.22rem hsl(var(--hue, 205) 85% 72% / 0.55), inset 0 0 1.6rem hsl(var(--hue, 205) 90% 55% / 0.35);
+}
+.hand-card .c-art::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  box-shadow: inset 0 0 0 0.16rem hsl(var(--hue, 205) 85% 72% / 0.4);
+}

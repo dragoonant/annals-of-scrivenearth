@@ -58,7 +58,7 @@ export function loadArtManifest(url = './art/manifest.json'): Promise<void> {
 function applySpecialArt(): void {
   if (typeof document === 'undefined' || !manifest) return;
   const root = document.documentElement;
-  for (const [id, prop] of [['cardback', '--cardback-img'], ['board-backdrop', '--backdrop-img']] as const) {
+  for (const [id, prop] of [['cardback', '--cardback-img'], ['board-backdrop', '--backdrop-img'], ['title-skyline', '--title-img']] as const) {
     if (manifest.has(id)) {
       root.style.setProperty(prop, `url('${new URL(`./art/${id}.webp`, document.baseURI).href}')`);
       root.classList.add(`has-${id}`);

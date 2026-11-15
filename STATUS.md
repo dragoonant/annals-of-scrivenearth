@@ -1,26 +1,48 @@
 # Status (rewritten each stage)
 
-**2026-11-15, stage 1: first playable.** All gates pass (`npm run gate`): typecheck, 201 Vitest tests, AI-vs-random
-bench with replay, build, 5 Playwright tests.
+## Morning summary (owner), 2026-11-15 night
+**Stage 2 is on `main`.** Every gate passes in one command (`npm run gate`): typecheck, 290 Vitest tests, the
+text-versus-data audit (0 FAIL of 166 card faces), the mutation check (150 of 150 cards caught), the art prompt
+lint, the AI-versus-random bench with seed replay, the build, and 24 Playwright tests.
+
+Play: https://dragoonant.github.io/annals-of-scrivenearth/ (needs the repo public and Pages on `gh-pages`, PLAN D17).
+Screenshots: `docs/screens/stage2-*.jpg` (title, board in combat, inspector, phone landscape, deck builder, setup).
+
+What changed since you said it was ugly (PLAN D20):
+1. **Real art everywhere**: 175 plates from EVILAEGIS (every card, both faces of each hero, crests, card back, painted
+   title skyline, board backdrop). The triangle sigils are gone wherever a plate exists.
+2. **Board rebuilt**: larger units with faction-lit frames, keyword badges, status marks, hero progress bars, hand
+   fan, targeting lines, a battle row with a per-pair forecast, an effects layer (strikes, shatter, summon, stasis,
+   ward break), the ascension sequence, per-card prompt wording for all 50 targeted cards.
+3. **Deck builder, guided first match (20 steps, ends with Jax ascending), richer end screen with a bug-report file.**
+4. **Generated audio**: 7 music tracks that follow the screen and the match, 30 effects, 12 hero voice lines.
+5. **Per-card audit** (your request): three independent reviews, four engine bugs fixed, 53 weak tests rewritten.
+   Summary: `docs/audit/README.md`.
+
+### Questions, in priority order
+1. **Look.** Is the board now in the right direction against Shadowforge, or what still reads as ugly? Name the
+   screen and the thing (PLAN D20 picks were art, flat board, frames and type).
+2. **Sound.** Nothing has been heard by anyone: NOT VERIFIED BY EAR. Please listen in Settings (sound test) and to
+   the music. EVILAEGIS flagged Brakk's roar as possibly a low growl.
+3. **Art misses** I noticed on the sample sheet: Ascended Jax wears a dark shirt (not his teal suit), Ysolde holds a
+   flaming staff (a shield captain), Sluice Close shows soldiers at a gate (not a canal freezing). Re-roll these, or
+   are they fine?
+4. **Tidewardens** lose in AI-versus-AI games (BALANCE B-3). Play Tide once and say whether it feels weak.
+5. **Phone portrait** shows a rotate hint (PLAN D15). Next stage, or leave?
 
 ## What exists
-- **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`): rounds, Charge and Reserve, priority, glyph stack,
-  declare/block/combat window, 12 keywords, hero ascension, Channel, full-Line replace, hidden-information view, save.
-- **Cards**: 150 collectible (6 factions x 2 heroes, 14 units, 9 glyphs), one behaviour test per card and hero.
-- **AI**: Apprentice / Adept / Archon, measured as a ladder (BALANCE B-2).
-- **Client** (`src/client`, spec `docs/spec/50-client.md`): title, new game with deck peek, mulligan, board, inspector,
-  stack, hero trackers, log, presentation director with the ascension sequence, autosave and Continue, settings,
-  how to play, rotate overlay in phone portrait. Procedural crystal-sigil card art.
-- **Sound**: synthesized effects riding the event log; generated samples take over when delivered. Not verified by ear.
-- **GPU job files**: `HANDOFF-GPU.md`, `tools/art/` (style, lint, Flux generator), `tools/audio/manifest.json`.
+- **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`), 150 cards, 12 heroes, three AI tiers (BALANCE B-2).
+- **Client** (`src/client`): title, learn to play, new game with deck peek, mulligan, board, inspector, stack, hero
+  trackers, log, presentation director, autosave and Continue, deck builder, end screen, settings, how to play.
+- **Art and audio pipelines** (`tools/art`, `tools/audio`, `HANDOFF-GPU.md`); the EVILAEGIS job is finished and the
+  studios are stopped. Its write-up: `docs/handback/gpu.md`.
 
-## Not done yet
-- Interface depth to the Xross Forge / Shadowforge level (PLAN D12): unit keyword badges and status marks, attack
-  arrows and strike animation, targeting lines, combat forecast, spotlight of the opponent's plays, prompt wording
-  per card (the table is empty), end-screen detail. Block, Dueler and full-Line flows have no browser test.
-- Deck builder screen (the model and its tests exist in `src/deckbuilder`).
-- Guided first match (PLAN D16).
-- Real art and audio: waiting for the EVILAEGIS session (PLAN open question 1). `tools/art/subjects.ts` in progress.
-- Premade decks are curve-built, not hand-tuned. Tidewardens look weak in AI games (BALANCE B-3), untouched.
-- Rule 21 side-by-side screenshots against Xross Forge and Shadowforge.
-- Knowledge-base entry.
+## Not done / known rough edges
+- My own visual pass was short (`src/client/polish.css`): painted backdrops, frames, unit size. Not yet compared side
+  by side with Shadowforge screenshots (owner rule 21 gate), and the right-hand stack panel is empty most of the time.
+- The board backdrop plate is 640 px wide and is shown blurred; a larger render would look better.
+- The combat forecast ignores Strike/Shatter abilities and glyphs cast in the combat window.
+- Touch long-press inspect in the deck builder was not exercised. Phone landscape works but hand cards are small.
+- Premade decks are curve-built, not hand-tuned.
+- The audit's fixes have not had a second independent review; the mutation check is whole-card, not per clause.
+- Audio and art have had no human review.
