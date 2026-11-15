@@ -12,7 +12,7 @@ export const STYLE =
 export const STYLE_GLYPH =
   'crisp digital illustration, flat cel shading with hard-edged faceted highlights, clean confident linework, ' +
   'a city of pale cut crystal spires at the blue hour behind, luminous cyan and amber light, deep indigo shadows, ' +
-  'a single dramatic moment seen close, wordless and unlettered, full-bleed';
+  'a single dramatic moment in tight framing, wordless and unlettered, full-bleed';
 
 export interface Subject {
   /** Who or what is shown: one visual clause, written once per card. Measurements and materials, no names. */
