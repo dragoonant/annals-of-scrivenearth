@@ -1,0 +1,36 @@
+{
+  "name": "annals-of-scrivenearth",
+  "version": "0.1.0",
+  "description": "Annals of Scrivenearth: an original hero-driven card battler for the browser",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "sim": "tsx tools/sim.ts",
+    "bench": "tsx tools/bench.ts",
+    "gate": "tsx tools/gate.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dragoonant/annals-of-scrivenearth.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dragoonant/annals-of-scrivenearth/issues"
+  },
+  "homepage": "https://github.com/dragoonant/annals-of-scrivenearth#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8",
+    "vitest": "^5.1.0"
+  },
+  "private": true,
+  "type": "module"
+}
