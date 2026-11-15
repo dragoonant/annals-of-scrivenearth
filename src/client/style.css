@@ -368,7 +368,7 @@ h1, h2, h3, p { margin: 0; }
 .c-kws { position: absolute; left: 0.35rem; bottom: 0.35rem; z-index: 3; }
 .c-kws .kwi { width: 1.45rem; height: 1.45rem; }
 .hand-card .c-type { position: relative; z-index: 2; display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.6rem; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink2); background: rgba(5, 9, 28, 0.92); }
-.hand-card .c-text { position: relative; z-index: 2; padding: 0.3rem 0.6rem 0.5rem; font-size: 1rem; line-height: 1.2; height: 4.6rem; overflow: hidden; background: rgba(5, 9, 28, 0.92); color: #d6e6fb; }
+.hand-card .c-text { position: relative; z-index: 2; padding: 0.3rem 0.6rem 0.5rem; font-size: 1rem; line-height: 1.2; height: 5.4rem; overflow: hidden; background: rgba(5, 9, 28, 0.92); color: #d6e6fb; }
 .hand-card .c-st { position: absolute; z-index: 3; right: 0; bottom: 0; display: flex; gap: 0.2rem; }
 .hand-card .c-st .pow, .hand-card .c-st .hp { font-size: 1.5rem; padding: 0.1rem 0.6rem; background: rgba(5, 9, 28, 0.92); }
 .hand-card .c-st .pow { color: #ffd9a0; } .hand-card .c-st .hp { color: #9ff5e9; }

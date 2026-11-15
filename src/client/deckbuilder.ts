@@ -255,7 +255,8 @@ export class Builder {
     for (const c of list) {
       const face = handCardEl(this.view, 0, `bd-${c.id}`, c.id);
       face.removeAttribute('data-hand');
-      const tile = h('div', { class: 'bd-tile', data: { ui: 'b-add', id: c.id }, attrs: { role: 'button', tabindex: '0' }, style: { '--hue': String(hueOf(c.id)) } }, face, h('span', { class: 'bd-copies' }));
+      const tile = h('div', { class: 'bd-tile', data: { ui: 'b-add', id: c.id }, attrs: { role: 'button', tabindex: '0' }, style: { '--hue': String(hueOf(c.id)) } }, face);
+      (face.querySelector('.c-art') ?? face).append(h('span', { class: 'bd-copies' })); // top-left of the art, whatever the card's text height
       this.tiles.set(c.id, tile);
       frag.append(tile);
     }
