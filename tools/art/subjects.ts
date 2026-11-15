@@ -402,7 +402,7 @@ export const SUBJECTS: Record<string, Subject> = {
     'bursting out of a tunnel wall with cables whipping, sparks across the whole pit'),
   'under-pullplug': s(
     'a hand yanking a giant plug out of a socket in a wall, arcs of violet lightning flaring as a machine dies',
-    'in close view of an undercity switch room, dials dropping to dark'),
+    'in close view of a bare wall of wet undercity stone, the violet glow of the socket guttering out and the tunnel beyond going dark'),
   'under-siphontap': s(
     'a brass tap hammered into an enemy\'s armour, glowing violet fluid pouring into a glass jar',
     'in a dim cellar with drips and low lamplight'),
@@ -508,7 +508,7 @@ export const SUBJECTS: Record<string, Subject> = {
     'a river of fast white air ribboning through the city sky, carrying a row of gliders that glow teal',
     'high above the spires at sunset, the clouds torn into long streaks'),
   'storm-airmail': s(
-    'a satchel bursting open, a flurry of glowing teal paper messages whirling around a flying courier',
+    'a satchel bursting open, a flurry of small glowing teal envelopes, each closed with a single round wax seal, whirling around a flying courier',
     'from rooftop to rooftop, a spiral of wind carrying them upward'),
   'storm-skyraid': s(
     'a squad of gliders diving in a V formation toward a spire, silver wings flashing',
