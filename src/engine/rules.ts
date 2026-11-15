@@ -741,9 +741,7 @@ export function whyNotPlay(s: GameState, seat: Seat, iid: string): string | null
   }
   if (have < cost) return `Needs ${cost} Charge (you have ${have} with Reserve)`;
   if (d.castIf && !evalCond(s, seat, d.castIf)) return 'Its condition is not met';
-  for (const spec of d.targets ?? []) {
-    if (legalTargets(s, seat, spec).length === 0) return 'No legal target';
-  }
+  if ((d.targets?.length ?? 0) > 0 && legalTargets(s, seat, d.targets![0]).length === 0) return 'No legal target';
   return null;
 }
 
@@ -759,8 +757,9 @@ export function targetChoices(s: GameState, seat: Seat, iid: string): string[][]
     const next: string[][] = [];
     for (const c of combos) for (const t of legal) if (!c.includes(t)) next.push([...c, t]);
     if (next.length === 0) {
-      // A unit may be played with no legal deploy target (the deploy then does nothing); a glyph may not.
-      return d.type === 'glyph' ? [] : combos;
+      // R-G10: fill as many target slots as have a legal target. A unit may be played with none (its deploy then
+      // does nothing for the missing slots); a glyph needs at least its first.
+      return d.type === 'glyph' && combos[0].length === 0 ? [] : combos;
     }
     combos = next;
     if (combos.length > 400) break;
@@ -771,7 +770,8 @@ export function targetChoices(s: GameState, seat: Seat, iid: string): string[][]
 function whyNotTargets(s: GameState, seat: Seat, iid: string, targets: string[]): string | null {
   const choices = targetChoices(s, seat, iid);
   if (choices.some((c) => c.length === targets.length && c.every((t, i) => t === targets[i]))) return null;
-  return choices.length && choices[0].length > 0 ? 'Choose a legal target' : 'This card takes no target';
+  if (choices.length && choices[0].length > 0) return targets.length < choices[0].length ? `Choose ${choices[0].length} target${choices[0].length > 1 ? 's' : ''}` : 'Choose a legal target';
+  return 'This card takes no target';
 }
 
 export function whyNotDeclare(s: GameState, seat: Seat, unitId: string, duel?: string): string | null {

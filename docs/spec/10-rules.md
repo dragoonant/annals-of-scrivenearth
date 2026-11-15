@@ -20,6 +20,9 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 - **R-G8 Negate.** A negated glyph leaves the stack for its owner's Scrap and does nothing.
 - **R-G9 Fizzle.** A glyph that chose targets does nothing if every one of them is gone when it resolves; if some remain it
   resolves and the missing ones are skipped. A target that left the Line and came back is a new object and is gone.
+- **R-G10 Targets.** A card that asks for targets must be given one for every slot that has a legal choice, each a
+  different object. A glyph needs at least its first target to be cast; later slots with no legal choice are left
+  empty and that part of the effect is skipped. A unit may always be played; its Deploy skips empty slots.
 
 ## Charge (R-C)
 - **R-C1.** At the start of each round your maximum Charge rises by 1 (cap 10) and your Charge refills.
@@ -46,6 +49,8 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
   onto a full Line is lost.
 - **R-U2.** Every unit enters through one door (`summon`). **Deploy** abilities fire only when the unit is played from hand.
 - **R-U3.** Units can attack on the round they arrive.
+- **R-U4 Return to hand.** A returned unit goes to its owner's hand as a fresh card (damage, buffs and counters are
+  gone). A token is not a card: returned, it vanishes. Returned to a full hand, the card is burned (R-G7).
 
 ## Battle (R-B)
 - **R-B1.** The Initiative holder may declare one attack a round, in the main phase with an empty stack. A **rally**
@@ -68,6 +73,9 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 
 ## Damage and state (R-D, R-S)
 - **R-D1.** All damage goes through one door (`damage`). **R-D5.** Damage on a unit stays until repaired.
+- **R-D7 Drain.** "Drain N from X" deals N damage to X, then repairs your Spire by the damage dealt. Damage dealt is
+  the full amount that landed (after Ward and Plated), even if the unit had less health left.
+- **R-D8 Stasis.** Putting a unit that is already in Stasis into Stasis does nothing and is not counted.
 - **R-S1 Stats.** Printed face, then lasting and this-round buffs, then auras. Power is never below 0.
 - **R-S2 State check.** After every effect: units with 0 or less health, or marked destroyed, are destroyed (the acting
   player's first, left to right); then "survived damage" is noted; then heroes are checked for ascension; then Spires.
@@ -122,4 +130,5 @@ attacker), **Dawn** (round start), **Dusk** (round end), **Ascend** (the hero ju
 - RULING: R-S3 | Triggered abilities never take chosen targets; only Deploy abilities and glyphs do | keeps "never assume a
   choice" true without a mid-resolution prompt system; revisit after the owner's playtest. Status: open.
 - RULING: R-K6 | Siphon counts strike damage only | Siphon plus a drain ability double-counted (Vex test). Status: settled.
+- RULING: R-B8/R-P3 | If a Flash glyph removes the last attacker, the attack is over and the defender has priority, although a Flash normally keeps priority | the attack was the attacker's action for that turn (R-P1). Status: settled.
 - RULING: R-B4 | The attacker, not the defender, acts first after blocks | one combat window is easier to read. Status: open.

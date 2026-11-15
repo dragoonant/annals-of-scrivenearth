@@ -104,6 +104,17 @@ describe('game flow', () => {
     expect(kinds(s)).toContain('fizzle');
   });
 
+  it('R-G10 a two-target glyph can be cast with one legal target; the empty slot is skipped', () => {
+    const s = board({ hand: [['tide-sluiceclose'], []], line: [[], ['zz-ogre']] });
+    const o = unit(s, 1, 'zz-ogre');
+    expect(legalActions(s).filter((a) => a.type === 'play').length).toBe(1);
+    play(s, 'tide-sluiceclose', [o.iid]);
+    pass(s);
+    expect(o.stasis).toBe(true);
+    const s2 = board({ hand: [['tide-sluiceclose'], []], line: [[], []] });
+    expect(applyAction(s2, { type: 'play', iid: s2.players[0].hand[0].iid }).error).toMatch(/No legal target/);
+  });
+
   it('R-G6 drawing from an empty deck loses', () => {
     const s = board({ deck: [Array<string>(5).fill('zz-filler'), Array<string>(10).fill('zz-filler')] });
     pass(s); pass(s);
