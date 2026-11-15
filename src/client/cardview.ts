@@ -1,11 +1,11 @@
 // Card faces, unit tiles, the inspector content. All text goes in through textContent; the only innerHTML
 // is our own generated SVG (art.ts), never card or player data.
-import type { GameState, Seat, Unit } from '../engine/types';
+import type { GameState, Keyword, Seat, Unit } from '../engine/types';
 import { costOf, def, face, findUnit, stats } from '../engine/query';
 import type { Face } from '../engine/query';
 import { FACTION_INFO } from '../data/decks';
-import { cardArt } from './art';
-import { KEYWORD_HELP, WORD_HELP, lineSegs } from './text';
+import { cardArt, crownSvg, frostSvg, keywordIcon, wardRimSvg, wireArtImg } from './art';
+import { KEYWORD_HELP, STATUS_HELP, WORD_HELP, lineSegs, roundBuffText } from './text';
 import type { Seg } from './text';
 import type { LogEntry } from '../engine/types';
 
@@ -33,9 +33,19 @@ export function h<K extends keyof HTMLElementTagNameMap>(tag: K, a: Attrs = {}, 
   return el;
 }
 
+/** Card art: a real <img> when art/manifest.json lists it, else the procedural sigil. */
 export function art(cardId: string, ascended: boolean): HTMLElement {
   const el = h('span', { class: 'artbox' });
   el.innerHTML = cardArt(cardId, ascended);
+  const img = el.querySelector('img');
+  if (img) wireArtImg(img, cardId, ascended);
+  return el;
+}
+
+/** A span holding one of our own inline SVGs. */
+export function svgSpan(cls: string, markup: string): HTMLElement {
+  const el = h('span', { class: cls });
+  el.innerHTML = markup;
   return el;
 }
 
@@ -58,6 +68,13 @@ export function kwPills(kws: string[]): HTMLElement {
   return box;
 }
 
+/** Small cut-gem icons, one per keyword. The name is explained in the inspector, never as a tooltip. */
+export function kwIcons(kws: string[], cls = 'kwi-row'): HTMLElement {
+  const box = h('span', { class: cls });
+  for (const k of kws) box.append(svgSpan(`kwi kwi-${k}`, keywordIcon(k as Keyword)));
+  return box;
+}
+
 export interface UnitDisplay {
   f: Face;
   power: number;
@@ -75,30 +92,68 @@ function statClass(now: number, printed: number): string {
   return now > printed ? 'up' : now < printed ? 'down' : '';
 }
 
+/** Net this-round buff on a unit (from its mods), or null when it has none. */
+export function roundBuff(u: Unit): { power: number; health: number; kw: string[] } | null {
+  const r = u.mods.filter((m) => m.dur === 'round');
+  if (!r.length) return null;
+  return { power: r.reduce((a, m) => a + m.power, 0), health: r.reduce((a, m) => a + m.health, 0), kw: r.flatMap((m) => m.kw ?? []) };
+}
+
 /** A unit tile for a Line or the battle row. */
 export function unitEl(view: GameState, u: Unit, extra = ''): HTMLElement {
   const d = unitDisplay(view, u);
+  const cd = def(u.card);
+  const isHero = cd.type === 'hero';
+  const prog = isHero && !d.f.ascended && cd.level ? heroProgress(view, u.owner, u.card) : null;
+  const buff = roundBuff(u);
+  const cls = [
+    'unit facet', isHero ? 'hero' : '', d.f.ascended ? 'asc' : '', u.stasis ? 'stasis' : '', u.ward ? 'warded' : '', u.dmg > 0 ? 'hurt' : '',
+    d.keywords.includes('unstable') ? 'unstable' : '', u.silenced ? 'silenced' : '', buff ? 'buffed' : '', u.doomed ? 'doomed' : '', extra,
+  ].filter(Boolean).join(' ');
   const el = h(
     'div',
-    {
-      class: `unit facet ${def(u.card).type === 'hero' ? 'hero' : ''} ${d.f.ascended ? 'asc' : ''} ${u.stasis ? 'stasis' : ''} ${u.ward ? 'warded' : ''} ${u.dmg > 0 ? 'hurt' : ''} ${extra}`,
-      data: { unit: u.iid, card: u.card, seat: u.owner },
-      style: { '--hue': String(d.f.ascended ? 46 : hueOf(u.card)) },
-    },
+    { class: cls, data: { unit: u.iid, card: u.card, seat: u.owner }, style: { '--hue': String(d.f.ascended ? 46 : hueOf(u.card)) } },
     art(u.card, d.f.ascended),
+    u.stasis ? svgSpan('u-frost', frostSvg()) : null,
+    d.f.ascended ? svgSpan('u-crown', crownSvg()) : null,
+    u.ward ? svgSpan('u-ward', wardRimSvg()) : null,
+    h('span', { class: 'u-cost', text: String(cd.cost) }),
+    d.keywords.length ? kwIcons(d.keywords.slice(0, 5), 'u-kws') : null,
+    h('span', { class: 'u-marks' },
+      buff ? h('span', { class: 'u-mark buff', text: 'RND' }) : null,
+      u.silenced ? h('span', { class: 'u-mark sil', text: 'SIL' }) : null,
+    ),
     h('span', { class: 'u-name', text: d.f.name }),
-    d.keywords.length ? kwPills(d.keywords) : null,
     h(
       'span',
       { class: 'u-st' },
       h('span', { class: `pow ${statClass(d.power, d.f.power)}`, text: String(d.power) }),
       h('span', { class: `hp ${d.dmg > 0 ? 'down' : statClass(d.max, d.f.health)}`, text: String(d.hp) }),
     ),
+    prog ? h('span', { class: 'u-prog' }, h('span', { class: 'fill', style: { width: `${Math.round((prog.n / prog.need) * 100)}%` } })) : null,
     u.stasis ? h('span', { class: 'u-tag', text: 'STASIS' }) : null,
-    u.ward ? h('span', { class: 'u-ward' }) : null,
     d.dmg > 0 ? h('span', { class: 'u-crack' }) : null,
   );
   return el;
+}
+
+/** Update the shown numbers of a unit tile in place (the director does this as damage, heal and buff events pass). */
+export function patchUnitEl(el: HTMLElement, view: GameState, u: Unit): void {
+  const d = unitDisplay(view, u);
+  const pow = el.querySelector<HTMLElement>('.u-st .pow');
+  const hp = el.querySelector<HTMLElement>('.u-st .hp');
+  if (pow) {
+    pow.textContent = String(d.power);
+    pow.className = `pow ${statClass(d.power, d.f.power)}`;
+  }
+  if (hp) {
+    hp.textContent = String(d.hp);
+    hp.className = `hp ${d.dmg > 0 ? 'down' : statClass(d.max, d.f.health)}`;
+  }
+  el.classList.toggle('hurt', d.dmg > 0);
+  const crack = el.querySelector('.u-crack');
+  if (d.dmg > 0 && !crack) el.append(h('span', { class: 'u-crack' }));
+  else if (d.dmg === 0 && crack) crack.remove();
 }
 
 /** A card in hand (face up). */
@@ -107,6 +162,7 @@ export function handCardEl(view: GameState, seat: Seat, iid: string, cardId: str
   const f = face(view, seat, cardId);
   const cost = costOf(view, seat, cardId);
   const costCls = cost < d.cost ? 'up' : cost > d.cost ? 'down' : '';
+  const kws = d.type === 'glyph' ? [] : f.keywords;
   return h(
     'div',
     {
@@ -114,8 +170,13 @@ export function handCardEl(view: GameState, seat: Seat, iid: string, cardId: str
       data: { card: cardId, seat, hand: iid },
       style: { '--hue': String(f.ascended ? 46 : hueOf(cardId)) },
     },
-    h('span', { class: 'c-top' }, h('span', { class: `cost ${costCls}`, text: String(cost) }), h('span', { class: 'c-name', text: f.name })),
-    h('span', { class: 'c-art' }, art(cardId, f.ascended), d.type !== 'glyph' ? h('span', { class: 'c-st' }, h('span', { class: 'pow', text: String(f.power) }), h('span', { class: 'hp', text: String(f.health) })) : null),
+    h('span', { class: 'c-top' },
+      h('span', { class: `cost ${costCls}`, text: String(cost) }),
+      costCls === 'up' ? h('span', { class: 'cost-was', text: String(d.cost) }) : null,
+      h('span', { class: 'c-name', text: f.name })),
+    h('span', { class: 'c-art' }, art(cardId, f.ascended),
+      kws.length ? kwIcons(kws.slice(0, 4), 'c-kws') : null,
+      d.type !== 'glyph' ? h('span', { class: 'c-st' }, h('span', { class: 'pow', text: String(f.power) }), h('span', { class: 'hp', text: String(f.health) })) : null),
     h('span', { class: 'c-type' }, gem(cardId), h('span', { text: typeLine(cardId) })),
     h('span', { class: 'c-text', text: f.text }),
   );
@@ -211,7 +272,7 @@ export function bigCard(o: BigOpts): HTMLElement {
   for (const k of kws) {
     const kh = KEYWORD_HELP[k as keyof typeof KEYWORD_HELP];
     if (!kh) throw new Error(`No KEYWORD_HELP for ${k}`);
-    help.push(h('div', { class: 'kwh' }, h('b', { text: kh.name }), h('span', { text: ` ${kh.text}` })));
+    help.push(h('div', { class: 'kwh' }, svgSpan('kwi', keywordIcon(k as Keyword)), h('b', { text: kh.name }), h('span', { text: ` ${kh.text}` })));
   }
   const textAll = `${o.f.text} ${d.type === 'hero' ? `${d.text} ${d.ascended?.text ?? ''}` : ''}`;
   for (const [word, say] of Object.entries(WORD_HELP)) {
@@ -222,19 +283,32 @@ export function bigCard(o: BigOpts): HTMLElement {
   return el;
 }
 
-/** The inspector: the large card, plus both faces and progress for heroes. */
+/** The inspector: the large card, plus both faces and progress for heroes, plus the unit's live statuses. */
 export function inspectorContent(view: GameState | null, seat: Seat, cardId: string, unitIid?: string): HTMLElement {
   const d = def(cardId);
   const f = face(view, seat, cardId);
   const u = view && unitIid ? findUnit(view, unitIid) : undefined;
   const cost = view ? costOf(view, seat, cardId) : d.cost;
   const root = h('div', { class: 'ins-wrap' });
-  root.append(
+  const st = u && view ? stats(view, u) : null;
+  const col = h('div', { class: 'ins-col' });
+  col.append(
     bigCard({
       cardId, seat, f, cost,
-      unit: u && view ? { power: stats(view, u).power, hp: stats(view, u).hp, max: stats(view, u).health, keywords: stats(view, u).keywords } : undefined,
+      unit: st ? { power: st.power, hp: st.hp, max: st.health, keywords: st.keywords } : undefined,
     }),
   );
+  if (u) {
+    const lines: string[] = [];
+    if (u.stasis) lines.push(STATUS_HELP.stasis);
+    if (u.ward) lines.push(STATUS_HELP.ward);
+    if (u.silenced) lines.push(STATUS_HELP.silenced);
+    if (u.doomed) lines.push(STATUS_HELP.doomed);
+    const rb = roundBuff(u);
+    if (rb && (rb.power || rb.health)) lines.push(roundBuffText(rb.power, rb.health));
+    if (lines.length) col.append(h('div', { class: 'ins-status' }, ...lines.map((l) => h('div', { class: 'ins-st', text: l }))));
+  }
+  root.append(col);
   if (d.type === 'hero' && d.level && d.ascended) {
     const pr = view ? heroProgress(view, seat, cardId) : null;
     const other = f.ascended ? face(null, seat, cardId) : null;
@@ -258,4 +332,46 @@ export function inspectorContent(view: GameState | null, seat: Seat, cardId: str
 
 export function lineSegsEl(e: LogEntry, view: GameState | null): HTMLElement {
   return segsEl(lineSegs(e), view);
+}
+
+// ---------- inspector placement ----------
+const hits = (a: { left: number; top: number; right: number; bottom: number }, x: number, y: number, w: number, hh: number, m = 6): boolean =>
+  x < a.right + m && x + w > a.left - m && y < a.bottom + m && y + hh > a.top - m;
+
+/**
+ * Place the inspector box next to `anchor` and never over it: above the hand for a hand card, beside the unit
+ * for a Line unit (the other side when the first does not fit), clamped to the viewport.
+ */
+export function placeInspector(box: HTMLElement, anchor: Element): void {
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const pad = 8;
+  const bw = box.offsetWidth;
+  const bh = box.offsetHeight;
+  const r = anchor.getBoundingClientRect();
+  const clampX = (x: number): number => Math.max(pad, Math.min(vw - bw - pad, x));
+  const clampY = (y: number): number => Math.max(pad, Math.min(vh - bh - pad, y));
+  const cands: [number, number][] = [];
+  const inHand = !!anchor.closest('[data-hand], .hand');
+  const cx = r.left + r.width / 2 - bw / 2;
+  const cy = r.top + r.height / 2 - bh / 2;
+  if (inHand) {
+    cands.push([clampX(cx), r.top - bh - 12], [clampX(r.right + 12), clampY(r.top - bh - 12)], [clampX(r.left - bw - 12), clampY(r.top - bh - 12)]);
+  } else {
+    cands.push([r.right + 12, clampY(cy)], [r.left - bw - 12, clampY(cy)], [clampX(cx), r.top - bh - 12], [clampX(cx), r.bottom + 12]);
+  }
+  let best: [number, number] | null = null;
+  for (const [x, y] of cands) {
+    if (x < pad || y < pad || x + bw > vw - pad || y + bh > vh - pad) continue;
+    if (hits(r, x, y, bw, bh)) continue;
+    best = [x, y];
+    break;
+  }
+  if (!best) {
+    // nothing fits cleanly: keep clear of the anchor as far as the viewport allows
+    const [x, y] = cands[0];
+    best = [clampX(x), inHand ? Math.max(pad, y) : clampY(y)];
+  }
+  box.style.left = `${Math.round(best[0])}px`;
+  box.style.top = `${Math.round(best[1])}px`;
 }

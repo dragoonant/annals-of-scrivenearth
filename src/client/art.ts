@@ -1,7 +1,8 @@
 // Procedural cut-crystal sigils. One function, cardArt(cardId, ascended), returns SVG markup so real
 // painted art can replace it later without touching the callers. Deterministic from the card id.
-import { def } from '../engine/query';
+import { allCards, def } from '../engine/query';
 import { FACTION_INFO } from '../data/decks';
+import type { Keyword } from '../engine/types';
 
 function hash(str: string): number {
   let h = 2166136261 >>> 0;
@@ -28,7 +29,81 @@ const pt = (x: number, y: number): string => `${f1(x)},${f1(y)}`;
 
 const cache = new Map<string, string>();
 
+// ---------- real art hook ----------
+// './art/manifest.json' is a JSON array of ids ('tide-maren', 'tide-maren--ascended'). An id in the list is drawn
+// from './art/<id>.webp'; every other id keeps its procedural sigil. A missing manifest means sigils everywhere.
+let manifest: Set<string> | null = null;
+let manifestLoaded: Promise<void> | null = null;
+
+export const artKey = (cardId: string, ascended: boolean): string => (ascended ? `${cardId}--ascended` : cardId);
+
+export function loadArtManifest(url = './art/manifest.json'): Promise<void> {
+  if (manifestLoaded) return manifestLoaded;
+  manifestLoaded = (async () => {
+    try {
+      const res = await fetch(url, { cache: 'no-cache' });
+      if (!res.ok) return;
+      const data = (await res.json()) as unknown;
+      if (Array.isArray(data) && data.every((x) => typeof x === 'string')) manifest = new Set(data as string[]);
+    } catch {
+      /* no manifest (404, an HTML fallback page, offline): every card keeps its sigil */
+    }
+  })();
+  return manifestLoaded;
+}
+if (typeof window !== 'undefined' && typeof fetch === 'function') void loadArtManifest();
+
+/** For a settings readout: the ids with real art, and the card ids (and Ascended faces) still on sigils. */
+export function artStatus(): { listed: string[]; missing: string[] } {
+  const listed = manifest ? [...manifest].sort() : [];
+  const missing: string[] = [];
+  for (const d of allCards()) {
+    if (d.token || d.unimplemented || d.id.startsWith('zz-')) continue;
+    if (!manifest?.has(artKey(d.id, false))) missing.push(d.id);
+    if (d.type === 'hero' && d.ascended && !manifest?.has(artKey(d.id, true))) missing.push(artKey(d.id, true));
+  }
+  return { listed, missing };
+}
+
+/** Is there real art for this face? */
+export const hasRealArt = (cardId: string, ascended: boolean): boolean => !!manifest?.has(artKey(cardId, ascended));
+
+const escAttr = (s: string): string => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+
+/** Markup for a face: an <img> when the manifest lists it, the procedural sigil otherwise. */
 export function cardArt(cardId: string, ascended: boolean): string {
+  if (hasRealArt(cardId, ascended)) {
+    const key = artKey(cardId, ascended);
+    return `<img class="art real" data-art="${escAttr(key)}" src="./art/${encodeURIComponent(key)}.webp" alt="" loading="lazy" decoding="async" draggable="false">`;
+  }
+  return sigilSvg(cardId, ascended);
+}
+
+/** Decode a listed image before it is shown; a listed image that fails is a loud console error, then its sigil. */
+export function wireArtImg(img: HTMLImageElement, cardId: string, ascended: boolean): void {
+  const key = artKey(cardId, ascended);
+  img.style.opacity = '0';
+  const fail = (): void => {
+    console.error(`art: "${key}" is listed in art/manifest.json but its image failed to load; showing the sigil instead`);
+    const holder = document.createElement('span');
+    holder.innerHTML = sigilSvg(cardId, ascended);
+    const svg = holder.firstElementChild;
+    if (svg && img.parentNode) img.replaceWith(svg);
+  };
+  const show = (): void => {
+    img.style.transition = 'opacity .18s';
+    img.style.opacity = '1';
+  };
+  img.addEventListener('error', fail, { once: true });
+  const go = (): void => {
+    if (typeof img.decode === 'function') img.decode().then(show, () => { if (!img.complete || img.naturalWidth === 0) fail(); else show(); });
+    else show();
+  };
+  if (img.complete && img.naturalWidth > 0) go();
+  else img.addEventListener('load', go, { once: true });
+}
+
+export function sigilSvg(cardId: string, ascended: boolean): string {
   const key = `${cardId}|${ascended ? 1 : 0}`;
   const hit = cache.get(key);
   if (hit) return hit;
@@ -147,22 +222,67 @@ export function skylineSvg(seed = 7): string {
   return `<svg class="skyline" viewBox="0 0 1000 300" preserveAspectRatio="xMidYMax slice" aria-hidden="true" focusable="false">${layers.join('')}${wins.join('')}</svg>`;
 }
 
-/** The Spire crystal for a side: cracks as Integrity falls. */
+/** Crack stage of a Spire: 0 whole, 1 at 15 or less, 2 at 10 or less, 3 at 5 or less. */
+export function spireStage(integrity: number): 0 | 1 | 2 | 3 {
+  return integrity <= 5 ? 3 : integrity <= 10 ? 2 : integrity <= 15 ? 1 : 0;
+}
+
+/** The Spire crystal for a side: it cracks at 15, 10 and 5 Integrity and warms towards red. */
 export function spireSvg(integrity: number, max = 20): string {
-  const lost = Math.max(0, max - integrity);
-  const cracks = Math.min(6, Math.ceil(lost / 3.5));
-  const col = integrity >= max ? '#eaf4ff' : '#ff5d73';
+  const stage = spireStage(integrity);
+  const hurt = integrity < max;
+  const col = stage === 0 ? '#eaf4ff' : stage === 1 ? '#ffc2cb' : '#ff5d73';
   const lines: string[] = [];
-  const spots: [number, number, number, number][] = [[20, 12, 14, 34], [20, 18, 28, 40], [20, 24, 12, 46], [20, 10, 26, 28], [20, 30, 10, 38], [20, 34, 30, 52]];
-  for (let i = 0; i < cracks; i++) {
-    const [x1, y1, x2, y2] = spots[i];
-    lines.push(`<polyline points="${x1},${y1} ${(x1 + x2) / 2 + 3},${(y1 + y2) / 2 - 2} ${x2},${y2}" fill="none" stroke="#0b1230" stroke-width="1.6"/>`);
-  }
-  return `<svg class="spire-svg" viewBox="0 0 40 64" aria-hidden="true" focusable="false">
+  const cracks: string[][] = [
+    ['20,6 17,15 21,22 16,31 19,38'],
+    ['20,22 28,28 26,36 31,44', '17,15 10,21 12,30'],
+    ['21,22 14,34 18,44 13,54', '26,36 22,48 27,57', '28,28 33,24'],
+  ];
+  for (let i = 0; i < stage; i++) for (const pts of cracks[i]) lines.push(`<polyline points="${pts}" fill="none" stroke="#0b1230" stroke-width="2.2" stroke-linejoin="miter"/><polyline points="${pts}" fill="none" stroke="#fff" stroke-width=".7" stroke-opacity=".8" stroke-linejoin="miter"/>`);
+  return `<svg class="spire-svg stage-${stage}${hurt ? ' hurt' : ''}" viewBox="0 0 40 64" aria-hidden="true" focusable="false">
 <polygon points="20,1 34,20 30,56 20,63 10,56 6,20" fill="${col}" fill-opacity=".16" stroke="${col}" stroke-width="1.4" stroke-linejoin="miter"/>
 <polygon points="20,1 34,20 20,26" fill="${col}" fill-opacity=".5"/>
 <polygon points="20,1 6,20 20,26" fill="${col}" fill-opacity=".28"/>
 <polygon points="6,20 20,26 10,56" fill="${col}" fill-opacity=".16"/>
 <polygon points="34,20 20,26 30,56" fill="${col}" fill-opacity=".34"/>
 ${lines.join('')}</svg>`;
+}
+
+// ---------- keyword gems ----------
+// One small cut gem per keyword; the keyword's name is shown in the inspector, never as a tooltip.
+const KW_ICON: Record<Keyword, { hue: number; glyph: string }> = {
+  vanguard: { hue: 28, glyph: '<polyline points="6,15 12,9 18,15" /><polyline points="6,20 12,14 18,20" />' },
+  pierce: { hue: 340, glyph: '<line x1="6" y1="19" x2="16" y2="9"/><polygon points="19,6 18,13 12,7" fill="#fff"/>' },
+  aerial: { hue: 195, glyph: '<polygon points="12,17 4,9 9,13 12,7 15,13 20,9" />' },
+  spotter: { hue: 165, glyph: '<polygon points="3,12 12,6 21,12 12,18" /><circle cx="12" cy="12" r="2.4" fill="#fff"/>' },
+  plated: { hue: 215, glyph: '<line x1="6" y1="9" x2="18" y2="9"/><line x1="6" y1="13" x2="18" y2="13"/><line x1="6" y1="17" x2="18" y2="17"/>' },
+  siphon: { hue: 300, glyph: '<polygon points="12,5 17,13 12,19 7,13" fill="#fff" fill-opacity=".85"/>' },
+  ward: { hue: 48, glyph: '<polygon points="12,4 19,7 18,15 12,20 6,15 5,7" />' },
+  dueler: { hue: 8, glyph: '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>' },
+  dread: { hue: 270, glyph: '<polygon points="5,6 19,6 12,19" /><line x1="9" y1="9" x2="10" y2="9"/><line x1="14" y1="9" x2="15" y2="9"/>' },
+  unstable: { hue: 58, glyph: '<polyline points="14,4 8,13 13,13 10,20" />' },
+  mend: { hue: 140, glyph: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>' },
+  corrosive: { hue: 95, glyph: '<line x1="8" y1="5" x2="8" y2="15"/><line x1="12" y1="5" x2="12" y2="19"/><line x1="16" y1="5" x2="16" y2="12"/>' },
+};
+
+export function keywordIcon(kw: Keyword): string {
+  const k = KW_ICON[kw];
+  if (!k) throw new Error(`no keyword icon for ${kw}`);
+  return `<svg class="kw-icon kw-${kw}" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><polygon points="12,0 24,8 24,16 12,24 0,16 0,8" fill="hsl(${k.hue} 60% 22%)" stroke="hsl(${k.hue} 90% 68%)" stroke-width="1.6" stroke-linejoin="miter"/><polygon points="12,0 24,8 12,11 0,8" fill="hsl(${k.hue} 90% 80%)" fill-opacity=".22"/><g fill="none" stroke="#fff" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">${k.glyph}</g></svg>`;
+}
+
+/** A frosted shard overlay for Stasis. */
+export function frostSvg(): string {
+  return '<svg class="frost-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><polygon points="0,0 46,0 22,38 0,30" fill="#dff2ff" fill-opacity=".34"/><polygon points="46,0 100,0 100,26 62,44 22,38" fill="#bfe4ff" fill-opacity=".26"/><polygon points="0,30 22,38 14,100 0,100" fill="#bfe4ff" fill-opacity=".3"/><polygon points="62,44 100,26 100,100 48,100 40,70" fill="#dff2ff" fill-opacity=".3"/><polygon points="22,38 62,44 40,70 14,100 48,100" fill="#eaf8ff" fill-opacity=".2"/><polyline points="0,30 22,38 62,44 100,26" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width=".8"/><polyline points="22,38 40,70 48,100" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width=".8"/></svg>';
+}
+
+/** A crown of shards for an Ascended hero on the Line. */
+export function crownSvg(): string {
+  const spikes = [[4, 0, 12, 16, 20, 0], [20, 0, 30, 22, 40, 0], [40, 0, 50, 28, 60, 0], [60, 0, 70, 22, 80, 0], [80, 0, 88, 16, 96, 0]];
+  return `<svg class="crown-svg" viewBox="0 0 100 30" preserveAspectRatio="none" aria-hidden="true" focusable="false">${spikes.map((p) => `<polygon points="${p[0]},${p[1]} ${p[2]},${p[3]} ${p[4]},${p[5]}" fill="#fff3b0" stroke="#fff" stroke-width=".6"/>`).join('')}</svg>`;
+}
+
+/** A faceted shield rim for Ward. */
+export function wardRimSvg(): string {
+  return '<svg class="ward-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true" focusable="false"><polygon points="12,1 88,1 99,12 99,70 50,99 1,70 1,12" fill="rgba(255,243,176,.07)" stroke="#fff3b0" stroke-width="2.4" stroke-linejoin="miter" vector-effect="non-scaling-stroke"/><polyline points="1,12 50,24 99,12" fill="none" stroke="#fff3b0" stroke-opacity=".55" stroke-width="1" vector-effect="non-scaling-stroke"/><polyline points="50,24 50,99" fill="none" stroke="#fff3b0" stroke-opacity=".4" stroke-width="1" vector-effect="non-scaling-stroke"/></svg>';
 }

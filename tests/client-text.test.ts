@@ -1,7 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { KEYWORDS } from '../src/engine/validate';
-import { KEYWORD_HELP, LOG_LINES, lineSegs, END_REASONS } from '../src/client/text';
+import '../src/data/cards/index';
+import { allCards, def } from '../src/engine/query';
+import type { CardDef } from '../src/engine/types';
+import { KEYWORD_HELP, LOG_LINES, lineSegs, END_REASONS, PLAY_PROMPTS } from '../src/client/text';
 
 describe('client text coverage', () => {
   const src = readFileSync(new URL('../src/engine/rules.ts', import.meta.url), 'utf8');
@@ -25,5 +28,36 @@ describe('client text coverage', () => {
   });
   it('every end reason the engine uses has wording', () => {
     for (const r of ['spire', 'spires', 'deck', 'rounds', 'concede']) expect(END_REASONS[r]).toBeTruthy();
+  });
+});
+
+describe('per-card target prompts', () => {
+  const specCount = (d: CardDef): number[] => {
+    const out: number[] = [];
+    if (d.type === 'glyph') {
+      if (d.targets?.length) out.push(d.targets.length);
+      return out;
+    }
+    for (const f of [d, d.ascended]) {
+      const dep = f?.abilities?.find((a) => a.on === 'deploy' && a.targets?.length);
+      if (dep?.targets?.length) out.push(dep.targets.length);
+    }
+    return out;
+  };
+  it('every card that takes targets has a prompt per target slot', () => {
+    let n = 0;
+    for (const d of allCards()) {
+      const counts = specCount(d);
+      if (counts.length === 0) continue;
+      n += 1;
+      const p = PLAY_PROMPTS[d.id];
+      expect(p, `PLAY_PROMPTS.${d.id}`).toBeDefined();
+      for (const c of counts) expect(p.length, `${d.id} slots`).toBe(c);
+      for (const line of p) expect(line.length, `${d.id} prompt`).toBeGreaterThan(10);
+    }
+    expect(n).toBeGreaterThan(30);
+  });
+  it('no prompt exists for a card that takes no targets', () => {
+    for (const id of Object.keys(PLAY_PROMPTS)) expect(specCount(def(id)).length, id).toBeGreaterThan(0);
   });
 });

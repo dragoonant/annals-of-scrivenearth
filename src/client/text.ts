@@ -107,6 +107,16 @@ export const WORD_HELP: Record<string, string> = {
   Channel: 'For 1 Charge, discard a spare copy of a hero already on your Line: repair it and give it +1|+1.',
 };
 
+/** Statuses on a unit, explained in the inspector. */
+export const STATUS_HELP = {
+  stasis: 'In Stasis: cannot attack or block for the rest of the round.',
+  ward: 'Ward is up: the next damage it would take is negated.',
+  silenced: 'Silenced: it has lost its abilities, keywords and buffs.',
+  doomed: 'Marked for destruction.',
+  ascended: 'Ascended: this hero uses its stronger face for the rest of the game.',
+} as const;
+export const roundBuffText = (power: number, health: number): string => `${power >= 0 ? '+' : ''}${power}|${health >= 0 ? '+' : ''}${health} until the end of the round.`;
+
 export const END_REASONS: Record<string, string> = {
   spire: 'A Spire fell to 0 Integrity.',
   spires: 'Both Spires fell at the same moment.',
@@ -125,7 +135,64 @@ const SPEC_WORDS = (s: TargetSpec): string => {
 };
 
 /** Optional per-card wording for each target slot. Falls back to a sentence built from the target spec. */
-export const PLAY_PROMPTS: Record<string, string[]> = {};
+export const PLAY_PROMPTS: Record<string, string[]> = {
+  // Prismguard
+  'prism-facet-initiate': ['Choose an ally to get +0|+1'],
+  'prism-pane-mender': ['Choose an ally to repair by 4'],
+  'prism-sentinel-lens': ['Choose an ally to gain Ward'],
+  'prism-hold-the-line': ['Choose an ally to gain Plated this round'],
+  'prism-mirror-ward': ['Choose an ally to gain Ward'],
+  'prism-patch-the-pane': ['Choose an ally to repair by 4'],
+  'prism-call-out': ['Choose an ally to gain Dueler and +0|+2 this round'],
+  'prism-lightwall-oath': ['Choose an ally to get +0|+2 and Plated'],
+  // Emberworks
+  'ember-kessa': ['Choose an enemy unit or the enemy Spire to take 1 damage'],
+  'ember-slagsmith': ['Choose an enemy unit to take 1 damage'],
+  'ember-arcwelder': ['Choose an enemy unit to take 2 damage (3 while Resonant)'],
+  'ember-moltenwarden': ['Choose an enemy unit to take 3 damage'],
+  'ember-overdrive': ['Choose an ally to get +2|+0 this round'],
+  'ember-pinprick': ['Choose an enemy unit or the enemy Spire to take 1 damage'],
+  'ember-ventburst': ['Choose an enemy unit to take 2 damage (the enemy Spire takes 1)'],
+  'ember-slagbolt': ['Choose an enemy unit to take 3 damage'],
+  'ember-scrapburst': ['Choose an ally to destroy (the enemy Spire takes 3 damage)'],
+  'ember-heatlance': ['Choose an enemy unit or the enemy Spire to take 3 damage'],
+  // Tidewardens
+  'tide-ilvane': ['Choose an enemy unit to put in Stasis'],
+  'tide-mirroreel': ['Choose an enemy unit with 2 or less power to put in Stasis'],
+  'tide-eddycourier': ['Choose an allied unit to return to your hand'],
+  'tide-lockkeeper': ["Choose an enemy unit with 2 or less power to return to its owner's hand"],
+  'tide-stillwaterbailiff': ['Choose an enemy unit to put in Stasis'],
+  'tide-frostmeremagistrate': ['Choose the first enemy unit to put in Stasis', 'Choose the second enemy unit to put in Stasis'],
+  'tide-slipunder': ['Choose an allied unit to return to your hand'],
+  'tide-heldbreath': ['Choose an enemy unit to put in Stasis'],
+  'tide-tidalveil': ['Choose an allied unit to gain Ward'],
+  'tide-unwrite': ['Choose an enemy glyph on the stack to negate'],
+  'tide-backwash': ["Choose an enemy unit to return to its owner's hand"],
+  'tide-sluiceclose': ['Choose the first enemy unit to put in Stasis', 'Choose the second enemy unit to put in Stasis'],
+  // Verdant Coil
+  'coil-vinewhip': ['Choose an enemy unit for it to strike'],
+  'coil-behemoth': ['Choose an enemy unit for it to strike (Pierce)'],
+  'coil-bristle': ['Choose an ally to get +3|+0 this round'],
+  'coil-overgrowth': ['Choose an ally to get +3|+3 and Pierce this round'],
+  'coil-duel-of-thorns': ['Choose your unit for the duel', 'Choose the enemy unit it strikes and is struck by'],
+  'coil-lash-out': ['Choose your unit that will strike', 'Choose the enemy unit it strikes'],
+  'coil-grafting': ['Choose an ally to get +2|+2 and Mend'],
+  // Undervolt
+  'under-furnacehand': ['Choose an allied unit to destroy'],
+  'under-leechwiresurgeon': ['Choose an enemy unit to drain 2 from'],
+  'under-pullplug': ['Choose an allied unit to destroy (then drain 2 from the enemy Spire)'],
+  'under-siphontap': ['Choose an enemy unit to drain 2 from'],
+  'under-acidbath': ['Choose an allied unit to gain Corrosive this round'],
+  'under-burnledger': ['Choose an allied unit to destroy (then you draw 2)'],
+  'under-snuffedfuse': ['Choose an enemy unit with 3 or less power to destroy'],
+  'under-bleeddry': ['Choose an enemy unit or the enemy Spire to drain 4 from'],
+  // Stormrail
+  'storm-dispatcher': ['Choose an ally to get +2|+0 and Aerial this round'],
+  'storm-tailwind': ['Choose an ally to get +1|+1 this round'],
+  'storm-updraft': ['Choose an ally to get +1|+0 and Aerial this round'],
+  'storm-crosswind': ['Choose an enemy unit to put in Stasis'],
+  'storm-skyhook': ["Choose an enemy unit to return to its owner's hand"],
+};
 
 export function targetPrompt(cardId: string, cardName: string, slot: number, total: number, spec: TargetSpec): string {
   const custom = PLAY_PROMPTS[cardId]?.[slot];
