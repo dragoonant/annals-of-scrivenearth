@@ -3,9 +3,11 @@ export type Speed = 'full' | 'quick' | 'instant';
 export interface Settings {
   speed: Speed;
   difficulty: string;
+  volume: number;
+  muted: boolean;
 }
 export const SETTINGS_KEY = 'scrivenearth-settings';
-const DEFAULTS: Settings = { speed: 'full', difficulty: 'normal' };
+const DEFAULTS: Settings = { speed: 'full', difficulty: 'normal', volume: 0.6, muted: false };
 
 export function loadSettings(): Settings {
   try {
@@ -15,6 +17,8 @@ export function loadSettings(): Settings {
     return {
       speed: o.speed === 'quick' || o.speed === 'instant' || o.speed === 'full' ? o.speed : DEFAULTS.speed,
       difficulty: typeof o.difficulty === 'string' ? o.difficulty : DEFAULTS.difficulty,
+      volume: typeof o.volume === 'number' ? Math.max(0, Math.min(1, o.volume)) : DEFAULTS.volume,
+      muted: o.muted === true,
     };
   } catch {
     return { ...DEFAULTS };

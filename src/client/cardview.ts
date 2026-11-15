@@ -110,15 +110,14 @@ export function handCardEl(view: GameState, seat: Seat, iid: string, cardId: str
   return h(
     'div',
     {
-      class: `card hand-card facet ${d.type} ${f.ascended ? 'asc' : ''}`,
+      class: `card hand-card facet t-${d.type} ${f.ascended ? 'asc' : ''}`,
       data: { card: cardId, seat, hand: iid },
       style: { '--hue': String(f.ascended ? 46 : hueOf(cardId)) },
     },
     h('span', { class: 'c-top' }, h('span', { class: `cost ${costCls}`, text: String(cost) }), h('span', { class: 'c-name', text: f.name })),
-    art(cardId, f.ascended),
+    h('span', { class: 'c-art' }, art(cardId, f.ascended), d.type !== 'glyph' ? h('span', { class: 'c-st' }, h('span', { class: 'pow', text: String(f.power) }), h('span', { class: 'hp', text: String(f.health) })) : null),
     h('span', { class: 'c-type' }, gem(cardId), h('span', { text: typeLine(cardId) })),
     h('span', { class: 'c-text', text: f.text }),
-    d.type !== 'glyph' ? h('span', { class: 'c-st' }, h('span', { class: 'pow', text: String(f.power) }), h('span', { class: 'hp', text: String(f.health) })) : null,
   );
 }
 
@@ -192,7 +191,7 @@ export function bigCard(o: BigOpts): HTMLElement {
   const d = def(o.cardId);
   const el = h(
     'div',
-    { class: `big facet ${d.type} ${o.f.ascended ? 'asc' : ''}`, style: { '--hue': String(o.f.ascended ? 46 : hueOf(o.cardId)) } },
+    { class: `big facet t-${d.type} ${o.f.ascended ? 'asc' : ''}`, style: { '--hue': String(o.f.ascended ? 46 : hueOf(o.cardId)) } },
     h('div', { class: 'big-head' }, o.cost !== null ? h('span', { class: 'cost', text: String(o.cost) }) : null, h('span', { class: 'big-name', text: o.f.name })),
     art(o.cardId, o.f.ascended),
     h('div', { class: 'big-type' }, gem(o.cardId), h('span', { text: `${typeLine(o.cardId)}, ${factionName(o.cardId)}` })),

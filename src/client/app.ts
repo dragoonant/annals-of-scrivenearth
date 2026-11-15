@@ -14,6 +14,7 @@ import { h, inspectorContent } from './cardview';
 import { loadSettings, readParams, saveSettings } from './settings';
 import type { Params, Settings, Speed } from './settings';
 import { premadeDecks } from '../data/decks';
+import { audition, installAudioUnlock, setMuted, setVolume } from '../audio/audio';
 
 export type Screen = 'title' | 'setup' | 'mulligan' | 'board' | 'end' | 'howto';
 const SCREENS: Screen[] = ['title', 'setup', 'mulligan', 'board', 'end', 'howto'];
@@ -60,7 +61,7 @@ export class App {
     this.overlayEl = h('div', { class: 'overlay' });
     this.fxEl = h('div', { class: 'fx' });
     this.inspEl = h('div', { class: 'inspector-host' });
-    this.root.append(this.screenEl, this.overlayEl, this.fxEl, this.inspEl);
+    this.root.append(this.screenEl, this.overlayEl, this.fxEl, this.inspEl, h('div', { class: 'rotate' }, h('b', { text: 'Rotate your device' }), h('span', { text: 'Annals of Scrivenearth is played in landscape.' })));
     this.director = new Director(this.fxEl, this.root);
     this.director.speed = this.params.speed ?? this.settings.speed;
     this.director.onRender = () => this.requestRender();
@@ -71,6 +72,9 @@ export class App {
   }
 
   start(): void {
+    installAudioUnlock();
+    setVolume(this.settings.volume);
+    setMuted(this.settings.muted);
     this.catalog = deckCatalog(this.params);
     document.body.dataset.premade = String(premadeDecks().length);
     this.sel.diff = this.settings.difficulty;
@@ -336,6 +340,21 @@ export class App {
         this.modal = null;
         this.startGame();
         return;
+      case 'settings':
+        this.modal = { kind: 'settings' };
+        this.renderOverlay();
+        return;
+      case 'mute':
+        this.settings.muted = !this.settings.muted;
+        setMuted(this.settings.muted);
+        saveSettings(this.settings);
+        this.renderOverlay();
+        return;
+      case 'audition':
+        audition(v!);
+        return;
+      case 'volume':
+        return;
       case 'close':
       case 'backdrop':
         this.modal = null;
@@ -447,6 +466,14 @@ export class App {
     });
     document.addEventListener('contextmenu', (e) => {
       if (!this.editable(e.target)) e.preventDefault();
+    });
+    document.addEventListener('input', (e) => {
+      const t = e.target as HTMLInputElement;
+      if (t?.dataset?.ui === 'volume') {
+        this.settings.volume = Number(t.value) / 100;
+        setVolume(this.settings.volume);
+        saveSettings(this.settings);
+      }
     });
     window.addEventListener('resize', () => {
       this.layout();

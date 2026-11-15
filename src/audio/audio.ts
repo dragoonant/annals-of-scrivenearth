@@ -145,6 +145,40 @@ const VOICES: Record<string, Voice> = {
 export const SILENT_KINDS = ['mulligan', 'burn', 'lineFull', 'destroy', 'create', 'reserve', 'combatEnd'];
 export const VOICED_KINDS = Object.keys(VOICES);
 
+// ---------- generated samples (from EVILAEGIS, HANDOFF-GPU.md) ----------
+// public/audio/manifest.json lists the sample ids that exist. A kind with a sample plays it; a kind without one
+// plays the synthesized voice above. Which one is in use is shown on the sound test in Settings (never silent).
+const samples = new Map<string, AudioBuffer>();
+let sampleIds: string[] = [];
+export function sampleStatus(): { loaded: string[]; listed: string[] } {
+  return { loaded: [...samples.keys()], listed: sampleIds };
+}
+export async function loadSamples(base = './audio/'): Promise<void> {
+  const r = await fetch(`${base}manifest.json`).catch(() => null);
+  if (!r || !r.ok) return; // no generated audio has been delivered yet
+  sampleIds = (await r.json()) as string[];
+  const c = ensure();
+  if (!c) return;
+  await Promise.all(sampleIds.filter((id) => id.startsWith('sfx/') || id.startsWith('voice/')).map(async (id) => {
+    const f = await fetch(`${base}${id}.ogg`);
+    if (!f.ok) throw new Error(`audio manifest lists ${id} but ${id}.ogg is missing`);
+    samples.set(id, await c.decodeAudioData(await f.arrayBuffer()));
+  }));
+}
+function playSample(c: AudioContext, id: string, gain = 1): boolean {
+  const buf = samples.get(id);
+  if (!buf || !master) return false;
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  const g = c.createGain();
+  g.gain.value = gain;
+  src.connect(g).connect(master);
+  src.start();
+  live += 1;
+  src.onended = () => { live -= 1; };
+  return true;
+}
+
 /** Play the sound for one event, now. `seat` is the listener's seat (so "mine" can sound brighter). */
 export function playEvent(e: LogEntry, seat: Seat): void {
   const voice = VOICES[e.k];
@@ -156,6 +190,8 @@ export function playEvent(e: LogEntry, seat: Seat): void {
   if (t - last < MIN_GAP) return;
   if (live >= MAX_LIVE && e.k !== 'ascend' && e.k !== 'over') return;
   lastAt.set(e.k, t);
+  if (e.k === 'ascend' && e.card) playSample(c, `voice/${e.card}`, 1.2); // the hero's line over the sting
+  if (playSample(c, `sfx/${e.k}`)) return;
   voice(c, master, t, e, e.seat === seat);
 }
 

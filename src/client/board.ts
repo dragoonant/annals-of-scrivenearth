@@ -16,8 +16,10 @@ export interface BoardUI {
   blockUnit: string | null;
   blockAtt: string | null;
   mull: Set<string>;
+  /** R-U1: the unit of yours chosen to scrap when the Line is full. */
+  scrap: string | null;
 }
-export const newBoardUI = (): BoardUI => ({ armed: null, picked: [], notice: null, duelFor: null, blockUnit: null, blockAtt: null, mull: new Set() });
+export const newBoardUI = (): BoardUI => ({ armed: null, picked: [], notice: null, duelFor: null, blockUnit: null, blockAtt: null, mull: new Set(), scrap: null });
 
 export interface BoardHost {
   view(): GameState;
@@ -34,21 +36,42 @@ export function clearSel(ui: BoardUI): void {
   ui.duelFor = null;
   ui.blockUnit = null;
   ui.blockAtt = null;
+  ui.scrap = null;
 }
 
 // ---------- derived interaction ----------
 interface Targets {
   slots: number;
   legal: Set<string>;
+  /** Choosing which of your units to scrap (Line full). */
+  scrapPhase?: boolean;
+}
+function lineFullFor(v: GameState, ui: BoardUI): boolean {
+  if (!ui.armed) return false;
+  const hc = v.players[0].hand.find((x) => x.iid === ui.armed);
+  return !!hc && def(hc.card).type !== 'glyph' && v.players[0].line.length >= LIMITS.line;
 }
 function armedTargets(v: GameState, ui: BoardUI): Targets {
   if (!ui.armed) return { slots: 0, legal: new Set() };
-  const choices = targetChoices(v, 0, ui.armed);
+  if (lineFullFor(v, ui) && !ui.scrap) {
+    // legal scraps come from legalActions: play actions that carry `replace`
+    const legal = new Set<string>();
+    for (const a of legalActions(v)) if (a.type === 'play' && a.iid === ui.armed && a.replace) legal.add(a.replace);
+    return { slots: 0, legal, scrapPhase: true };
+  }
+  const choices = targetChoices(v, 0, ui.armed).filter((c) => !ui.scrap || !c.includes(ui.scrap));
   const slots = choices[0]?.length ?? 0;
   if (slots === 0) return { slots: 0, legal: new Set() };
   const legal = new Set<string>();
   for (const c of choices) if (ui.picked.every((p, i) => c[i] === p) && c.length > ui.picked.length) legal.add(c[ui.picked.length]);
   return { slots, legal };
+}
+
+function playAction(ui: BoardUI, targets: string[]): Action {
+  const a: Action = { type: 'play', iid: ui.armed! };
+  if (targets.length) a.targets = targets;
+  if (ui.scrap) a.replace = ui.scrap;
+  return a;
 }
 
 export function passLabel(v: GameState): string {
@@ -90,8 +113,8 @@ export function handleBoardClick(e: Event, host: BoardHost, ui: BoardUI): void {
       case 'play': {
         if (!ui.armed) return;
         const tg = armedTargets(v, ui);
-        if (ui.picked.length < tg.slots) return;
-        return done(ui.picked.length ? { type: 'play', iid: ui.armed, targets: ui.picked } : { type: 'play', iid: ui.armed });
+        if (tg.scrapPhase || ui.picked.length < tg.slots) return;
+        return done(playAction(ui, ui.picked));
       }
       case 'cancel': clearSel(ui); ui.notice = null; return host.rerender();
       case 'noforce': if (ui.duelFor) return done({ type: 'declare', unit: ui.duelFor }); return;
@@ -115,11 +138,20 @@ export function handleBoardClick(e: Event, host: BoardHost, ui: BoardUI): void {
   const tg = armedTargets(v, ui);
   const pickTarget = (id: string): boolean => {
     if (!ui.armed || !tg.legal.has(id)) return false;
-    ui.picked.push(id);
     ui.notice = null;
+    if (tg.scrapPhase) {
+      ui.scrap = id;
+      const after = armedTargets(v, ui);
+      if (after.slots === 0) {
+        done(playAction(ui, []));
+        if (ui.armed) ui.scrap = null;
+      } else host.rerender();
+      return true;
+    }
+    ui.picked.push(id);
     // the last slot chosen plays the card (the owner's rule: a click on a legal target plays it)
     if (ui.picked.length >= tg.slots) {
-      done({ type: 'play', iid: ui.armed, targets: [...ui.picked] });
+      done(playAction(ui, [...ui.picked]));
       if (ui.armed) ui.picked.pop(); // refused: keep the card armed, ask again for the last slot
     } else host.rerender();
     return true;
@@ -260,7 +292,7 @@ function cells(n: number, max: number, cls: string): HTMLElement {
 }
 
 function heroChips(v: GameState, seat: Seat): HTMLElement {
-  const box = h('div', { class: 's-heroes' });
+  const box = h('div', { class: `s-heroes ${v.players[seat].heroes.length > 3 ? 'many' : ''}` });
   for (const hid of v.players[seat].heroes) {
     const pr = heroProgress(v, seat, hid);
     const f = face(v, seat, hid);
@@ -385,7 +417,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
   // battle row
   const battle = h('div', { class: 'battle facet' });
   if (v.combat && v.combat.pairs.length) {
-    const pairs = h('div', { class: 'pairs' });
+    const pairs = h('div', { class: `pairs ${v.combat.pairs.length > 3 ? 'many' : ''}` });
     const attackerSeat = v.combat.attacker;
     for (const pr of v.combat.pairs) {
       const att = findUnit(v, pr.att);
@@ -449,8 +481,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
   }
   board.append(h('div', { class: 'a-hand' }, hand));
 
-  const menu = h('div', { class: 'topbtns' }, h('button', { class: 'btn small', data: { ui: 'log' }, text: 'Log' }), h('button', { class: 'btn small', data: { ui: 'menu' }, text: 'Menu' }));
-  board.append(menu);
+  board.classList.toggle('nostack', v.stack.length === 0);
   return board;
 }
 
@@ -471,10 +502,11 @@ function actionBar(v: GameState, ui: BoardUI, interactive: boolean, tg: Targets,
     const name = cardName(v, 0, hc.card);
     const specs = targetSpecs(v, 0, hc.card);
     const cost = costOf(v, 0, hc.card);
-    if (tg.slots > 0 && ui.picked.length < tg.slots) line = targetPrompt(hc.card, name, ui.picked.length, tg.slots, specs[ui.picked.length]);
+    if (tg.scrapPhase) line = `Your Line is full: choose one of your units to scrap for ${name}`;
+    else if (tg.slots > 0 && ui.picked.length < tg.slots) line = targetPrompt(hc.card, name, ui.picked.length, tg.slots, specs[ui.picked.length]);
     else if (playable.has(hc.iid)) line = `Ready: ${name}. Press Play.`;
     else line = `${name}: ${d.type === 'hero' ? 'Channel it, or put it back' : 'put it back'}.`;
-    if (playable.has(hc.iid) && tg.slots === 0) {
+    if (playable.has(hc.iid) && tg.slots === 0 && !tg.scrapPhase) {
       const pay = d.type === 'glyph' ? `${cost} Charge or Reserve` : `${cost} Charge`;
       btns.append(h('button', { class: 'btn primary', data: { action: 'play' }, text: `Play ${name} (${pay})` }));
     }
@@ -503,7 +535,7 @@ function actionBar(v: GameState, ui: BoardUI, interactive: boolean, tg: Targets,
   if (interactive && (v.phase === 'main' || v.phase === 'combat')) {
     btns.append(h('button', { class: `btn ${ui.armed ? 'ghost' : 'primary'}`, data: { action: 'pass' }, text: passLabel(v) }));
   }
-  bar.append(status, btns);
+  bar.append(status, btns, h('div', { class: 'menubtns' }, h('button', { class: 'btn small', data: { ui: 'log' }, text: 'Log' }), h('button', { class: 'btn small', data: { ui: 'menu' }, text: 'Menu' })));
   const feed = h('div', { class: 'feed' });
   for (const e of v.log.slice(-4)) feed.append(h('div', { class: 'feed-line' }, lineSegsEl(e, v)));
   bar.append(feed);

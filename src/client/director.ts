@@ -6,6 +6,7 @@ import { face } from '../engine/query';
 import { view } from '../engine/view';
 import type { Speed } from './settings';
 import { bigCard, h } from './cardview';
+import { playEvent } from '../audio/audio';
 
 type Listener = (events: LogEntry[]) => void;
 const listeners = new Set<Listener>();
@@ -137,6 +138,7 @@ export class Director {
   }
 
   private async play(e: LogEntry, it: Item): Promise<void> {
+    if (this.speed !== 'instant' && !this.skipping) playEvent(e, 0);
     switch (e.k) {
       case 'play':
       case 'cast':

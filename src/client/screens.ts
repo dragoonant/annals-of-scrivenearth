@@ -10,6 +10,7 @@ import type { DeckChoice, SaveState } from './game';
 import type { Settings, Speed } from './settings';
 import { END_REASONS, HOW_TO_PLAY, KEYWORD_HELP, WORD_HELP } from './text';
 import { LIMITS } from '../engine/types';
+import { VOICED_KINDS } from '../audio/audio';
 
 export function backdrop(): HTMLElement {
   const el = h('div', { class: 'backdrop' });
@@ -60,7 +61,7 @@ export function renderTitle(save: SaveState, settings: Settings, devdecks: boole
   if (devdecks) root.append(h('div', { class: 'devbadge', text: 'DEV DECKS ON (test only)' }));
   const sp = h('div', { class: 'speedrow' }, h('span', { class: 'lbl', text: 'ANIMATION' }));
   for (const s of ['full', 'quick', 'instant'] as Speed[]) sp.append(h('button', { class: `chipbtn ${settings.speed === s ? 'on' : ''}`, data: { ui: 'speed', v: s }, text: s }));
-  root.append(sp, h('p', { class: 'fineprint', text: 'An original fan-made game. Not affiliated with any publisher.' }));
+  root.append(sp, h('button', { class: 'btn small', data: { ui: 'settings' }, text: 'Sound and settings' }), h('p', { class: 'fineprint', text: 'An original fan-made game. Not affiliated with any publisher.' }));
   return root;
 }
 
@@ -169,6 +170,7 @@ export type Modal =
   | { kind: 'scrap' }
   | { kind: 'log' }
   | { kind: 'menu'; confirmConcede: boolean }
+  | { kind: 'settings' }
   | { kind: 'peek'; deck: DeckList }
   | { kind: 'confirm'; text: string; yes: string };
 
@@ -211,8 +213,17 @@ export function renderModal(m: Modal, v: GameState | null, settings: Settings, c
           ? h('div', { class: 'confirm-row' }, h('p', { text: 'Concede this game? You lose and the save is cleared.' }), h('button', { class: 'btn danger', data: { ui: 'concede-yes' }, text: 'Yes, concede' }), h('button', { class: 'btn', data: { ui: 'concede-no' }, text: 'Keep playing' }))
           : h('button', { class: `btn ${canConcede ? '' : 'disabled'}`, data: { ui: 'concede' }, text: canConcede ? 'Concede' : 'Concede (wait for your move)' }),
         h('button', { class: 'btn', data: { ui: 'title' }, text: 'Back to title (the game stays saved)' }),
+        h('button', { class: 'btn', data: { ui: 'settings' }, text: 'Sound and settings' }),
         h('button', { class: 'btn', data: { ui: 'howto-from-game' }, text: 'How to play' }),
       );
+    }
+    case 'settings': {
+      const sp = h('div', { class: 'speedrow' }, h('span', { class: 'lbl', text: 'ANIMATION' }));
+      for (const s of ['full', 'quick', 'instant'] as Speed[]) sp.append(h('button', { class: `chipbtn ${settings.speed === s ? 'on' : ''}`, data: { ui: 'speed', v: s }, text: s }));
+      const vol = h('div', { class: 'speedrow' }, h('span', { class: 'lbl', text: 'VOLUME' }), h('input', { class: 'vol', data: { ui: 'volume' }, attrs: { type: 'range', min: '0', max: '100', value: String(Math.round(settings.volume * 100)) } }), h('button', { class: `chipbtn ${settings.muted ? 'on' : ''}`, data: { ui: 'mute' }, text: settings.muted ? 'muted' : 'mute' }));
+      const test = h('div', { class: 'soundtest' });
+      for (const k of VOICED_KINDS) test.append(h('button', { class: 'chipbtn', data: { ui: 'audition', v: k }, text: k }));
+      return modalShell('small', h('div', { class: 'modal-head' }, h('h2', { text: 'Settings' }), h('button', { class: 'btn small', data: { ui: 'close' }, text: 'Close' })), sp, vol, h('div', { class: 'lbl', text: 'SOUND TEST (tap a sound)' }), test);
     }
     case 'peek': {
       const counts = new Map<string, number>();

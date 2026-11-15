@@ -38,6 +38,7 @@ export const LOG_LINES: Record<string, LineFn> = {
   create: (e) => [c(e.card, e.seat), ` was added to ${whose(e.seat)} hand`, ...via(e), '.'],
   destroy: (e) => (e.s === 'unstable'
     ? [c(e.tcard, e.seat), ' faded (Unstable).']
+    : e.s === 'replaced' ? [c(e.tcard, e.seat), ' was scrapped to make room', ...via(e), '.']
     : [c(e.tcard, e.seat), ' was marked for destruction', ...via(e), '.']),
   die: (e) => [c(e.card, e.seat), ` was destroyed (${whose(e.seat)} Scrap).`],
   dmg: (e) => [c(e.tcard, e.seat), ` took ${e.n ?? 0} damage`, ...via(e), '.'],
