@@ -375,3 +375,28 @@ export function placeInspector(box: HTMLElement, anchor: Element): void {
   box.style.left = `${Math.round(best[0])}px`;
   box.style.top = `${Math.round(best[1])}px`;
 }
+
+// The app opens the inspector (hover 300 ms / long-press) and gives it a first position; this re-places it with
+// placeInspector() before it is ever painted, so it never covers the card that opened it.
+let placerOn = false;
+let lastAnchor: Element | null = null;
+export function installInspectorPlacer(): void {
+  if (placerOn || typeof document === 'undefined') return;
+  placerOn = true;
+  const note = (e: Event): void => {
+    const t = e.target as Element | null;
+    const a = t?.closest?.('[data-card]') ?? null;
+    if (a) lastAnchor = a;
+  };
+  document.addEventListener('pointerover', note, true);
+  document.addEventListener('pointerdown', note, true);
+  new MutationObserver((muts) => {
+    for (const m of muts) {
+      for (const n of m.addedNodes) {
+        if (!(n instanceof HTMLElement) || !n.classList.contains('inspector')) continue;
+        const anchor = lastAnchor && document.contains(lastAnchor) ? lastAnchor : null;
+        if (anchor) placeInspector(n, anchor);
+      }
+    }
+  }).observe(document.body, { childList: true, subtree: true });
+}

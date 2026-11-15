@@ -5,7 +5,7 @@ import type { Action, GameState, Result, Seat, Unit } from '../engine/types';
 import { LIMITS } from '../engine/types';
 import { legalActions, targetChoices, whyNotBlockAction, whyNotChannel, whyNotDeclare, whyNotPlay } from '../engine/rules';
 import { costOf, def, face, findUnit, stats, targetSpecs } from '../engine/query';
-import { cardBack, handCardEl, h, heroProgress, lineSegsEl, svgSpan, unitEl } from './cardview';
+import { cardBack, handCardEl, h, heroProgress, installInspectorPlacer, lineSegsEl, svgSpan, unitEl } from './cardview';
 import { spireSvg } from './art';
 import { fxScale } from './fx';
 import { targetPrompt } from './text';
@@ -701,6 +701,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
   // after mount: the overlay, the FLIP slide
   cur = { host, ui };
   installHover();
+  installInspectorPlacer();
   const size = `${window.innerWidth}x${window.innerHeight}`;
   const resized = size !== lastSize;
   lastSize = size;

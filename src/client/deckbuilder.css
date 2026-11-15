@@ -43,7 +43,7 @@
 .bd-tile.has .hand-card { --edge-c: var(--charge); }
 .bd-tile.blocked .hand-card { opacity: 0.42; filter: saturate(0.55); }
 .bd-tile.blocked { cursor: not-allowed; }
-.bd-copies { position: absolute; z-index: 9; right: 0; top: 0; padding: 0.15rem 0.7rem 0.15rem 1rem; font-family: var(--head); font-weight: 700; font-size: 1.3rem; color: var(--ink2); background: rgba(5, 9, 28, 0.94); clip-path: polygon(0.6rem 0, 100% 0, 100% 100%, 0 100%); pointer-events: none; }
+.bd-copies { position: absolute; z-index: 9; left: 0; bottom: 6.6rem; padding: 0.15rem 1rem 0.15rem 0.7rem; font-family: var(--head); font-weight: 700; font-size: 1.3rem; color: var(--ink2); background: rgba(5, 9, 28, 0.94); clip-path: polygon(0 0, calc(100% - 0.6rem) 0, 100% 100%, 0 100%); pointer-events: none; }
 .bd-tile.has .bd-copies { color: var(--sky0); background: var(--charge); }
 .bd-empty { color: var(--ink2); font-size: 1.3rem; grid-column: 1 / -1; padding: 1rem; }
 
@@ -119,7 +119,7 @@
 #root.mode-short .bd-why { font-size: 1rem; }
 #root.mode-short .bd-msgrow { min-height: 1.4rem; }
 #root.mode-short .bd-grid { --cw: 6.3rem; --ch: 8.4rem; gap: 0.7rem 0.5rem; padding: 0.4rem 0.6rem 0.8rem 0.3rem; }
-#root.mode-short .bd-copies { font-size: 0.95rem; padding: 0.05rem 0.4rem 0.05rem 0.7rem; }
+#root.mode-short .bd-copies { font-size: 0.95rem; padding: 0.05rem 0.7rem 0.05rem 0.4rem; bottom: 0; }
 #root.mode-short .bd-right { padding: 0.6rem 0.8rem; gap: 0.5rem; }
 #root.mode-short .bd-name { font-size: 1.2rem; padding: 0.25rem 0.6rem; }
 #root.mode-short .bd-n { font-size: 2.2rem; }
@@ -186,3 +186,5 @@
 #root.mode-short .end-stat { font-size: 0.95rem; } #root.mode-short .end-stat b { font-size: 1.1rem; }
 #root.mode-short .end-btns { margin-top: 0.2rem; gap: 0.6rem; } #root.mode-short .end-btns .big-btn { width: 15rem; padding: 0.4rem 1rem; }
 #root.mode-short .end-btns .big-btn { flex-direction: row; justify-content: center; }
+.bd-search { -webkit-appearance: none; appearance: none; border-radius: 0; }
+.bd-search::-webkit-search-cancel-button, .bd-search::-webkit-search-decoration { -webkit-appearance: none; display: none; }

@@ -298,7 +298,7 @@ describe('tide cards (strict)', () => {
     expect(alone.players[0].hand.length).toBe(0);
   });
 
-  it('tide-lockkeeper: a 2-power enemy is returned, a 3-power one is refused; Resonant +1|+1 only with an Ascended hero', () => {
+  it('tide-lockkeeper: a 2-power enemy is returned, a 3-power one is refused', () => {
     const s = board({ hand: [['tide-lockkeeper'], []], line: [[], ['tide-stillwaterbailiff', 'tide-hushwateradept']] });
     expect(tryPlay(s, 'tide-lockkeeper', [unit(s, 1, 'tide-stillwaterbailiff').iid]).ok).toBe(false);
     play(s, 'tide-lockkeeper', [unit(s, 1, 'tide-hushwateradept').iid]);
