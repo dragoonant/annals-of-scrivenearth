@@ -379,7 +379,7 @@ export interface Setup {
 
 export type Action =
   | { type: 'mulligan'; replace: string[] } // hand iids to swap
-  | { type: 'play'; iid: string; targets?: string[] }
+  | { type: 'play'; iid: string; targets?: string[]; replace?: string } // replace: your unit to scrap when your Line is full (R-U1)
   | { type: 'channel'; iid: string } // R-H7: spend a spare hero copy on the one in play
   | { type: 'declare'; unit: string; duel?: string } // add an attacker (and a Dueler's forced blocker)
   | { type: 'undeclare'; unit: string }

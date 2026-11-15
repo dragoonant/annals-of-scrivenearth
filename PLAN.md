@@ -12,9 +12,17 @@ The only place a decision lives. `by` is `owner` (with the owner's words) or `de
 | D6 | 2026-11-15 | Publish: fast-forward `main` after each gated stage; Pages from `gh-pages`. | owner |
 | D7 | 2026-11-15 | Feel: **big hero moments**. Heroes are the centre of every deck; ascension is staged; a **Resonant** bonus rewards having an Ascended hero on the Line. | owner |
 | D8 | 2026-11-15 | Stack: Vite + TypeScript strict, plain DOM, no framework; Vitest; Playwright 1.63.0. | default |
-| D9 | 2026-11-15 | Card art is a procedural cut-crystal sigil per card until a session on the owner's GPU PC can generate real art (cloud sessions cannot reach the studios). Audio is procedural WebAudio for the same reason; not verified by ear. | default |
+| D9 | 2026-11-15 | Art and audio are generated on EVILAEGIS (Flux Studio, Audio Studio): "You can use evilaegis for flux and music/sound gen." Approved batches: about 190 card renders, music, sound effects, hero voice lines; three-image sample first; one GPU job at a time; studios stopped afterwards. This cloud session cannot reach EVILAEGIS, so a Claude session on EVILAEGIS in a clone of this repo runs the jobs and this session messages it (owner's choice). Until then: procedural crystal sigils and synthesized sound (not verified by ear). | owner |
 | D10 | 2026-11-15 | Triggered abilities never ask for a target; only Deploy abilities and glyphs do (spec RULING R-S3). | default |
 | D11 | 2026-11-15 | The working title stays "Annals of Scrivenearth" (the repo name). | default |
+| D12 | 2026-11-15 | Interface depth: "a fully fleshed out UI like xross forge and shadow forge" (targeting layer, animation layer, HUD, preview, title, deck builder, tutorial, sound page), in this game's own look (rule 21). | owner |
+| D13 | 2026-11-15 | Card art style: Claude picks; contact sheets go to the owner as FYI. | owner |
+| D14 | 2026-11-15 | A unit may be played onto a full Line by scrapping one of your own units (spec R-U1). | owner |
+| D15 | 2026-11-15 | Screens for the first playable: desktop and phone landscape; portrait shows a rotate hint until a later stage. | owner |
+| D16 | 2026-11-15 | Teaching: a guided first match, plus how-to-play and keyword hover help. | owner |
+| D17 | 2026-11-15 | The owner will make the repo public and point Pages at `gh-pages`. | owner |
+| D18 | 2026-11-15 | This session has push access to `dragoonant/tabletop-kb` and keeps this game's entry current (rule 19). | owner |
+| D19 | 2026-11-15 | Tidewardens' weak AI-versus-AI results (BALANCE B-3) are left alone until the owner has played Tide. | default |
 
 ## Cut order if a session runs short
 Cut first: audio polish, deck-builder niceties (filters, import/export), the third AI tier, phone-portrait polish.
@@ -22,6 +30,5 @@ Never cut: per-card behaviour tests, the save, open-information viewers, prompts
 the hero ascension moment.
 
 ## Open questions for the owner
-1. Pages needs the repository to be public (or a paid plan) and Settings -> Pages -> Source "Deploy from a branch",
-   branch `gh-pages`. Until then the link is a 404.
-2. Real card art and audio need a session on the GPU PC.
+1. The name of the Claude session on EVILAEGIS (opened in a clone of this repo) so this session can message it (D9).
+2. Pages: repo public, Settings -> Pages -> Source "Deploy from a branch", branch `gh-pages` (D17).

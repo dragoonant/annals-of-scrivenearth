@@ -41,7 +41,9 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 - **R-P6.** Units and heroes can be played only in the main phase with an empty stack.
 
 ## Units (R-U)
-- **R-U1 Line.** At most 6 units a side. A unit cannot be played onto a full Line; a summon onto a full Line is lost.
+- **R-U1 Line.** At most 6 units a side. To play a unit onto a full Line you choose one of your own units to scrap:
+  it is destroyed first (its Shatter fires and it counts as destroyed), then the new unit arrives. A summon by an effect
+  onto a full Line is lost.
 - **R-U2.** Every unit enters through one door (`summon`). **Deploy** abilities fire only when the unit is played from hand.
 - **R-U3.** Units can attack on the round they arrive.
 

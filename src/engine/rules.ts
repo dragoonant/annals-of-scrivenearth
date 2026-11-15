@@ -725,7 +725,6 @@ export function whyNotPlay(s: GameState, seat: Seat, iid: string): string | null
   if (d.type !== 'glyph') {
     if (s.phase !== 'main') return 'Units cannot be played during an attack';
     if (s.stack.length > 0) return 'Units cannot be played while glyphs are waiting to resolve';
-    if (s.players[seat].line.length >= LIMITS.line) return `Your Line is full (${LIMITS.line} units)`;
     if (d.type === 'hero' && s.players[seat].line.some((u) => u.card === hc.card)) {
       return 'That hero is already on your Line: Channel this copy instead';
     }
@@ -822,8 +821,15 @@ export function legalActions(s: GameState): Action[] {
     for (const hc of p.hand) {
       if (hc.card === '?') continue;
       if (whyNotPlay(s, seat, hc.iid) === null) {
-        for (const targets of targetChoices(s, seat, hc.iid)) {
-          out.push(targets.length ? { type: 'play', iid: hc.iid, targets } : { type: 'play', iid: hc.iid });
+        const full = def(hc.card).type !== 'glyph' && p.line.length >= LIMITS.line;
+        for (const replace of full ? p.line.map((u) => u.iid) : [undefined]) {
+          for (const targets of targetChoices(s, seat, hc.iid)) {
+            if (replace && targets.includes(replace)) continue;
+            const a: Action = { type: 'play', iid: hc.iid };
+            if (targets.length) a.targets = targets;
+            if (replace) a.replace = replace;
+            out.push(a);
+          }
         }
       }
       if (whyNotChannel(s, seat, hc.iid) === null) out.push({ type: 'channel', iid: hc.iid });
@@ -920,6 +926,12 @@ export function applyAction(s: GameState, a: Action): Result {
       if (whyT) return refuse(whyT);
       const hc = handCard(s, seat, a.iid)!;
       const d = def(hc.card);
+      // R-U1: a unit played onto a full Line replaces one of your own units, which is destroyed first.
+      const full = d.type !== 'glyph' && p.line.length >= LIMITS.line;
+      const scrapped = a.replace !== undefined ? p.line.find((u) => u.iid === a.replace) : undefined;
+      if (full && !scrapped) return refuse(`Your Line is full (${LIMITS.line} units): choose one of your units to scrap`);
+      if (!full && a.replace !== undefined) return refuse('Nothing needs to be scrapped');
+      if (scrapped && targets.includes(scrapped.iid)) return refuse('The scrapped unit cannot be a target');
       const cost = costOf(s, seat, hc.card);
       // R-C2: glyphs spend Reserve first, then Charge.
       let left = cost;
@@ -930,8 +942,14 @@ export function applyAction(s: GameState, a: Action): Result {
       s.acted[seat] += 1;
       if (d.type !== 'glyph') {
         log(s, { k: 'play', seat, card: hc.card, n: cost });
-        const u = summon(s, seat, hc.card, hc.card)!;
-        emit(s, 'deploy', u, undefined, targets);
+        if (scrapped) {
+          scrapped.doomed = true;
+          log(s, { k: 'destroy', seat, tunit: scrapped.iid, tcard: scrapped.card, via: hc.card, s: 'replaced' });
+          settle(s);
+          if (over(s)) return done();
+        }
+        const u = summon(s, seat, hc.card, hc.card);
+        if (u) emit(s, 'deploy', u, undefined, targets);
         settle(s);
         if (!over(s)) { s.passes = 0; s.priority = other(seat); }
         return done();

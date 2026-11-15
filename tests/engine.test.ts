@@ -118,11 +118,18 @@ describe('game flow', () => {
     expect(s.players[0].scrap).toEqual(['zz-filler']);
   });
 
-  it('R-U1 the Line holds 6 units', () => {
-    const s = board({ hand: [['zz-grunt'], []], line: [Array<string>(6).fill('zz-grunt'), []] });
-    const r = applyAction(s, { type: 'play', iid: s.players[0].hand[0].iid });
+  it('R-U1 the Line holds 6 units; a unit played onto a full Line replaces one of yours, which is destroyed', () => {
+    const s = board({ hand: [['zz-ogre'], []], line: [Array<string>(6).fill('zz-grunt'), []] });
+    const iid = s.players[0].hand[0].iid;
+    const r = applyAction(s, { type: 'play', iid });
     expect(r.ok).toBe(false);
-    expect(r.error).toMatch(/full/);
+    expect(r.error).toMatch(/full.*scrap/);
+    expect(legalActions(s).filter((a) => a.type === 'play').length).toBe(6);
+    act(s, { type: 'play', iid, replace: s.players[0].line[2].iid });
+    expect(s.players[0].line.map((u) => u.card)).toEqual(['zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-ogre']);
+    expect(s.players[0].seen.alliesDied).toBe(1);
+    const s2 = board({ hand: [['zz-ogre'], []], line: [['zz-grunt'], []] });
+    expect(applyAction(s2, { type: 'play', iid: s2.players[0].hand[0].iid, replace: s2.players[0].line[0].iid }).ok).toBe(false);
   });
 
   it('R-X1 a refused action changes nothing', () => {
