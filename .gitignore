@@ -1,0 +1,15 @@
+node_modules/
+dist/
+e2e-out/
+test-results/
+playwright-report/
+tools/out/
+scratch/
+docs/sources/
+*.token*
+Tokens.txt
+tokens.txt*
+.env*
+.hf_token
+*.pdf
+.DS_Store
