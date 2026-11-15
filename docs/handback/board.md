@@ -66,6 +66,6 @@ Every export the other client files import is unchanged; exports were only added
 
 ## Results
 - `npx tsc --noEmit`: clean.
-- `npx vitest run`: all green (see the final line of the run in the task result for the count).
-- `npx vite build && npx playwright test`: all green, including `e2e/smoke.spec.ts` and `e2e/flows.spec.ts`.
+- `npx vitest run`: 15 files, 290 tests passed (includes tests/forecast.test.ts, 5 tests, and the prompt tests in tests/client-text.test.ts).
+- `npx vite build && npx playwright test`: 24 passed (9 in e2e/flows.spec.ts, 5 in e2e/smoke.spec.ts, the rest from the other helper).
 - Screenshots: `/tmp/claude-0/-home-user-annals-of-scrivenearth/ea59f08a-530e-530f-a046-1c805977cfcb/scratchpad/board/`.

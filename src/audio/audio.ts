@@ -154,12 +154,13 @@ export function sampleStatus(): { loaded: string[]; listed: string[] } {
   return { loaded: [...samples.keys()], listed: sampleIds };
 }
 export async function loadSamples(base = './audio/'): Promise<void> {
+  musicBase = base;
   const r = await fetch(`${base}manifest.json`).catch(() => null);
   if (!r || !r.ok) return; // no generated audio has been delivered yet
   sampleIds = (await r.json()) as string[];
   const c = ensure();
   if (!c) return;
-  await Promise.all(sampleIds.filter((id) => id.startsWith('sfx/') || id.startsWith('voice/')).map(async (id) => {
+  await Promise.all(sampleIds.filter((id) => id.startsWith('sfx/') || id.startsWith('voice/') || id === 'music/ascend-sting').map(async (id) => {
     const f = await fetch(`${base}${id}.ogg`);
     if (!f.ok) throw new Error(`audio manifest lists ${id} but ${id}.ogg is missing`);
     samples.set(id, await c.decodeAudioData(await f.arrayBuffer()));
@@ -179,6 +180,52 @@ function playSample(c: AudioContext, id: string, gain = 1): boolean {
   return true;
 }
 
+// ---------- music (generated tracks; silent until they are delivered) ----------
+export type MusicMood = 'title' | 'calm' | 'battle' | 'tense' | 'victory' | 'defeat' | 'none';
+const tracks = new Map<string, AudioBuffer>();
+let musicGain: GainNode | null = null;
+let musicSrc: AudioBufferSourceNode | null = null;
+let mood: MusicMood = 'none';
+let musicVolume = 0.5;
+let musicBase = './audio/';
+export function setMusicVolume(v: number): void {
+  musicVolume = Math.max(0, Math.min(1, v));
+  if (musicGain && ctx) musicGain.gain.setTargetAtTime(musicVolume, ctx.currentTime, 0.2);
+}
+export function currentMood(): MusicMood { return mood; }
+/** Crossfade to a mood's track. One-shots (victory, defeat) do not loop. Safe to call every render. */
+export async function setMusic(next: MusicMood): Promise<void> {
+  if (next === mood) return;
+  mood = next;
+  const c = ensure();
+  if (!c || !master) return;
+  if (musicSrc && musicGain) {
+    const old = musicSrc; const g = musicGain;
+    g.gain.setTargetAtTime(0, c.currentTime, 0.4);
+    setTimeout(() => { try { old.stop(); } catch { /* already stopped */ } }, 2000);
+    musicSrc = null; musicGain = null;
+  }
+  const id = `music/${next}`;
+  if (next === 'none' || !sampleIds.includes(id)) return;
+  let buf = tracks.get(id);
+  if (!buf) {
+    const f = await fetch(`${musicBase}${id}.ogg`);
+    if (!f.ok) throw new Error(`audio manifest lists ${id} but ${id}.ogg is missing`);
+    buf = await c.decodeAudioData(await f.arrayBuffer());
+    tracks.set(id, buf);
+  }
+  if (mood !== next) return; // the mood changed while this track was loading
+  const src = c.createBufferSource();
+  src.buffer = buf;
+  src.loop = next !== 'victory' && next !== 'defeat';
+  const g = c.createGain();
+  g.gain.value = 0;
+  g.gain.setTargetAtTime(musicVolume, c.currentTime, 0.6);
+  src.connect(g).connect(master);
+  src.start();
+  musicSrc = src; musicGain = g;
+}
+
 /** Play the sound for one event, now. `seat` is the listener's seat (so "mine" can sound brighter). */
 export function playEvent(e: LogEntry, seat: Seat): void {
   const voice = VOICES[e.k];
@@ -190,7 +237,7 @@ export function playEvent(e: LogEntry, seat: Seat): void {
   if (t - last < MIN_GAP) return;
   if (live >= MAX_LIVE && e.k !== 'ascend' && e.k !== 'over') return;
   lastAt.set(e.k, t);
-  if (e.k === 'ascend' && e.card) playSample(c, `voice/${e.card}`, 1.2); // the hero's line over the sting
+  if (e.k === 'ascend' && e.card) { playSample(c, 'music/ascend-sting', 1.4); playSample(c, `voice/${e.card}`, 1.6); } // sting, then the hero's line over it
   if (playSample(c, `sfx/${e.k}`)) return;
   voice(c, master, t, e, e.seat === seat);
 }
