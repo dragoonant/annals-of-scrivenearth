@@ -26,6 +26,7 @@ The only place a decision lives. `by` is `owner` (with the owner's words) or `de
 | D20 | 2026-11-15 | The first-pass client is rejected on looks: "Yikes. That's ugly as hell. I hope you're going to improve it." What is wrong, in the owner's picks: the placeholder card art, the flat empty board, and the card frames and type. The crystal magitech concept itself stands. | owner |
 | D21 | 2026-11-15 | Finish quality is measured against **Shadowforge** (its rebuilt look: board art, HUD, card view, animation layer); the look stays this game's own. | owner |
 | D22 | 2026-11-15 | Overnight: merge each gated stage to `main`, and merge `gpu/assets` (EVILAEGIS art and audio) into the session branch as it lands, without waiting. Leave a morning summary with screenshots and numbered questions. | owner |
+| D23 | 2026-11-15 | Audio is now an ElevenLabs render of all 49 ids (Eleven Music, Sound Effects v3, Voice Design and v3 speech; a sound-effect roar for Brakk), replacing the Audio Studio set. As reported by the EVILAEGIS session: the owner supplied a one-day key and asked for it there; this session did not hear that request directly. The Audio Studio set stays in git history (0f69a93). Not verified by ear. | owner (reported by the EVILAEGIS session) |
 
 ## Cut order if a session runs short
 Cut first: audio polish, deck-builder niceties (filters, import/export), the third AI tier, phone-portrait polish.

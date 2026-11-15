@@ -16,6 +16,8 @@ What changed since you said it was ugly (PLAN D20):
    ward break), the ascension sequence, per-card prompt wording for all 50 targeted cards.
 3. **Deck builder, guided first match (20 steps, ends with Jax ascending), richer end screen with a bug-report file.**
 4. **Generated audio**: 7 music tracks that follow the screen and the match, 30 effects, 12 hero voice lines.
+   The set on `main` is the ElevenLabs render the EVILAEGIS session made at your request (PLAN D23); looping tracks
+   are now seamless. The earlier Audio Studio set is in git history.
 5. **Per-card audit** (your request): three independent reviews, four engine bugs fixed, 53 weak tests rewritten.
    Summary: `docs/audit/README.md`.
 
@@ -23,7 +25,7 @@ What changed since you said it was ugly (PLAN D20):
 1. **Look.** Is the board now in the right direction against Shadowforge, or what still reads as ugly? Name the
    screen and the thing (PLAN D20 picks were art, flat board, frames and type).
 2. **Sound.** Nothing has been heard by anyone: NOT VERIFIED BY EAR. Please listen in Settings (sound test) and to
-   the music. EVILAEGIS flagged Brakk's roar as possibly a low growl.
+   the music. Brakk's roar is now a sound effect, not a voice line.
 3. **Art misses** I noticed on the sample sheet: Ascended Jax wears a dark shirt (not his teal suit), Ysolde holds a
    flaming staff (a shield captain), Sluice Close shows soldiers at a gate (not a canal freezing). Re-roll these, or
    are they fine?
