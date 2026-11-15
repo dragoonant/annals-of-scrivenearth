@@ -10,7 +10,8 @@
     "e2e": "playwright test",
     "sim": "tsx tools/sim.ts",
     "bench": "tsx tools/bench.ts",
-    "gate": "tsx tools/gate.ts"
+    "gate": "tsx tools/gate.ts",
+    "audit": "tsx tools/audit.ts --warn"
   },
   "repository": {
     "type": "git",

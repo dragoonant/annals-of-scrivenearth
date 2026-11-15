@@ -4,6 +4,9 @@ import { spawnSync } from 'node:child_process';
 const steps: [string, string, string[]][] = [
   ['typecheck', 'npx', ['tsc', '--noEmit']],
   ['unit + card + sim tests', 'npx', ['vitest', 'run']],
+  ['audit selftest', 'npx', ['tsx', 'tools/audit.ts', '--selftest']],
+  ['audit: printed text vs data, every card face', 'npx', ['tsx', 'tools/audit.ts']],
+  ['art prompt lint', 'npx', ['tsx', 'tools/art/build-prompts.ts']],
   ['bench: AI vs random, 60 games', 'npx', ['tsx', 'tools/sim.ts', '--games', '60', '--a', 'normal', '--b', 'random', '--allpairs', '--replay']],
   ['build', 'npx', ['vite', 'build']],
   ['e2e', 'npx', ['playwright', 'test']],
