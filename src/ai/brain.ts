@@ -23,6 +23,11 @@ const W = {
   kw: { aerial: 1.5, pierce: 0.8, vanguard: 0.7, plated: 1.2, siphon: 1.0, ward: 1.5, dueler: 0.8, dread: 1.0, mend: 0.8, corrosive: 1.5, spotter: 0.3, unstable: 0 } as Record<string, number>,
   unstable: 0.25, // an Unstable unit is gone at Dusk: only its strike this round matters
   eps: 0.05,
+  // Boards stall when both sides only take attacks that win outright (10 of 60 mirror games ended by empty deck,
+  // BALANCE B-1). The first attacker of a round gets a bonus that grows with the round and with a full Line.
+  tempoBase: 0.3,
+  tempoPerRound: 0.08,
+  tempoFullLine: 1.0,
 };
 
 function unitValue(s: GameState, u: Unit): number {
@@ -201,8 +206,11 @@ export function decide(v: GameState, seat: Seat, level: Difficulty, rnd: () => n
     // An attack is judged by its first attacker; the rest are added in the declare phase.
     for (const a of acts) {
       if (a.type !== 'declare') continue;
-      const gain = after(base, seat, a) + noise() - baseline;
-      if (gain >= W.win / 2) return a; // lethal: take it now
+      const raw = after(base, seat, a) + noise() - baseline;
+      if (raw >= W.win / 2) return a; // lethal: take it now
+      if (raw <= -W.win / 2) continue;
+      const full = v.players[seat].line.length >= 6 ? W.tempoFullLine : 0;
+      const gain = raw + W.tempoBase + W.tempoPerRound * v.round + full;
       if (gain > bestGain) { bestGain = gain; best = a; }
     }
   }

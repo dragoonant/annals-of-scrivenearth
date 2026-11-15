@@ -32,7 +32,7 @@ if (flag('allpairs')) {
 if (decks.length < 2) { console.error('fewer than 2 legal decks: the card pool is not ready'); process.exit(2); }
 
 let aWins = 0, bWins = 0, draws = 0, firstWins = 0, decisive = 0, rounds = 0, capped = 0, ms = 0;
-const empty = [0, 0], played = [0, 0], asc = [0, 0], att = [0, 0], blk = [0, 0], gly = [0, 0];
+const idle = [0, 0], empty = [0, 0], played = [0, 0], asc = [0, 0], att = [0, 0], blk = [0, 0], gly = [0, 0];
 const byReason: Record<string, number> = {};
 const deckWins: Record<string, [number, number]> = {};
 const problems: string[] = [];
@@ -56,6 +56,7 @@ for (let g = 0; g < games; g++) {
     (deckWins[wn] ??= [0, 0])[0] += 1; (deckWins[ln] ??= [0, 0])[1] += 1;
   }
   const bSeat = aSeat === 0 ? 1 : 0;
+  idle[0] += r.idleRounds[aSeat]; idle[1] += r.idleRounds[bSeat];
   empty[0] += r.emptyRounds[aSeat]; empty[1] += r.emptyRounds[bSeat];
   played[0] += r.roundsPlayed[aSeat]; played[1] += r.roundsPlayed[bSeat];
   asc[0] += r.ascensions[aSeat]; asc[1] += r.ascensions[bSeat];
@@ -66,7 +67,7 @@ for (let g = 0; g < games; g++) {
 const pct = (n: number, d: number): string => (d ? `${((100 * n) / d).toFixed(1)}%` : 'n/a');
 console.log(`${games} games, ${A} vs ${B}, ${decks.length} decks${flag('mirror') ? ' (mirror)' : ''}: ${A} ${aWins} / ${B} ${bWins} / draws ${draws} (decisive only: ${pct(aWins, decisive)})`);
 console.log(`first player wins ${pct(firstWins, decisive)} of decisive games; avg ${(rounds / games).toFixed(1)} rounds; capped ${capped}; ${(ms / games).toFixed(0)} ms/game; ends: ${JSON.stringify(byReason)}`);
-console.log(`per game  ${A}: empty rounds ${pct(empty[0], played[0])}, ascensions ${(asc[0] / games).toFixed(2)}, attacks ${(att[0] / games).toFixed(1)}, blocks ${(blk[0] / games).toFixed(1)}, glyphs ${(gly[0] / games).toFixed(1)}`);
-console.log(`per game  ${B}: empty rounds ${pct(empty[1], played[1])}, ascensions ${(asc[1] / games).toFixed(2)}, attacks ${(att[1] / games).toFixed(1)}, blocks ${(blk[1] / games).toFixed(1)}, glyphs ${(gly[1] / games).toFixed(1)}`);
+console.log(`per game  ${A}: empty rounds ${pct(empty[0], played[0])} (idle with options ${pct(idle[0], played[0])}), ascensions ${(asc[0] / games).toFixed(2)}, attacks ${(att[0] / games).toFixed(1)}, blocks ${(blk[0] / games).toFixed(1)}, glyphs ${(gly[0] / games).toFixed(1)}`);
+console.log(`per game  ${B}: empty rounds ${pct(empty[1], played[1])} (idle with options ${pct(idle[1], played[1])}), ascensions ${(asc[1] / games).toFixed(2)}, attacks ${(att[1] / games).toFixed(1)}, blocks ${(blk[1] / games).toFixed(1)}, glyphs ${(gly[1] / games).toFixed(1)}`);
 if (flag('decks')) for (const [n, [w, l]] of Object.entries(deckWins).sort((x, y) => y[1][0] / (y[1][0] + y[1][1]) - x[1][0] / (x[1][0] + x[1][1]))) console.log(`  ${n.padEnd(18)} ${w}-${l} ${pct(w, w + l)}`);
 if (problems.length) { console.log(`PROBLEMS (${problems.length}):\n${problems.slice(0, 10).join('\n')}`); process.exit(1); }

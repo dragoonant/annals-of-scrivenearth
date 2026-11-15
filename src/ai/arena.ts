@@ -16,6 +16,8 @@ export interface GameResult {
   /** Rounds in which a seat took no action at all. */
   emptyRounds: [number, number];
   roundsPlayed: [number, number];
+  /** Empty rounds in which the seat could have played a card or attacked (the behaviour to drive to zero). */
+  idleRounds: [number, number];
   ascensions: [number, number];
   attacks: [number, number];
   blocksMade: [number, number];
@@ -79,16 +81,17 @@ export function playGame(setup: Setup, policies: [Policy, Policy], opts: { maxAc
   const actions: Action[] = [];
   const problems: string[] = [];
   const res: GameResult = {
-    winner: null, reason: null, rounds: 0, actions: 0, emptyRounds: [0, 0], roundsPlayed: [0, 0], ascensions: [0, 0],
+    winner: null, reason: null, rounds: 0, actions: 0, emptyRounds: [0, 0], roundsPlayed: [0, 0], idleRounds: [0, 0], ascensions: [0, 0],
     attacks: [0, 0], blocksMade: [0, 0], glyphs: [0, 0], firstSeat: 0, problems, ms: 0,
   };
   let lastRound = 0;
   let acted: [number, number] = [0, 0];
+  let could: [boolean, boolean] = [false, false];
   const closeRound = (): void => {
     if (lastRound === 0) return;
     for (const seat of [0, 1] as Seat[]) {
       res.roundsPlayed[seat] += 1;
-      if (acted[seat] === 0) res.emptyRounds[seat] += 1;
+      if (acted[seat] === 0) { res.emptyRounds[seat] += 1; if (could[seat]) res.idleRounds[seat] += 1; }
     }
   };
   const max = opts.maxActions ?? 4000;
@@ -97,10 +100,12 @@ export function playGame(setup: Setup, policies: [Policy, Policy], opts: { maxAc
       closeRound();
       if (lastRound === 0 && s.round === 1) res.firstSeat = s.initiative;
       lastRound = s.round;
+      could = [false, false];
     }
     acted = [s.acted[0], s.acted[1]];
     const seat = s.priority;
     const v = view(s, seat);
+    if (legalActions(s).some((x) => x.type === 'play' || x.type === 'declare')) could[seat] = true;
     let a: Action;
     try {
       a = policies[seat](v, seat, rnd);
