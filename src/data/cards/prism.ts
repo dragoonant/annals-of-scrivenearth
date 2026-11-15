@@ -26,7 +26,7 @@ export const prism: CardDef[] = [
     level: { who: 'self', stat: 'survivals', n: 3, text: "I've survived damage 3+ times" },
     ascended: {
       name: 'Oren, Unbroken', power: 5, health: 8, keywords: ['spotter', 'plated'],
-      text: 'Spotter, Plated. When I survive damage, I get +1|+0 and deal 2 to the strongest enemy. Ascend: repair your Spire by 4.',
+      text: 'Spotter, Plated. When I survive damage, I get +1|+0 and deal 2 to the enemy with the highest power. Ascend: repair your Spire by 4.',
       abilities: [
         { on: 'survive', ops: [{ op: 'buff', to: 'self', power: 1 }, { op: 'damage', to: 'strongestEnemy', n: 2 }] },
         { on: 'ascend', ops: [{ op: 'heal', to: 'mySpire', n: 4 }] },
@@ -40,7 +40,7 @@ export const prism: CardDef[] = [
   },
   {
     id: 'prism-lampkeeper', name: 'Lamp-Keeper', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 2,
-    keywords: ['spotter'], tribe: 'warden', text: 'Spotter. Dusk: repair the weakest ally by 1.',
+    keywords: ['spotter'], tribe: 'warden', text: 'Spotter. Dusk: repair the ally with the lowest power by 1.',
     abilities: [{ on: 'dusk', ops: [{ op: 'heal', to: 'weakestAlly', n: 1 }] }],
   },
   {

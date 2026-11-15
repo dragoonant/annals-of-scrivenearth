@@ -158,7 +158,7 @@ function placeCoach(screen: HTMLElement, layer: HTMLElement, ctx: CoachCtx, avoi
     [(vw - w) / 2, vh - hh - pad],
   ];
   // things worth keeping visible when there is room: the pairs in the battle row, the stack, the action bar
-  const soft: Box[] = [...screen.querySelectorAll('.pair, .sitem, .actionbar')].map((e) => boxOf(e));
+  const soft: Box[] = [...screen.querySelectorAll('.pair, .sitem, .actionbar, .line.opp .unit')].map((e) => boxOf(e));
   const cost = (s: [number, number], keep: Box[]): number => {
     const b: Box = { l: s[0], t: s[1], r: s[0] + w, b: s[1] + hh };
     return keep.reduce((n, k) => n + overlap(b, k), 0);

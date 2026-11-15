@@ -22,7 +22,7 @@ export const coil: CardDef[] = [
     level: { who: 'self', stat: 'damageDealt', n: 10, text: "I've dealt 10+ damage" },
     ascended: {
       name: 'Brakk, Apex', power: 8, health: 8, keywords: ['pierce', 'mend'],
-      text: 'Pierce, Mend. Strike: I get +1|+1. Ascend: you may attack again this round.',
+      text: 'Pierce, Mend. Strike: I get +1|+1. Ascend: you get one more attack this round.',
       abilities: [
         { on: 'strike', ops: [{ op: 'buff', to: 'self', power: 1, health: 1 }] },
         { on: 'ascend', ops: [{ op: 'rally' }] },
@@ -70,7 +70,7 @@ export const coil: CardDef[] = [
   },
   {
     id: 'coil-lashvine', name: 'Lashvine Brute', faction: 'coil', type: 'unit', cost: 3, power: 2, health: 3,
-    tribe: 'beast', text: 'Assault: I strike the weakest enemy.',
+    tribe: 'beast', text: 'Assault: I strike the enemy with the lowest power.',
     abilities: [{ on: 'assault', ops: [{ op: 'strike', from: 'self', to: 'weakestEnemy' }] }],
   },
   {
@@ -114,13 +114,13 @@ export const coil: CardDef[] = [
   },
   {
     id: 'coil-duel-of-thorns', name: 'Duel of Thorns', faction: 'coil', type: 'glyph', cost: 2, speed: 'swift',
-    text: 'An ally and an enemy unit strike each other.',
+    text: 'Choose up to two targets, an ally and an enemy unit. They strike each other.',
     targets: [{ what: 'unit', side: 'ally' }, { what: 'unit', side: 'enemy' }],
     ops: [{ op: 'duel', a: 'target0', b: 'target1' }],
   },
   {
     id: 'coil-lash-out', name: 'Lash Out', faction: 'coil', type: 'glyph', cost: 3, speed: 'swift',
-    text: 'An ally strikes an enemy unit.',
+    text: 'Choose up to two targets, an ally and an enemy unit. The ally strikes the enemy.',
     targets: [{ what: 'unit', side: 'ally' }, { what: 'unit', side: 'enemy' }],
     ops: [{ op: 'strike', from: 'target0', to: 'target1' }],
   },
@@ -132,7 +132,7 @@ export const coil: CardDef[] = [
   },
   {
     id: 'coil-canopy-rampage', name: 'Canopy Rampage', faction: 'coil', type: 'glyph', cost: 5, speed: 'swift',
-    text: 'Each ally with 4+ power strikes the strongest enemy.',
+    text: 'Pick the enemy with the highest power now; each ally with 4+ power strikes it.',
     ops: [{ op: 'strike', from: { from: 'allies', filter: { minPower: 4 } }, to: 'strongestEnemy' }],
   },
   {
