@@ -1,4 +1,5 @@
 import './style.css';
+import './polish.css';
 import { App } from './app';
 
 const root = document.getElementById('root');
