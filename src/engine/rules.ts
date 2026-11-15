@@ -772,7 +772,7 @@ function whyNotTargets(s: GameState, seat: Seat, iid: string, targets: string[])
   return choices.length && choices[0].length > 0 ? 'Choose a legal target' : 'This card takes no target';
 }
 
-function whyNotDeclare(s: GameState, seat: Seat, unitId: string, duel?: string): string | null {
+export function whyNotDeclare(s: GameState, seat: Seat, unitId: string, duel?: string): string | null {
   if (s.priority !== seat) return 'Not your turn to act';
   if (s.phase !== 'main' && s.phase !== 'declare') return 'An attack is already under way';
   if (s.phase === 'main' && s.stack.length > 0) return 'Cannot attack while glyphs are waiting to resolve';
@@ -792,7 +792,7 @@ function whyNotDeclare(s: GameState, seat: Seat, unitId: string, duel?: string):
   return null;
 }
 
-function whyNotBlockAction(s: GameState, seat: Seat, unitId: string, attId: string): string | null {
+export function whyNotBlockAction(s: GameState, seat: Seat, unitId: string, attId: string): string | null {
   if (s.phase !== 'block' || s.priority !== seat || !s.combat) return 'There is nothing to block right now';
   const u = s.players[seat].line.find((x) => x.iid === unitId);
   if (!u) return 'That unit is not on your Line';
