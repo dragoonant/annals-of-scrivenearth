@@ -120,8 +120,8 @@ export function unitEl(view: GameState, u: Unit, extra = ''): HTMLElement {
     h('span', { class: 'u-cost', text: String(cd.cost) }),
     d.keywords.length ? kwIcons(d.keywords.slice(0, 5), 'u-kws') : null,
     h('span', { class: 'u-marks' },
-      buff ? h('span', { class: 'u-mark buff', text: 'RND' }) : null,
-      u.silenced ? h('span', { class: 'u-mark sil', text: 'SIL' }) : null,
+      buff ? h('span', { class: 'u-mark buff', attrs: { 'aria-label': 'buffed this round' } }) : null,
+      u.silenced ? h('span', { class: 'u-mark sil', attrs: { 'aria-label': 'silenced' } }) : null,
     ),
     h('span', { class: 'u-name', text: d.f.name }),
     h(

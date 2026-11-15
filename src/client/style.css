@@ -533,9 +533,8 @@ h1, h2, h3, p { margin: 0; }
 #root.mode-short .s-who { display: none; }
 #root.mode-short .init, #root.mode-short .canatk { font-size: 0.9rem; padding: 0.1rem 0.5rem; letter-spacing: 0.06em; }
 #root.mode-short .s-cells { gap: 0.3rem; }
-#root.mode-short .s-lbl { display: none; }
-#root.mode-short .s-cells::before { font-family: var(--head); font-size: 1rem; width: 1.2rem; color: var(--ink2); }
-#root.mode-short .s-cells:nth-of-type(1)::before { content: 'C'; } 
+#root.mode-short .s-lbl { display: inline-block; font-size: 0; min-width: 1.1rem; margin: 0; }
+#root.mode-short .s-lbl::first-letter { font-size: 1.1rem; }
 #root.mode-short .cell { width: 0.85rem; height: 1.25rem; }
 #root.mode-short .cells { gap: 0.15rem; }
 #root.mode-short .s-num { font-size: 1.1rem; }

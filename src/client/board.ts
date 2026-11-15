@@ -507,7 +507,7 @@ function sidePanel(v: GameState, seat: Seat, tg: Targets, canTargetSpire: boolea
       h('div', { class: 's-flags' },
         h('div', { class: 's-who', text: seat === 0 ? 'YOU' : 'OPPONENT' }),
         holds ? h('span', { class: 'init', text: 'INITIATIVE' }) : null,
-        p.canAttack && v.phase !== 'over' ? h('span', { class: 'canatk', text: 'CAN ATTACK' }) : null,
+        p.canAttack && v.phase !== 'over' ? h('span', { class: 'canatk', text: p.extraAttacks > 0 ? `CAN ATTACK +${p.extraAttacks}` : 'CAN ATTACK' }) : null,
       ),
     ),
     h('div', { class: 's-cells' }, h('span', { class: 's-lbl', text: 'CHARGE' }), cells(p.charge, p.maxCharge, 'charge'), h('span', { class: 's-num', text: `${p.charge}/${p.maxCharge}` })),
@@ -651,6 +651,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
   } else {
     battle.append(h('div', { class: 'battle-empty', text: 'BATTLE ROW' }));
   }
+  battle.append(h('span', { class: 'roundtag', text: `ROUND ${v.round}` }));
   board.append(h('div', { class: 'a-battle' }, battle));
 
   // stack
