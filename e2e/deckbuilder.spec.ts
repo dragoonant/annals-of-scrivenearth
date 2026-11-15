@@ -219,3 +219,38 @@ test('a damaged saved-deck list is reported as a visible line, not dropped silen
   await expect(page.locator('.bd-storage')).toContainText('unreadable');
   expect(errs).toEqual([]);
 });
+
+test('end screen: winner, reason, heroes, totals, and a bug report download', async ({ page }) => {
+  const errs = watch(page);
+  await page.goto(url('skiptitle=1&seed=21&bot=random'));
+  await page.click('[data-action=mulligan]');
+  await page.waitForFunction(() => window.__sv.idle() && window.__sv.state().priority === 0);
+  await page.evaluate(() => window.__sv.act({ type: 'pass' }));
+  await page.waitForFunction(() => window.__sv.idle() && window.__sv.state().priority === 0);
+  await page.evaluate(() => window.__sv.act({ type: 'concede' }));
+  await expect(screen(page)).toHaveAttribute('data-screen', 'end');
+  await expect(page.locator('.end-head')).toHaveText('Defeat');
+  await expect(page.locator('.end-who')).toContainText('You conceded');
+  await expect(page.locator('.end-why')).toContainText('conceded');
+  await expect(page.locator('.end-rounds')).toContainText('round');
+  await expect(page.locator('.end-col')).toHaveCount(2);
+  expect(await page.locator('.end-col').first().locator('.row').count()).toBeGreaterThan(0);
+  await expect(page.locator('.end-col').first()).toContainText('Damage to the enemy Spire');
+  await expect(page.locator('.end-col').first()).toContainText('Enemy units destroyed');
+  await expect(page.locator('.end-col').first()).toContainText('Glyphs cast');
+  expect(await badText(page)).toBeNull();
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.click('[data-ui=bugreport]')]);
+  expect(dl.suggestedFilename()).toMatch(/^scrivenearth-bug-21-\d+\.json$/);
+  const path = await dl.path();
+  const { readFileSync } = await import('node:fs');
+  const rep = JSON.parse(readFileSync(path!, 'utf8'));
+  expect(rep.seed).toBe(21);
+  expect(rep.setup.decks).toHaveLength(2);
+  expect(Array.isArray(rep.actions)).toBe(true);
+  expect(rep.actions.at(-1)).toEqual({ type: 'concede' });
+  expect(rep.save.snapshot.phase).toBe('over');
+  expect(rep.save.game).toBe('annals-of-scrivenearth');
+  expect(typeof rep.userAgent).toBe('string');
+  expect(rep.userAgent.length).toBeGreaterThan(5);
+  expect(errs).toEqual([]);
+});
