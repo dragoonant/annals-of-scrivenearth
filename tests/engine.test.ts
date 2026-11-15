@@ -154,6 +154,20 @@ describe('combat', () => {
     expect(applyAction(s, { type: 'declare', unit: unit(s, 0, 'zz-grunt').iid }).error).toMatch(/already attacked/);
   });
 
+  it('R-B1 a rally before the first attack banks a second attack', () => {
+    const s = board({ hand: [['storm-reroute'], []], line: [['zz-grunt'], []] });
+    play(s, 'storm-reroute');
+    while (s.stack.length) pass(s);
+    expect(s.players[0].extraAttacks).toBe(1);
+    if (s.priority !== 0) pass(s);
+    attack(s, [unit(s, 0, 'zz-grunt')]); resolveCombat(s);
+    expect(s.players[0].canAttack).toBe(true);
+    pass(s);
+    attack(s, [unit(s, 0, 'zz-grunt')]); resolveCombat(s);
+    expect(s.players[0].canAttack).toBe(false);
+    expect(s.players[1].spire).toBe(16);
+  });
+
   it('R-B5/R-B6 blocked units strike each other at the same time; damage stays', () => {
     const s = board({ line: [['zz-ogre'], ['zz-grunt', 'zz-wall']] });
     const o = unit(s, 0, 'zz-ogre');

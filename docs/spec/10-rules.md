@@ -49,7 +49,8 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 
 ## Battle (R-B)
 - **R-B1.** The Initiative holder may declare one attack a round, in the main phase with an empty stack. A **rally**
-  effect lets a player attack again (and lets the other player attack if they gain it).
+  effect always gives one more attack this round: if the round's attack is still unused the extra one is banked
+  (and it lets a player without the Initiative attack).
 - **R-B2 Declare.** The attacker picks any of their units not in Stasis, in order; that order is the strike order.
   Attackers may be withdrawn until the attack is locked in. Assault abilities fire when it is locked in.
 - **R-B3 Block.** The defender assigns at most one blocker to each attacker; a unit blocks one attacker. Units in Stasis

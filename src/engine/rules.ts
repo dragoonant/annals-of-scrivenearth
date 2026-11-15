@@ -65,7 +65,7 @@ function newPlayer(deck: string[]): PlayerState {
   const heroes = [...new Set(deck.filter((id) => hasCard(id) && def(id).type === 'hero'))];
   return {
     spire: LIMITS.spire, charge: 0, maxCharge: 0, reserve: 0, deck: [...deck], hand: [], line: [], scrap: [],
-    seen: {}, seenRound: {}, ascended: [], heroes, canAttack: false, mulliganed: false,
+    seen: {}, seenRound: {}, ascended: [], heroes, canAttack: false, extraAttacks: 0, mulliganed: false,
     deckList: [...deck].sort(),
   };
 }
@@ -522,7 +522,9 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
       return;
     }
     case 'rally':
-      if (!p.canAttack) { p.canAttack = true; log(s, { k: 'rally', seat: ctx.seat, via: ctx.via }); }
+      // R-B1: a rally is always one more attack, even if this round's attack has not been used yet.
+      if (p.canAttack) p.extraAttacks += 1; else p.canAttack = true;
+      log(s, { k: 'rally', seat: ctx.seat, via: ctx.via });
       return;
     case 'strike': {
       const tos = resolve(s, ctx, op.to);
@@ -568,6 +570,7 @@ function startRound(s: GameState): void {
     p.maxCharge = Math.min(LIMITS.maxCharge, p.maxCharge + 1);
     p.charge = p.maxCharge;
     p.canAttack = seat === s.initiative;
+    p.extraAttacks = 0;
     p.seenRound = {};
   }
   s.priority = s.initiative;
@@ -1009,7 +1012,7 @@ export function applyAction(s: GameState, a: Action): Result {
 
     case 'attack': {
       if (s.phase !== 'declare' || !s.combat || s.combat.pairs.length === 0) return refuse('Choose at least one attacker');
-      p.canAttack = false;
+      if (p.extraAttacks > 0) p.extraAttacks -= 1; else p.canAttack = false;
       s.acted[seat] += 1;
       bump(s, seat, 'attackersDeclared', s.combat.pairs.length);
       log(s, { k: 'attack', seat, n: s.combat.pairs.length });

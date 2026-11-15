@@ -285,6 +285,8 @@ export interface PlayerState {
   heroes: string[];
   /** May declare an attack this round. */
   canAttack: boolean;
+  /** Further attacks banked by rally effects while an attack was still available (R-B1). */
+  extraAttacks: number;
   mulliganed: boolean;
   /** Full deck list, sorted, for the deck viewer (your own only in a view). */
   deckList: string[];
