@@ -123,6 +123,12 @@ engine gives a reason, and that reason is shown on hover/press next to the contr
   scrollbars at 1366x768, 1920x1080 and 844x390 (phone landscape). Phone portrait (390x844) shows a "rotate your
   device" overlay and has no board layout yet (PLAN D15); the unused tall-board styles are to be removed or finished
   when portrait is taken up.
+  RULING (2026-11-15, owner on a foldable's inner screen: "the text is so small I can't read anything", the battle row
+  too large, the opponent's hand strip wasted): the board is chosen by the unit it would get, not by the window's
+  shape. The wide board is used while its unit is at least 9 px; otherwise the compact board (tall or short) with the
+  larger unit is used, so text is never smaller than on a phone. A compact board with height to spare gives it to the
+  hand and the Lines (capped at the wide board's card sizes), never only to the battle row. 900x640 (landscape inner
+  screen) and 1024x768 are supported sizes alongside the three above; 640x900 is portrait and shows the rotate overlay.
 - Escape every string inserted into HTML, including apostrophes in attributes; prefer `textContent` and DOM APIs.
 
 ## Test hooks
