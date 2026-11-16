@@ -523,8 +523,12 @@ img.art { object-fit: cover; object-position: 50% 32%; }
 #root.mode-tall .big-btn b { font-size: 1.6rem; }
 
 /* phone landscape (844x390): 1rem = 10px, no type under 1rem */
-#root.mode-short { --uw: 8.6rem; --uh: 8rem; --lgap: 0.4rem; --cw: 6.8rem; --ch: 8.8rem; --bw: 5.6rem; --bh: 5rem; --stackw: 13.4rem; --wm: 5.2rem; --mw: 10rem; --mh: 15rem; font-size: 1rem; }
-#root.mode-short .board { grid-template-columns: 11.4rem 1fr 13.4rem; grid-template-rows: 8rem 1fr 8rem 4.8rem 8.8rem;
+/* The short board is designed for 844x390. A screen with the same width but more height (a foldable's inner screen in
+   landscape) keeps the unit the width allows and has height to spare: that spare goes to the hand (half) and the two
+   Lines (a quarter each), capped at the wide board's card sizes, instead of all of it widening the battle row. Units
+   may grow taller than wide; their width is also held to a sixth of the centre column. At 844x390 nothing changes. */
+#root.mode-short { --spare: max(0rem, calc(100dvh - 41rem)); --uh: min(11rem, calc(8rem + var(--spare) * 0.25)); --uw: max(8.6rem, min(calc(var(--uh) * 1.075), calc((100vw - 29rem) / 6))); --lgap: 0.4rem; --ch: min(14rem, calc(8.8rem + var(--spare) * 0.5)); --cw: calc(var(--ch) * 0.773); --bw: 5.6rem; --bh: 5rem; --stackw: 13.4rem; --wm: 5.2rem; --mw: 10rem; --mh: 15rem; font-size: 1rem; }
+#root.mode-short .board { grid-template-columns: 11.4rem 1fr 13.4rem; grid-template-rows: var(--uh) 1fr var(--uh) 4.8rem var(--ch);
   grid-template-areas: "opp oppline stack" "opp battle stack" "me meline stack" "me action action" "me hand hand"; }
 #root.mode-short .board.nostack { grid-template-columns: 11.4rem 1fr; grid-template-areas: "opp oppline" "opp battle" "me meline" "me action" "me hand"; }
 #root.mode-short .board.nostack .a-stack { display: none; }
@@ -585,7 +589,9 @@ img.art { object-fit: cover; object-position: 50% 32%; }
 #root.mode-short .btn.small { padding: 0.3rem 0.7rem; font-size: 0.95rem; }
 #root.mode-short .menubtns { flex-direction: column; gap: 0.2rem; }
 #root.mode-short .hand-card { --cut: 0.8rem; }
-#root.mode-short .hand-card .c-text, #root.mode-short .hand-card .c-type { display: none; }
+#root.mode-short .hand-card .c-type { display: none; }
+/* Card text appears once the hand has grown past the 844x390 card (no height at --ch 8.8rem; three lines at 14rem). */
+#root.mode-short .hand-card .c-text { height: max(0rem, calc((var(--ch) - 9rem) * 0.8)); padding: 0 0.5rem; font-size: 1rem; line-height: 1.2; }
 #root.mode-short .hand-card .c-top { padding: 0.25rem 0.3rem; gap: 0.3rem; }
 #root.mode-short .hand-card .c-name { font-size: 1rem; }
 #root.mode-short .cost { min-width: 1.7rem; height: 1.7rem; font-size: 1.1rem; }

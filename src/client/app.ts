@@ -234,18 +234,14 @@ export class App {
   layout(): void {
     const w = window.innerWidth;
     const hh = window.innerHeight;
-    let mode: 'wide' | 'short' | 'tall';
-    let u: number;
-    if (hh > w) {
-      mode = 'tall';
-      u = Math.min(w / 39, hh / 84.4);
-    } else if (hh < 560) {
-      mode = 'short';
-      u = Math.min(w / 84.4, hh / 39);
-    } else {
-      mode = 'wide';
-      u = Math.min(w / 136.6, hh / 76.8);
-    }
+    // The unit each board design would get on this screen (design sizes in units: wide 136.6x76.8, short 84.4x39,
+    // tall 39x84.4). The wide board (three columns, opponent hand across the top) is kept while its unit stays at
+    // least 9 px (1280x720 and up); below that a near-square screen (a foldable's inner screen, a tablet) takes
+    // whichever compact board gives it the larger unit, so text never shrinks under phone size to make room for the
+    // desktop layout (50-client.md RULING, 2026-11-15: a 900x640 inner screen had 9 px body text in the wide board).
+    const fit = { wide: Math.min(w / 136.6, hh / 76.8), short: Math.min(w / 84.4, hh / 39), tall: Math.min(w / 39, hh / 84.4) };
+    const mode: 'wide' | 'short' | 'tall' = fit.wide >= 9 ? 'wide' : fit.tall >= fit.short ? 'tall' : 'short';
+    const u = fit[mode];
     document.documentElement.style.setProperty('--u', `${u.toFixed(3)}px`);
     this.root.dataset.mode = mode;
     this.root.className = this.root.className.replace(/\bmode-\w+/g, '').trim();
