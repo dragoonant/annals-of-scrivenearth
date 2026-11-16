@@ -39,6 +39,11 @@ What changed since you said it was ugly (PLAN D20):
   studios are stopped. Its write-up: `docs/handback/gpu.md`.
 
 ## Not done / known rough edges
+- `e2e/flows.spec.ts` "(d) a full Line" (seed 4) ends in defeat before the Line fills on EVILAEGIS (Windows),
+  four runs in a row, but passes here (Linux container) five runs in a row. The seeded game differs between the two
+  machines; the cause is not found yet (suspects: a timing-dependent path in the client's AI turn loop, or the
+  test's own waiting). The engine replay tests are deterministic on this machine.
+- The bug-report download test fails on EVILAEGIS with a Windows file-permission error; it passes here.
 - My own visual pass was short (`src/client/polish.css`): painted backdrops, frames, unit size. Not yet compared side
   by side with Shadowforge screenshots (owner rule 21 gate), and the right-hand stack panel is empty most of the time.
 - The board backdrop plate is 640 px wide and is shown blurred; a larger render would look better.
