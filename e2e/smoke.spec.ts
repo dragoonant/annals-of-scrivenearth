@@ -163,3 +163,34 @@ test('save: continue after reopening, and a corrupt save is explained', async ()
   await expect(page.locator('.note-box')).toHaveCount(0);
   await ctx.close();
 });
+
+// 50-client.md RULING 2026-11-15: a foldable's inner screen (near-square) gets a compact board with a phone-sized unit, never
+// the wide board shrunk until its text is unreadable; spare height goes to the hand and the Lines, not only the battle row.
+test('a foldable inner screen (900x640) keeps phone-sized text, no scrollbars, battle row under a third; portrait rotates', async ({ browser }) => {
+  for (const [w, h, mode] of [[900, 640, 'short'], [1024, 768, 'short'], [1280, 720, 'wide']] as const) {
+    const ctx = await browser.newContext({ viewport: { width: w, height: h } });
+    const page = await ctx.newPage();
+    await page.goto(url('skiptitle=1&seed=4&bot=random'));
+    await page.click('[data-action=mulligan]');
+    await expect(page.locator('#root')).toHaveAttribute('data-screen', 'board');
+    const m = await page.evaluate(() => ({
+      mode: document.getElementById('root')!.dataset.mode, u: parseFloat(getComputedStyle(document.documentElement).fontSize),
+      battle: document.querySelector('.a-battle')!.getBoundingClientRect().height, hand: document.querySelector('.hand-card')!.getBoundingClientRect().height,
+      sw: document.documentElement.scrollWidth, iw: innerWidth, sh: document.documentElement.scrollHeight, ih: innerHeight,
+      boardOver: (() => { const b = document.querySelector('.board')!; return b.scrollHeight > b.clientHeight + 1 || b.scrollWidth > b.clientWidth + 1; })(),
+    }));
+    expect(m.mode, `${w}x${h}`).toBe(mode);
+    expect(m.u, `${w}x${h} unit`).toBeGreaterThanOrEqual(mode === 'wide' ? 9 : 10); // the wide board keeps 9 px and up; a compact board never under the phones' 10 px
+    expect(m.battle, `${w}x${h} battle row`).toBeLessThan(h / 3);
+    expect(m.hand, `${w}x${h} hand card`).toBeGreaterThanOrEqual(10 * 8.8); // at least the phone-landscape card
+    expect(m.sw).toBeLessThanOrEqual(m.iw);
+    expect(m.sh).toBeLessThanOrEqual(m.ih);
+    expect(m.boardOver).toBe(false);
+    await ctx.close();
+  }
+  const ctx = await browser.newContext({ viewport: { width: 640, height: 900 } });
+  const page = await ctx.newPage();
+  await page.goto(url('skiptitle=1&seed=4'));
+  await expect(page.locator('.rotate')).toBeVisible();
+  await ctx.close();
+});
