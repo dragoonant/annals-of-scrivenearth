@@ -362,16 +362,20 @@ export function placeInspector(box: HTMLElement, anchor: Element): void {
   const tries: (() => Try | null)[] = [];
   const above = (): Try | null => { const m = measure(fullW); return { x: clampX(r.left + r.width / 2 - m.w / 2, m.w), y: r.top - m.h - gap, w: m.w, h: m.h }; };
   const below = (): Try | null => { const m = measure(fullW); return { x: clampX(r.left + r.width / 2 - m.w / 2, m.w), y: r.bottom + gap, w: m.w, h: m.h }; };
+  // A side is usable only when the box still fits there at its stylesheet floor (min-width): the compact board's
+  // inspector keeps its text column readable and falls through to above/below instead of squeezing to a sliver.
   const right = (): Try | null => {
     const avail = vw - pad - (r.right + gap);
     if (avail < 230) return null;
     const m = measure(Math.min(fullW, avail));
+    if (m.w > avail + 0.5) return null;
     return { x: r.right + gap, y: clampY(r.top + r.height / 2 - m.h / 2, m.h), w: m.w, h: m.h };
   };
   const left = (): Try | null => {
     const avail = r.left - gap - pad;
     if (avail < 230) return null;
     const m = measure(Math.min(fullW, avail));
+    if (m.w > avail + 0.5) return null;
     return { x: r.left - gap - m.w, y: clampY(r.top + r.height / 2 - m.h / 2, m.h), w: m.w, h: m.h };
   };
   if (inHand) tries.push(above, right, left);

@@ -451,10 +451,10 @@ img.art { object-fit: cover; object-position: 50% 32%; }
 .big-name { font-family: var(--head); font-weight: 700; font-size: 1.8rem; line-height: 1.1; }
 .big .artbox { position: relative; inset: auto; height: 12rem; flex: none; border: 1px solid rgba(190, 225, 255, 0.3); }
 .big-type { display: flex; gap: 0.6rem; align-items: center; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.08em; font-size: 1.1rem; }
-.ins-stats { display: flex; gap: 1.6rem; }
+.ins-stats { display: flex; flex-wrap: wrap; gap: 0.2rem 1.6rem; }
 .ins-stat { display: flex; gap: 0.6rem; align-items: baseline; }
 .ins-stat .lbl { margin: 0; }
-.ins-stat .val { font-family: var(--head); font-size: 2rem; font-weight: 700; }
+.ins-stat .val { font-family: var(--head); font-size: 2rem; font-weight: 700; white-space: nowrap; }
 .printed { color: var(--ink2); font-size: 1rem; }
 .big-text { font-size: 1.4rem; line-height: 1.4; }
 .kw-help { display: flex; flex-direction: column; gap: 0.35rem; border-top: 1px solid rgba(190, 225, 255, 0.25); padding-top: 0.6rem; font-size: 1.1rem; color: var(--ink2); line-height: 1.35; }
@@ -606,8 +606,13 @@ img.art { object-fit: cover; object-position: 50% 32%; }
 #root.mode-short .mull-panel { padding: 1rem 1.6rem; gap: 0.8rem; } #root.mode-short .mull-panel h2 { font-size: 1.8rem; } #root.mode-short .mull-hand { flex-wrap: nowrap; gap: 0.8rem; }
 #root.mode-short .mull .hand-card .c-text { display: block; font-size: 0.9rem; min-height: 0; }
 #root.mode-short .modal { padding: 1rem 1.4rem; gap: 0.6rem; }
-#root.mode-short .inspector { width: min(56rem, calc(100vw - 1.6rem)); padding: 0.7rem; }
-#root.mode-short .ins-wrap { flex-direction: row; align-items: flex-start; } #root.mode-short .ins-wrap > * { flex: 1; min-width: 0; }
+/* Compact board: the large card's text column must stay at least ~24 units wide (stats, name and keyword help in one
+   column beside the art), so the box has a floor the placer respects (placeInspector gives up a side that is narrower)
+   and a hero's box, which adds the level-condition panel beside the card, is wider still. */
+#root.mode-short .inspector { width: min(56rem, calc(100vw - 1.6rem)); min-width: min(42rem, calc(100vw - 1.6rem)); padding: 0.7rem; }
+#root.mode-short .inspector:has(.hero-sec) { width: min(78rem, calc(100vw - 1.6rem)); min-width: min(66rem, calc(100vw - 1.6rem)); }
+#root.mode-short .ins-wrap { flex-direction: row; align-items: flex-start; } #root.mode-short .ins-wrap > * { min-width: 0; }
+#root.mode-short .ins-col { flex: 3; } #root.mode-short .hero-sec { flex: 2; }
 #root.mode-short .big { display: grid; grid-template-columns: 10rem 1fr; gap: 0.3rem 1rem; align-items: start; padding: 0.6rem 0.8rem; }
 #root.mode-short .big > * { grid-column: 2; }
 #root.mode-short .big .artbox { grid-column: 1; grid-row: 1 / span 5; height: 10rem; }

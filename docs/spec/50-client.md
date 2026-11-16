@@ -64,6 +64,10 @@ engine gives a reason, and that reason is shown on hover/press next to the contr
   the large card: name, cost, stats (current and printed when they differ), faction, type, speed, full text, keyword
   explanations, for heroes both faces and progress. One delegated listener keyed on `data-card` / `data-unit`.
   The inspector sits above every modal. **No native tooltips: no `title` attributes, no SVG `<title>`.**
+  RULING (2026-11-16, owner on the foldable: "the card text is cut off"): the inspector never clips its text. On the
+  compact board its card keeps a text column of at least 20 units beside the art (stats on one line, name on at most two),
+  a hero's box is wider still to hold the level-condition panel beside the card, and the placer uses a side of the anchor
+  only when the box fits there at that width; otherwise it goes above or below, overlapping the anchor as little as it can.
 - **Play a card**: first click arms it (lifts, shows its targets in amber, shows a "Play <name> (N Charge)" button in
   the action bar); clicking a legal target, or the button when it takes no target, plays it. Click elsewhere or Esc
   disarms. A card that cannot be played shows why (`whyNotPlay`) in the action bar when clicked. With two targets,
