@@ -166,7 +166,7 @@ test('save: continue after reopening, and a corrupt save is explained', async ()
 
 // 50-client.md RULING 2026-11-15: a foldable's inner screen (near-square) gets a compact board with a phone-sized unit, never
 // the wide board shrunk until its text is unreadable; spare height goes to the hand and the Lines, not only the battle row.
-test('a foldable inner screen (900x640) keeps phone-sized text, no scrollbars, battle row under a third; portrait rotates', async ({ browser }) => {
+test('a foldable inner screen (900x640) keeps phone-sized text, no scrollbars, battle row under a third, a readable inspector; portrait rotates', async ({ browser }) => {
   for (const [w, h, mode] of [[900, 640, 'short'], [1024, 768, 'short'], [1280, 720, 'wide']] as const) {
     const ctx = await browser.newContext({ viewport: { width: w, height: h } });
     const page = await ctx.newPage();
@@ -186,6 +186,27 @@ test('a foldable inner screen (900x640) keeps phone-sized text, no scrollbars, b
     expect(m.sw).toBeLessThanOrEqual(m.iw);
     expect(m.sh).toBeLessThanOrEqual(m.ih);
     expect(m.boardOver).toBe(false);
+    // the inspector (hover a hero chip: the widest content, card plus level condition) fits the window and never
+    // clips: the stats stay on one line and the card's text column is at least 20 units wide
+    await page.hover('.chip[data-seat="0"]');
+    await expect(page.locator('.inspector')).toBeVisible();
+    const ins = await page.evaluate(() => {
+      const box = document.querySelector('.inspector')!;
+      const r = box.getBoundingClientRect();
+      const over = (e: Element): boolean => e.scrollWidth > e.clientWidth + 1 || e.scrollHeight > e.clientHeight + 1;
+      return {
+        inside: r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight,
+        bigOver: over(box.querySelector('.big')!), boxOver: over(box),
+        statsW: box.querySelector('.ins-stats')!.getBoundingClientRect().width,
+        valLines: [...box.querySelectorAll('.ins-stat .val')].map((v) => v.getClientRects().length),
+        nameLines: box.querySelector('.big-name')!.getClientRects().length,
+      };
+    });
+    expect(ins.inside, `${w}x${h} inspector inside the window`).toBe(true);
+    expect(ins.bigOver || ins.boxOver, `${w}x${h} inspector clipped`).toBe(false);
+    expect(ins.statsW, `${w}x${h} inspector text column`).toBeGreaterThanOrEqual(20 * m.u);
+    expect(ins.valLines, `${w}x${h} stat values on one line`).toEqual([1, 1]);
+    expect(ins.nameLines, `${w}x${h} card name lines`).toBeLessThanOrEqual(2);
     await ctx.close();
   }
   const ctx = await browser.newContext({ viewport: { width: 640, height: 900 } });
