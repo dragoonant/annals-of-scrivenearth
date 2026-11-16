@@ -30,7 +30,6 @@ What changed since you said it was ugly (PLAN D20):
    flaming staff (a shield captain), Sluice Close shows soldiers at a gate (not a canal freezing). Re-roll these, or
    are they fine?
 4. **Tidewardens** lose in AI-versus-AI games (BALANCE B-3). Play Tide once and say whether it feels weak.
-5. **Phone portrait** shows a rotate hint (PLAN D15). Next stage, or leave?
 
 ## What exists
 - **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`), 150 cards, 12 heroes, three AI tiers (BALANCE B-2).
