@@ -44,7 +44,9 @@ What changed since you said it was ugly (PLAN D20):
   four runs in a row, but passes here (Linux container) five runs in a row. The seeded game differs between the two
   machines; the cause is not found yet (suspects: a timing-dependent path in the client's AI turn loop, or the
   test's own waiting). The engine replay tests are deterministic on this machine.
-- The bug-report download test fails on EVILAEGIS with a Windows file-permission error; it passes here.
+- The bug-report download test fails on EVILAEGIS with a Windows file-permission error (EPERM in `e2e-out`) when run
+  from the project folder, but passes on the same machine and the same commit from a folder under the user's AppData,
+  so the folder is the cause, not the code. (2026-11-26; the full-Line test also failed there on `main` before D25.)
 - My own visual pass was short (`src/client/polish.css`): painted backdrops, frames, unit size. Not yet compared side
   by side with Shadowforge screenshots (owner rule 21 gate), and the right-hand stack panel is empty most of the time.
 - The board backdrop plate is 640 px wide and is shown blurred; a larger render would look better.
