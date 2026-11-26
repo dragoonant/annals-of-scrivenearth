@@ -44,7 +44,8 @@ engine gives a reason, and that reason is shown on hover/press next to the contr
    a readable save, see Saves), New game, Deck builder (may be a disabled stub in the first build, saying "coming in
    the next build"), How to play. A line: "An original fan-made game. Not affiliated with any publisher."
 2. **New game**: pick your deck and the opponent's deck from `premadeDecks()` plus saved custom decks (deck tiles show
-   name, the two factions, hero names, and a "Peek" that lists every card with counts); "Surprise me" picks at random;
+   name, the two factions, hero names, a hand-built deck's one-line plan, and a "Peek" that lists every card with
+   counts); picking a deck keeps the list's scroll position; "Surprise me" picks at random;
    a default is pre-selected so Start is never disabled; difficulty from `DIFFICULTIES`. "New game" over an existing
    save asks once: "This replaces your saved game (round N vs <deck>). Start anyway?"
 3. **Mulligan**: your 4 cards face up; click to mark for replacement; button reads "Keep all 4" or "Replace N".

@@ -175,6 +175,9 @@ export class App {
     this.syncScreen();
     this.syncMusic();
     this.layout();
+    // Re-rendering the same scrolling screen (picking the 15th deck on New game) keeps its scroll position.
+    const prevBody = this.root.dataset.screen === this.screen ? this.screenEl.querySelector<HTMLElement>(':scope > .screen-body') : null;
+    const keepTop = prevBody && prevBody !== this.builder.root ? prevBody.scrollTop : 0;
     this.root.dataset.screen = this.screen;
     let content: HTMLElement;
     switch (this.screen) {
@@ -206,6 +209,7 @@ export class App {
     }
     content.classList.add('screen-body');
     this.screenEl.replaceChildren(content);
+    if (keepTop) content.scrollTop = keepTop;
     if (this.screen === 'board' || this.screen === 'mulligan') fitHand(this.screenEl);
     if (this.tut && this.screen === 'board') this.renderTutorial();
     // storage warning on every screen if saving failed

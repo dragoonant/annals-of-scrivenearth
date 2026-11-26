@@ -103,6 +103,7 @@ export function renderSetup(catalog: DeckChoice[], sel: SetupSel, devdecks: bool
           h('div', { class: 'deck-top' }, h('b', { class: 'deck-name', text: d.name }), h('span', { class: 'deck-n', text: `${d.cards.length} cards` }), d.custom ? h('span', { class: 'deck-mine', text: 'YOUR DECK' }) : null),
           factionTags(d.cards),
           h('div', { class: 'deck-heroes', text: `Heroes: ${deckHeroes(d).join(', ') || 'none'}` }),
+          d.about ? h('div', { class: 'deck-about', text: d.about }) : null,
           h('div', { class: 'deck-plan', text: deckPlan(d.cards) }),
           h('button', { class: 'btn small peek', data: { ui: 'peek', i }, text: 'Peek' }),
         ),

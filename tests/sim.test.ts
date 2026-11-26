@@ -22,9 +22,9 @@ describe('card pool and decks', () => {
       expect(mine.filter((c) => c.type === 'hero').length, f).toBe(2);
     }
   });
-  it('R-G1 every faction pair builds a legal deck, and all six premade decks are legal', () => {
+  it('R-G1 every faction pair builds a legal deck, and all 18 premade decks are legal', () => {
     for (const [a, b] of pairs) expect(checkDeck(autoDeck(a, b)).errors, `${a}+${b}`).toEqual([]);
-    expect(premadeDecks().length).toBe(6);
+    expect(premadeDecks().length).toBe(18);
   });
 });
 

@@ -19,6 +19,8 @@ export interface DeckChoice extends DeckList {
   dev?: boolean;
   /** A deck saved in the builder (as opposed to a premade one). */
   custom?: boolean;
+  /** A hand-built premade deck's one-line plan. */
+  about?: string;
 }
 
 /** Two 40-card test decks made by repeating whatever collectible cards exist. Development only, bypasses checkDeck. */

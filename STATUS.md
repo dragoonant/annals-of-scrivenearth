@@ -33,6 +33,7 @@ What changed since you said it was ugly (PLAN D20):
 
 ## What exists
 - **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`), 150 cards, 12 heroes, three AI tiers (BALANCE B-2).
+- **Decks** (`src/data/decks.ts`): 18 premades covering all 15 faction pairs and two single-faction decks.
 - **Client** (`src/client`): title, learn to play, new game with deck peek, mulligan, board, inspector, stack, hero
   trackers, log, presentation director, autosave and Continue, deck builder, end screen, settings, how to play.
 - **Art and audio pipelines** (`tools/art`, `tools/audio`, `HANDOFF-GPU.md`); the EVILAEGIS job is finished and the
@@ -49,6 +50,8 @@ What changed since you said it was ugly (PLAN D20):
 - The board backdrop plate is 640 px wide and is shown blurred; a larger render would look better.
 - The combat forecast ignores Strike/Shatter abilities and glyphs cast in the combat window.
 - Touch long-press inspect in the deck builder was not exercised. Phone landscape works but hand cards are small.
-- Premade decks are curve-built, not hand-tuned.
+- 18 premade decks (PLAN D25): 12 hand-built, plus five curve-built and Blackwater rebuilt by hand. The two Tide-led
+  decks (Floodgate, Crosscurrent) win about a quarter of AI-versus-AI games and Tithe Wall about 70% (BALANCE B-4);
+  the five curve-built decks are the weakest group. Not playtested by hand.
 - The audit's fixes have not had a second independent review; the mutation check is whole-card, not per clause.
 - Audio and art have had no human review.
