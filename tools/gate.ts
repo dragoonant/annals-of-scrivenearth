@@ -14,9 +14,10 @@ const steps: [string, string, string[]][] = [
 ];
 for (const [name, cmd, args] of steps) {
   const t0 = Date.now();
-  const r = spawnSync(cmd, args, { encoding: 'utf8' });
+  // Windows finds npx (npx.cmd) only through a shell; no argument here contains a space.
+  const r = spawnSync(cmd, args, { encoding: 'utf8', shell: process.platform === 'win32' });
   const ok = r.status === 0;
-  const tail = (r.stdout + r.stderr).trim().split('\n').slice(ok ? -1 : -25).join('\n');
+  const tail = `${r.stdout ?? ''}${r.stderr ?? ''}${r.error ? `\n${r.error.message}` : ''}`.trim().split('\n').slice(ok ? -1 : -25).join('\n');
   console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}  (${((Date.now() - t0) / 1000).toFixed(0)}s)  ${ok ? tail.slice(0, 160) : `\n${tail}`}`);
   if (!ok) process.exit(1);
 }

@@ -16,7 +16,7 @@ const cards = allCards().filter((c) => !c.token && !c.id.startsWith('zz-') && (!
 function run(id: string, fac: string, hero: boolean): Promise<{ id: string; survived: boolean; ran: boolean }> {
   return new Promise((resolve) => {
     const files = hero ? ['tests/heroes.test.ts', `tests/cards/${fac}.test.ts`] : [`tests/cards/${fac}.test.ts`];
-    const p = spawn('npx', ['vitest', 'run', ...files, '-t', id, '--reporter=dot'], { env: { ...process.env, MUTATE: id } });
+    const p = spawn('npx', ['vitest', 'run', ...files, '-t', id, '--reporter=dot'], { env: { ...process.env, MUTATE: id }, shell: process.platform === 'win32' }); // npx.cmd needs a shell on Windows
     let out = '';
     p.stdout.on('data', (d) => { out += String(d); });
     p.stderr.on('data', (d) => { out += String(d); });
