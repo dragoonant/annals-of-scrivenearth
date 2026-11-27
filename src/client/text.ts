@@ -7,6 +7,7 @@ import { tide } from './prompts/tide';
 import { coil } from './prompts/coil';
 import { under } from './prompts/under';
 import { storm } from './prompts/storm';
+import { mirror } from './prompts/mirror';
 
 /** A piece of a sentence: plain text, or a card name that opens the inspector. */
 export type Seg = string | { card: string; seat?: Seat };
@@ -150,7 +151,7 @@ const SPEC_WORDS = (s: TargetSpec): string => {
 
 /** Optional per-card wording for each target slot. Falls back to a sentence built from the target spec. */
 /** Per-card target prompts, one file per faction in src/client/prompts/ (tests/client-text.test.ts checks every card). */
-export const PLAY_PROMPTS: Record<string, string[]> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm };
+export const PLAY_PROMPTS: Record<string, string[]> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror };
 
 export function targetPrompt(cardId: string, cardName: string, slot: number, total: number, spec: TargetSpec): string {
   const custom = PLAY_PROMPTS[cardId]?.[slot];

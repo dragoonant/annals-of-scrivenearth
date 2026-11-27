@@ -6,8 +6,9 @@ import { tide } from './subjects/tide';
 import { coil } from './subjects/coil';
 import { under } from './subjects/under';
 import { storm } from './subjects/storm';
+import { mirror } from './subjects/mirror';
 
-export const SUBJECTS: Record<string, Subject> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm };
+export const SUBJECTS: Record<string, Subject> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror };
 
 const GEM =
   'crisp digital illustration, flat cel shading with hard-edged faceted highlights, clean confident linework, ' +
@@ -21,6 +22,7 @@ export const EXTRA: Record<string, { prompt: string; aspect: '3:2' | '2:3' }> = 
   'crest-coil': { aspect: '3:2', prompt: `a green cut gem with a simple coiled vine and leaf silhouette glowing inside it, ${GEM}` },
   'crest-under': { aspect: '3:2', prompt: `a violet and black cut gem with a simple lit fuse and cable knot silhouette glowing inside it, ${GEM}` },
   'crest-storm': { aspect: '3:2', prompt: `a teal and silver cut gem with a simple spread wing and lightning bolt silhouette glowing inside it, ${GEM}` },
+  'crest-mirror': { aspect: '3:2', prompt: `a rose and silver cut gem with a simple pair of facing profiles silhouette glowing inside it, ${GEM}` },
   cardback: {
     aspect: '2:3',
     prompt: 'a perfectly symmetrical pattern of interlocking faceted crystals in indigo and cyan, a central starburst of cut facets with mirrored rows of smaller gems around it, crisp digital illustration, flat cel shading with hard-edged faceted highlights, luminous cyan rim light, deep indigo shadows, wordless and unlettered, full-bleed',

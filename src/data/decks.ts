@@ -1,6 +1,6 @@
 // Deck helpers and the premade decks.
 import './cards/index';
-import type { CardDef, DeckList, FactionId } from '../engine/types';
+import type { CardDef, DeckList, FactionId, CardSet } from '../engine/types';
 import { LIMITS } from '../engine/types';
 import { allCards } from '../engine/query';
 import { checkDeck } from '../engine/validate';
@@ -14,6 +14,14 @@ export const FACTION_INFO: Record<FactionId, { name: string; blurb: string; hue:
   storm: { name: 'Stormrail', blurb: 'The sky couriers. Aerial strikes, Vanguard and second attacks.', hue: 180 },
   mirror: { name: 'Mirrorwatch', blurb: 'The mirror quarter. Copies, Veiled spies and glyphs that come back for more.', hue: 330 },
 };
+
+/** The card sets (docs/SETS.md). A card with no `set` field is in the base set. */
+export const SET_INFO: Record<CardSet, { name: string }> = {
+  base: { name: 'First Light' },
+  x1: { name: 'The Mirror Quarter' },
+  x2: { name: 'The Starward Rise' },
+};
+export const setOf = (c: CardDef): CardSet => c.set ?? 'base';
 
 export function collectible(): CardDef[] {
   return allCards().filter((c) => !c.token && !c.unimplemented && !c.id.startsWith('zz-'));

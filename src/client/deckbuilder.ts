@@ -2,10 +2,10 @@
 // import/export); this file only draws and wires clicks. The root element is built once and kept, so the typing
 // fields never lose focus: filters and counts update their own parts in place.
 import './deckbuilder.css';
-import type { CardDef, DeckList, FactionId, GameState } from '../engine/types';
+import type { CardDef, DeckList, FactionId, GameState, CardSet } from '../engine/types';
 import { LIMITS } from '../engine/types';
 import { def } from '../engine/query';
-import { autoDeck, collectible, FACTION_INFO, premadeDecks } from '../data/decks';
+import { autoDeck, collectible, FACTION_INFO, premadeDecks, SET_INFO, setOf } from '../data/decks';
 import { addCard, countOf, deckStats, exportDeck, importDeck, loadDecks, removeCard, saveDecks, whyNotAdd } from '../deckbuilder/model';
 import { gem, h, handCardEl, hueOf } from './cardview';
 import { KEYWORD_HELP } from './text';
@@ -57,6 +57,7 @@ interface Filters {
   types: Set<CardDef['type']>;
   cost: number | null;
   keyword: string | null;
+  sets: Set<CardSet>;
   text: string;
 }
 
@@ -83,7 +84,7 @@ export class Builder {
   private dirty = false;
   private saved: DeckList[] = [];
   private storageProblem: string | null = null;
-  private filters: Filters = { factions: new Set(), types: new Set(), cost: null, keyword: null, text: '' };
+  private filters: Filters = { factions: new Set(), types: new Set(), cost: null, keyword: null, sets: new Set(), text: '' };
   private dlg: Dialog | null = null;
   private importText = '';
   private pool: CardDef[];
@@ -227,7 +228,12 @@ export class Builder {
     for (const c of COSTS) costRow.append(this.chip(c === 7 ? '7+' : String(c), 'b-cost', String(c), f.cost === c));
     const kwRow = h('div', { class: 'bd-frow bd-kws' }, h('span', { class: 'lbl', text: 'KEYWORD' }));
     for (const [k, v] of Object.entries(KEYWORD_HELP)) kwRow.append(this.chip(v.name, 'b-kw', k, f.keyword === k));
-    this.filterEl.replaceChildren(top, h('div', { class: 'bd-more' }, costRow, kwRow));
+    const setRow = h('div', { class: 'bd-frow' }, h('span', { class: 'lbl', text: 'SET' }));
+    const present = new Set(collectible().map(setOf));
+    for (const [id, info] of Object.entries(SET_INFO) as [CardSet, { name: string }][]) {
+      if (present.has(id)) setRow.append(this.chip(info.name, 'b-set', id, f.sets.has(id)));
+    }
+    this.filterEl.replaceChildren(top, h('div', { class: 'bd-more' }, costRow, kwRow, present.size > 1 ? setRow : null));
     // the search field is kept as the same element so typing is never interrupted
   }
 
@@ -235,6 +241,7 @@ export class Builder {
     const f = this.filters;
     if (f.factions.size && !f.factions.has(c.faction)) return false;
     if (f.types.size && !f.types.has(c.type)) return false;
+    if (f.sets.size && !f.sets.has(setOf(c))) return false;
     if (f.cost !== null && (f.cost >= 7 ? c.cost < 7 : c.cost !== f.cost)) return false;
     if (f.keyword) {
       const kws = [...(c.keywords ?? []), ...(c.ascended?.keywords ?? [])];
@@ -466,9 +473,10 @@ export class Builder {
       case 'b-type': toggle(f.types, v as CardDef['type']); return this.refilter();
       case 'b-cost': f.cost = f.cost === Number(v) ? null : Number(v); return this.refilter();
       case 'b-kw': f.keyword = f.keyword === v ? null : v; return this.refilter();
+      case 'b-set': toggle(f.sets, v as CardSet); return this.refilter();
       case 'b-more': this.filterEl.classList.toggle('more'); return;
       case 'b-clear':
-        this.filters = { factions: new Set(), types: new Set(), cost: null, keyword: null, text: '' };
+        this.filters = { factions: new Set(), types: new Set(), cost: null, keyword: null, sets: new Set(), text: '' };
         this.searchInput.value = '';
         return this.refilter();
       case 'b-back': return this.guard(() => this.host.leave(), 'Leaving the builder discards the deck you are building');
