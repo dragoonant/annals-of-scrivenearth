@@ -100,12 +100,23 @@ Scrivenearth is a city of cut crystal. Each player commands a **Spire** and fiel
 | R-K10 | **Unstable** | Destroyed at the end of the round. |
 | R-K11 | **Mend** | Fully repaired at the start of each round. |
 | R-K12 | **Corrosive** | Any damage it deals to a unit destroys that unit. |
+| R-K13 | **Veiled** (set x1) | Cannot be chosen as a target by the enemy's glyphs or Deploy abilities. Effects that pick by themselves (strongest, random, all) still reach it. It loses Veiled the first time it strikes. |
+| R-K14 | **Reprise** (set x1, glyphs) | After it resolves, a Glimmer copy of it without Reprise goes to its caster's hand. A negated Reprise glyph makes no copy. |
 
 Status **Stasis**: the unit cannot attack or block for the rest of the round (R-B8).
 
 Ability words: **Deploy** (played from hand), **Shatter** (destroyed), **Strike** (it struck), **Assault** (declared as an
 attacker), **Dawn** (round start), **Dusk** (round end), **Ascend** (the hero just ascended on the Line),
 **Resonant** (see R-H6).
+
+## Sets (R-E)
+Rules that arrive with an expansion (docs/SETS.md). Cards that do not use them are unaffected.
+- **R-E1 Glimmer** (set x1). A Glimmer card in hand is burned at the end of the round if it is still there (after Dusk
+  abilities). Glimmer is shown on the card and is open information, even on a hidden hand card.
+- **R-E2 Copy** (set x1). "Copy X" puts a new card with X's card id into a hand (the caster's unless it says otherwise):
+  X is a unit on a Line or a glyph on the stack. The copy is a fresh card: no damage, buffs or counters. A token is not a
+  card and cannot be copied; the copy is skipped and logged. A hand at 10 burns the copy (R-G7).
+- **R-E3 Foe glyph** (set x1). Trigger: the opponent cast a glyph (when it goes on the stack, or resolves at Flash speed).
 
 ## Heroes (R-H)
 - **R-H1.** A hero is a unit with a **level condition** and an **Ascended** face.
