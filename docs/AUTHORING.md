@@ -41,6 +41,18 @@ Cost 7+ units should end games. Glyph rates: 1 Charge is about 2 damage to a uni
   one person, creature or object and one scene, never a scene clause another card already uses.
   `npx tsx tools/art/build-prompts.ts` lints them.
 
+## Expansion cards (docs/SETS.md)
+Every expansion card has `set: 'x1'` or `set: 'x2'`. Shape per set is in docs/SETS.md. The new primitives:
+- **x1, The Mirror Quarter.** Unit keyword `veiled` (R-K13). Glyph keyword `reprise` (R-K14; the only keyword a glyph
+  may carry, written first: "Reprise. Deal 2 to ..."). `create` and `copy` take `glimmer: true` (R-E1, the text says
+  "Glimmer"). `{ op: 'copy', of }` copies a unit's card (`target0`, `trigger`, `strongestEnemy`...) or a glyph on the
+  stack (`target0` of a `what: 'glyph'` slot) into a hand (R-E2; the text says "copy"). Trigger `foeGlyph` ("When the
+  opponent casts a glyph"). Counters `copiesMade`, `glimmerPlayed`.
+- **x2, The Starward Rise.** `{ op: 'chart', n, find: { type?, maxCost?, minCost?, tribe?, faction? } }` (R-E4; text
+  "Chart a unit (4)"). A **unit** may Unfold (R-E5): give it `level` with `who: 'self'` and an `ascended` face; the
+  second face's one-off ability uses `on: 'unfold'` ("Unfold: ..."); unit counter `dawns` counts rounds it started on
+  the Line. Condition `{ c: 'conjunction' }` (R-E6; text "Conjunction:"). Counters `unitsPlayed`, `charted`.
+
 ## Worked examples
 ```ts
 // A unit with a targeted Deploy and a Resonant aura.
