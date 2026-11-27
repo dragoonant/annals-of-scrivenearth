@@ -541,7 +541,9 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
       const look = Math.min(op.n, deck.length);
       let found = -1;
       for (let i = 0; i < look; i++) {
-        const c = def(deck[deck.length - 1 - i]);
+        const id = deck[deck.length - 1 - i];
+        if (id === '?') { found = deck.length - 1 - i; break; } // a view (R-V1): the deck is hidden, so planning assumes a hit
+        const c = def(id);
         const f = op.find;
         if (f.type && c.type !== f.type) continue;
         if (f.maxCost !== undefined && c.cost > f.maxCost) continue;
@@ -669,7 +671,7 @@ function endRound(s: GameState): void {
     const p = s.players[seat];
     for (const hc of p.hand.filter((x) => x.glimmer)) {
       p.hand.splice(p.hand.indexOf(hc), 1);
-      p.scrap.push(hc.card);
+      if (hc.card !== '?') p.scrap.push(hc.card); // in a view the faded card stays unknown
       log(s, { k: 'burn', seat, card: hc.card, s: 'glimmer' });
     }
   }
