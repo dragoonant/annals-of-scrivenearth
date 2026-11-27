@@ -23,4 +23,13 @@ export const tide: Record<string, string[]> = {
     "Choose the second enemy unit with 3 or less power to return to its owner's hand",
   ],
   'tide-homewardcurrent': ['Choose an allied unit to return to your hand'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'tide-hesper': ['Choose another allied unit to copy into your hand as a Glimmer card'],
+  'tide-canalglint': ['Choose an allied unit with 2 or less power to copy into your hand as a Glimmer card'],
+  'tide-surfacemimic': ['Choose an enemy unit to copy into your hand'],
+  'tide-mirrorwakecourier': ['Choose an allied unit to return to your hand along with a Glimmer copy of it'],
+  'tide-pondmirrorwarden': ['Choose an enemy unit to put in Stasis and copy into your hand as a Glimmer card'],
+  'tide-twinmoorings': ['Choose an enemy unit in combat to put in Stasis'],
+  'tide-caughtreflection': ['Choose an enemy glyph on the stack to copy into your hand as a Glimmer card'],
+  'tide-ebbandecho': ["Choose an enemy unit with 3 or less power to return to its owner's hand"],
 };

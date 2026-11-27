@@ -535,3 +535,183 @@ describe('ember cards', () => {
     expect(unit(s, 1, 'zz-ogre').dmg).toBe(2);
   });
 });
+
+// ---------- set x1: The Mirror Quarter ----------
+describe('ember x1 cards', () => {
+  const inHand = (s: GameState, seat: 0 | 1, card: string) => s.players[seat].hand.filter((h) => h.card === card);
+  const nextRound = (s: GameState): void => { const r = s.round; let g = 0; while (s.round === r && g++ < 6) pass(s); };
+
+  it('ember-oriel: Dawn creates a Glimmer Cullet Spark; ascends at 8 Glimmer plays, copies each other ally (Glimmer) and gains 2 Charge', () => {
+    const s = board({ line: [['ember-oriel', 'ember-ashrunner', 'zz-grunt'], ['zz-wall']] });
+    s.players[0].heroes = ['ember-oriel'];
+    nextRound(s);
+    expect(inHand(s, 0, 'ember-culletspark')).toMatchObject([{ glimmer: true }]);
+    s.players[0].seen.glimmerPlayed = 7;
+    expect(isAscended(s, 0, 'ember-oriel')).toBe(false);
+    pass(s); // seat 1 holds the Initiative in round 2
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-culletspark', [w.iid]); // the 8th Glimmer card
+    expect(isAscended(s, 0, 'ember-oriel')).toBe(true);
+    expect(face(s, 0, 'ember-oriel').name).toBe('Oriel, Glassfire Unbound');
+    expect(inHand(s, 0, 'ember-ashrunner')).toMatchObject([{ glimmer: true }]);
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(0); // a token cannot be copied
+    expect(kinds(s)).toContain('copyToken');
+    expect(s.players[0].charge).toBe(10 + 2); // the Spark was paid from Reserve (R-C2)
+    expect(st(s, unit(s, 0, 'ember-oriel'))).toMatchObject({ power: 4, health: 5 });
+    expect(w.dmg).toBe(1);
+    nextRound(s);
+    expect(inHand(s, 0, 'ember-culletspark').filter((h) => h.glimmer)).toHaveLength(2); // the old ones faded; Dawn made 2
+  });
+
+  it('ember-baublebot: Unstable; when it is destroyed a Glimmer Bauble Bot goes to your hand and lasts the next round', () => {
+    const s = board({ line: [['ember-baublebot'], []] });
+    nextRound(s);
+    expect(names(s, 0)).toEqual([]);
+    expect(inHand(s, 0, 'ember-baublebot')).toMatchObject([{ glimmer: true }]);
+    pass(s); // seat 1 acts first in round 2
+    play(s, 'ember-baublebot');
+    expect(names(s, 0)).toEqual(['ember-baublebot']);
+    expect(s.players[0].seen.glimmerPlayed).toBe(1);
+  });
+
+  it('ember-gafferapprentice: Deploy creates a Glimmer Cullet Spark that Reprises', () => {
+    const s = board({ hand: [['ember-gafferapprentice'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-gafferapprentice');
+    expect(inHand(s, 0, 'ember-culletspark')).toMatchObject([{ glimmer: true }]);
+    pass(s);
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-culletspark', [w.iid]);
+    play(s, 'ember-culletspark', [w.iid]); // the Reprise copy
+    expect(w.dmg).toBe(2);
+    expect(s.players[0].seen.glimmerPlayed).toBe(2);
+  });
+
+  it('ember-smokedlookout: Veiled against enemy targets; Strike creates a Glimmer Pinprick', () => {
+    const t = board({ hand: [[], ['zz-zap']], line: [['ember-smokedlookout'], []], first: 1 });
+    const zap = t.players[1].hand[0].iid;
+    expect(applyAction(t, { type: 'play', iid: zap, targets: [unit(t, 0, 'ember-smokedlookout').iid] }).ok).toBe(false);
+    const s = board({ line: [['ember-smokedlookout'], ['zz-wall']] });
+    const l = unit(s, 0, 'ember-smokedlookout');
+    attack(s, [l], [[unit(s, 1, 'zz-wall'), l]]);
+    resolveCombat(s);
+    expect(inHand(s, 0, 'ember-pinprick')).toMatchObject([{ glimmer: true }]);
+    expect(st(s, l).keywords).not.toContain('veiled');
+  });
+
+  it('ember-reflectorkiln: when the opponent casts a glyph, a Glimmer Slag Bolt goes to your hand', () => {
+    const s = board({ hand: [['zz-zap'], ['zz-zap']], line: [['ember-reflectorkiln'], ['ember-reflectorkiln']] });
+    play(s, 'zz-zap', [unit(s, 1, 'ember-reflectorkiln').iid]);
+    expect(inHand(s, 1, 'ember-slagbolt')).toMatchObject([{ glimmer: true }]);
+    expect(inHand(s, 0, 'ember-slagbolt')).toHaveLength(0); // only the opponent's glyphs
+  });
+
+  it('ember-lampworklancer: Vanguard; Strike creates a Glimmer Cullet Spark; Resonant gives +1|+1', () => {
+    const s = board({ line: [['ember-lampworklancer'], ['zz-grunt']] });
+    const l = unit(s, 0, 'ember-lampworklancer');
+    attack(s, [l], [[unit(s, 1, 'zz-grunt'), l]]);
+    resolveCombat(s);
+    expect(names(s, 1)).toEqual([]);
+    expect(l.dmg).toBe(0); // Vanguard: the blocker died first
+    expect(inHand(s, 0, 'ember-culletspark')).toMatchObject([{ glimmer: true }]);
+    const t = board({ line: [['ember-lampworklancer', 'ember-kessa'], []] });
+    expect(st(t, unit(t, 0, 'ember-lampworklancer'))).toMatchObject({ power: 3, health: 2 });
+    resonant(t);
+    expect(st(t, unit(t, 0, 'ember-lampworklancer'))).toMatchObject({ power: 4, health: 3 });
+  });
+
+  it('ember-mouldkeeper: when another ally is destroyed, a Glimmer copy of it goes to your hand', () => {
+    const s = board({ first: 1, hand: [[], ['zz-bolt']], line: [['ember-mouldkeeper', 'ember-kilnhand'], []] });
+    play(s, 'zz-bolt', [unit(s, 0, 'ember-kilnhand').iid]);
+    pass(s);
+    expect(names(s, 0)).toEqual(['ember-mouldkeeper']);
+    expect(inHand(s, 0, 'ember-kilnhand')).toMatchObject([{ glimmer: true }]);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('ember-lehrforeman: Deploy creates a Glimmer Cullet Spark; Dusk deals 2 to every enemy unit after 2+ Glimmer plays this round', () => {
+    const s = board({ hand: [['ember-lehrforeman'], []], line: [[], ['zz-wall', 'zz-grunt']] });
+    play(s, 'ember-lehrforeman');
+    pass(s);
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-culletspark', [w.iid]);
+    play(s, 'ember-culletspark', [w.iid]);
+    expect(w.dmg).toBe(2);
+    nextRound(s);
+    expect(w.dmg).toBe(4);
+    expect(names(s, 1)).toEqual(['zz-wall']);
+    const t = board({ hand: [['ember-lehrforeman'], []], line: [[], ['zz-wall']] });
+    play(t, 'ember-lehrforeman');
+    pass(t);
+    play(t, 'ember-culletspark', [unit(t, 1, 'zz-wall').iid]); // only 1 Glimmer card played
+    nextRound(t);
+    expect(unit(t, 1, 'zz-wall').dmg).toBe(1);
+  });
+
+  it('ember-glasscolossus: Deploy deals 2 to every enemy unit; Unstable, and a Glimmer copy of it is left in hand', () => {
+    const s = board({ hand: [['ember-glasscolossus'], []], line: [[], ['zz-wall', 'zz-grunt']] });
+    play(s, 'ember-glasscolossus');
+    expect(names(s, 1)).toEqual(['zz-wall']);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    nextRound(s);
+    expect(names(s, 0)).toEqual([]);
+    expect(inHand(s, 0, 'ember-glasscolossus')).toMatchObject([{ glimmer: true }]);
+  });
+
+  it('ember-culletspark: Reprise deals 1 to an enemy unit twice, the copy only once', () => {
+    const s = board({ hand: [['ember-culletspark'], []], line: [[], ['zz-wall']] });
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-culletspark', [w.iid]);
+    expect(w.dmg).toBe(1);
+    expect(inHand(s, 0, 'ember-culletspark')).toMatchObject([{ glimmer: true, plain: true }]);
+    play(s, 'ember-culletspark', [w.iid]);
+    expect(w.dmg).toBe(2);
+    expect(inHand(s, 0, 'ember-culletspark')).toHaveLength(0);
+  });
+
+  it('ember-twingather: an ally gets +2|+0 this round and a Glimmer copy of it goes to your hand', () => {
+    const s = board({ hand: [['ember-twingather'], []], line: [['ember-ashrunner'], []] });
+    const a = unit(s, 0, 'ember-ashrunner');
+    play(s, 'ember-twingather', [a.iid]);
+    expect(st(s, a).power).toBe(4);
+    expect(inHand(s, 0, 'ember-ashrunner')).toMatchObject([{ glimmer: true }]);
+    nextRound(s);
+    expect(st(s, a).power).toBe(2);
+    expect(inHand(s, 0, 'ember-ashrunner')).toHaveLength(0); // the Glimmer copy faded
+  });
+
+  it('ember-blowpipeflare: Reprise deals 2 to the enemy Spire, then the copy deals 2 to a unit', () => {
+    const s = board({ hand: [['ember-blowpipeflare'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-blowpipeflare', ['spire1']);
+    pass(s);
+    expect(s.players[1].spire).toBe(18);
+    expect(inHand(s, 0, 'ember-blowpipeflare')).toMatchObject([{ glimmer: true, plain: true }]);
+    pass(s); // seat 1 hands priority back
+    play(s, 'ember-blowpipeflare', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(inHand(s, 0, 'ember-blowpipeflare')).toHaveLength(0);
+  });
+
+  it('ember-paneburst: deals 3 to an enemy unit and creates a Glimmer Cullet Spark; Resonant creates 2', () => {
+    const s = board({ hand: [['ember-paneburst'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-paneburst', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(3);
+    expect(inHand(s, 0, 'ember-culletspark')).toMatchObject([{ glimmer: true }]);
+    const t = board({ hand: [['ember-paneburst'], []], line: [['ember-kessa'], ['zz-wall']] });
+    resonant(t);
+    play(t, 'ember-paneburst', [unit(t, 1, 'zz-wall').iid]);
+    pass(t);
+    expect(inHand(t, 0, 'ember-culletspark')).toHaveLength(2);
+  });
+
+  it('ember-shardshower: Reprise deals 1 to every enemy unit and 1 to the enemy Spire', () => {
+    const s = board({ hand: [['ember-shardshower'], []], line: [[], ['zz-wall', 'zz-grunt']] });
+    play(s, 'ember-shardshower');
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(1);
+    expect(s.players[1].spire).toBe(19);
+    expect(inHand(s, 0, 'ember-shardshower')).toMatchObject([{ glimmer: true, plain: true }]);
+  });
+});

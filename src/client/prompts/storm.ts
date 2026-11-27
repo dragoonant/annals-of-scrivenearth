@@ -10,4 +10,9 @@ export const storm: Record<string, string[]> = {
   'storm-anchorleg': ['Choose an ally to get +1|+0 this round (+1|+1 more with 3+ attackers declared this round)'],
   'storm-sinkingair': ['Choose an enemy unit to get -2|+0 this round'],
   'storm-steepdive': ['Choose the Aerial ally that strikes', 'Choose the enemy unit it strikes'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'storm-passforger': ['Choose an ally to copy into your hand as a Glimmer card (a token cannot be copied)'],
+  'storm-quartermaster': ['Choose an ally to get +1|+1 and gain Veiled (an ally that has already struck stays unveiled)'],
+  'storm-turnedcollar': ['Choose an ally to get +1|+0 and Veiled this round'],
+  'storm-smokelantern': ['Choose an enemy unit with 3 or less power to put in Stasis'],
 };

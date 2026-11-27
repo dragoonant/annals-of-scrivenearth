@@ -172,4 +172,50 @@ export const ember: Subjects = {
   'ember-moltentorrent': s(
     'a vast tilting crucible pouring a river of liquid orange metal down a stepped street onto a rank of enemy soldiers',
     'seen from a bridge at dusk, steam rising from the paving and crystal windows glowing red'),
+  // ---------- set x1: The Mirror Quarter ----------
+  'ember-oriel': s(
+    'a broad-shouldered woman in her fifties with grey-streaked red hair tied back, a scorched leather apron over rolled shirtsleeves, dark-lensed goggles pushed up, a long iron blowpipe with a glowing orange bulb of molten glass on its end',
+    'turning the pipe beside a roaring glass furnace, bright sparks spinning off the glowing bulb'),
+  'ember-oriel--ascended': s(
+    'a broad-shouldered woman in her fifties with grey-streaked red hair loose and lifting in the heat, her leather apron edged with white-hot light, an iron blowpipe crowned with a blazing sphere of liquid glass',
+    'standing in a ring of floating glass replicas of foundry machines, each glowing orange from within, in a vast glassworks hall'),
+  'ember-baublebot': s(
+    'a round walker of clear blown glass the size of a cat, a brass collar at its neck, an orange flame flickering inside its glass belly and thin copper legs',
+    'hopping off a cooling rack in a dim glassworks, a fresh glass twin of it glowing on the rack behind'),
+  'ember-gafferapprentice': s(
+    'a gangly young man with a soot-smudged face, oversized leather gloves, a canvas apron and a short iron blowpipe',
+    'blowing a bead of orange glass that spits a single bright spark across a crowded workbench'),
+  'ember-smokedlookout': s(
+    'a lean woman in a hooded grey coat with round dark-tinted goggles, a brass spyglass and a bandolier of glass vials',
+    'crouched half-hidden in drifting furnace smoke on a high catwalk, watching the foundry floor far below'),
+  'ember-reflectorkiln': s(
+    'a squat brick-and-brass kiln on iron legs with a curved polished copper hood like a dish, an orange fire glowing in its open door',
+    'catching a beam of cyan light on its copper hood and throwing it back as a jet of sparks across a workshop yard'),
+  'ember-lampworklancer': s(
+    'an armoured construct knight of riveted brass with a long lance of twisted orange glass and a visor of cut amber',
+    'charging through the doorway of a glassworks, its glowing lance shattering a crate of bottles'),
+  'ember-mouldkeeper': s(
+    'an elderly man with a white beard singed short, thick spectacles and a leather apron, cradling a hinged iron casting form lined with glowing glass',
+    'pouring liquid glass into the form beside the wreck of a broken brass machine on a workshop floor'),
+  'ember-lehrforeman': s(
+    'a heavyset woman in her forties with cropped grey hair, a heat-scarred leather coat and a long iron rake over her shoulder',
+    'pacing beside a long tunnel oven where glowing glass pieces cool slowly on a moving iron belt'),
+  'ember-glasscolossus': s(
+    'a towering construct of leaded panes of amber and red glass set in a black iron frame, fire roaring inside its chest',
+    'wading through a burning glassworks yard, molten droplets raining from its shoulders onto enemy machines'),
+  'ember-culletspark': s(
+    'a single white-hot spark leaping from a heap of broken green glass',
+    'striking a brass machine on a dark foundry floor, a second spark already rising from the heap'),
+  'ember-twingather': s(
+    'a pair of identical glowing blobs of molten glass on the ends of crossed iron pipes',
+    'held up before a furnace mouth as a brass soldier steps forward between them'),
+  'ember-blowpipeflare': s(
+    'a long iron tube spitting a jet of orange flame and molten glass droplets',
+    'fired from the edge of a soot-black rooftop toward an enemy watchtower, droplets glowing in the night air'),
+  'ember-paneburst': s(
+    'a tall leaded glass window exploding outward into a storm of glowing amber fragments',
+    'over a narrow street below the foundry, enemy soldiers raising their shields against the fragments'),
+  'ember-shardshower': s(
+    'a rain of red-hot glass slivers pouring from a cracked furnace roof',
+    'over a crowded enemy camp in a cobbled square, sparks bouncing off helmets'),
 };

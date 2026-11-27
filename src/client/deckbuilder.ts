@@ -10,7 +10,8 @@ import { addCard, countOf, deckStats, exportDeck, importDeck, loadDecks, removeC
 import { gem, h, handCardEl, hueOf } from './cardview';
 import { KEYWORD_HELP } from './text';
 
-const FACTIONS = Object.keys(FACTION_INFO) as FactionId[];
+/** Factions with cards in the pool (an expansion's faction appears once its set is written). */
+const liveFactions = (): FactionId[] => (Object.keys(FACTION_INFO) as FactionId[]).filter((f) => collectible().some((c) => c.faction === f));
 const TYPES: { id: CardDef['type']; name: string }[] = [
   { id: 'unit', name: 'Unit' },
   { id: 'hero', name: 'Hero' },
@@ -215,7 +216,7 @@ export class Builder {
   private buildFilters(): void {
     const f = this.filters;
     const facRow = h('div', { class: 'bd-frow' }, h('span', { class: 'lbl', text: 'FACTION' }));
-    for (const id of FACTIONS) {
+    for (const id of liveFactions()) {
       const on = f.factions.has(id);
       facRow.append(
         h('button', { class: `bd-fac ${on ? 'on' : ''}`, data: { ui: 'b-faction', v: id }, style: { '--hue': String(FACTION_INFO[id].hue) }, attrs: { type: 'button', 'aria-pressed': String(on) } }, h('span', { class: 'gem' }), h('span', { class: 'bd-facname', text: FACTION_INFO[id].name })),
@@ -596,7 +597,7 @@ export class Builder {
         title = 'Auto-fill from two factions';
         const rowFor = (label: string, ui: string, cur: FactionId | null): HTMLElement => {
           const row = h('div', { class: 'bd-frow' }, h('span', { class: 'lbl', text: label }));
-          for (const f of FACTIONS) {
+          for (const f of liveFactions()) {
             row.append(h('button', { class: `bd-fac ${cur === f ? 'on' : ''}`, data: { ui, v: f }, style: { '--hue': String(FACTION_INFO[f].hue) }, attrs: { type: 'button', 'aria-pressed': String(cur === f) } }, h('span', { class: 'gem' }), h('span', { class: 'bd-facname', text: FACTION_INFO[f].name })));
           }
           return row;

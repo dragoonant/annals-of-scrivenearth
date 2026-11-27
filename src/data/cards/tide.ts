@@ -338,4 +338,110 @@ export const tide: CardDef[] = [
     text: "Return every unit to its owner's hand, then draw 2.",
     ops: [{ op: 'recall', to: 'all' }, { op: 'draw', n: 2 }],
   },
+
+  // ---------- set x1: The Mirror Quarter ----------
+  // Reflections on the water: Reprise glyphs, Glimmer copies of recalled and stilled units, mages that answer enemy glyphs.
+  {
+    id: 'tide-hesper', name: 'Hesper Twicewater', faction: 'tide', type: 'hero', cost: 4, power: 3, health: 4,
+    tribe: 'mage', set: 'x1',
+    text: 'Deploy: put a Glimmer copy of another allied unit in your hand.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+    level: { who: 'you', stat: 'glimmerPlayed', n: 4, text: "You've played 4+ Glimmer cards" },
+    ascended: {
+      name: 'Hesper, the Doubled Tide', power: 4, health: 6,
+      text: 'Deploy: put a Glimmer copy of another allied unit in your hand. Dawn: put a Glimmer copy of a random other ally in your hand. ' +
+        "Ascend: return the strongest enemy to its owner's hand and put a Glimmer copy of it in your hand.",
+      abilities: [
+        { on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] },
+        { on: 'dawn', ops: [{ op: 'copy', of: 'randomAlly', glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'copy', of: 'strongestEnemy', glimmer: true }, { op: 'recall', to: 'strongestEnemy' }] },
+      ],
+    },
+  },
+  {
+    id: 'tide-canalglint', name: 'Canal Glint', faction: 'tide', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'mage', set: 'x1',
+    text: 'Deploy: put a Glimmer copy of an allied unit with 2 or less power in your hand.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally', filter: { maxPower: 2 } }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+  },
+  {
+    id: 'tide-wakeecho', name: 'Wake Echo', faction: 'tide', type: 'unit', cost: 2, power: 2, health: 2, tribe: 'beast', set: 'x1',
+    text: 'When the opponent casts a glyph, put a Glimmer copy of me in your hand.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'copy', of: 'self', glimmer: true }] }],
+  },
+  {
+    id: 'tide-glasswaterlookout', name: 'Glasswater Lookout', faction: 'tide', type: 'unit', cost: 2, power: 1, health: 2, tribe: 'construct', set: 'x1',
+    keywords: ['veiled'],
+    text: 'Veiled. When the opponent casts a glyph, I get +1|+1.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'buff', to: 'self', power: 1, health: 1 }] }],
+  },
+  {
+    id: 'tide-surfacemimic', name: 'Surface Mimic', faction: 'tide', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'mage', set: 'x1',
+    text: 'Deploy: put a Glimmer copy of an enemy unit in your hand. Resonant: the copy is not Glimmer.',
+    abilities: [{
+      on: 'deploy',
+      targets: [{ what: 'unit', side: 'enemy' }],
+      ops: [{ op: 'if', cond: { c: 'resonant' }, then: [{ op: 'copy', of: 'target0' }], else: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+    }],
+  },
+  {
+    id: 'tide-mirrorwakecourier', name: 'Mirrorwake Courier', faction: 'tide', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'mage', set: 'x1',
+    text: 'Deploy: return another allied unit to your hand and put a Glimmer copy of it in your hand.',
+    abilities: [{
+      on: 'deploy',
+      targets: [{ what: 'unit', side: 'ally' }],
+      ops: [{ op: 'copy', of: 'target0', glimmer: true }, { op: 'recall', to: 'target0' }], // copy first: R-E2 copies a unit on a Line
+    }],
+  },
+  {
+    id: 'tide-stillmirrormagus', name: 'Stillmirror Magus', faction: 'tide', type: 'unit', cost: 4, power: 3, health: 4, tribe: 'mage', set: 'x1',
+    text: 'When the opponent casts a glyph, put the strongest enemy in Stasis. If it is already in Stasis, nothing happens. Resonant: I have +1|+1.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'stasis', to: 'strongestEnemy' }] }],
+    auras: [{ to: 'self', power: 1, health: 1, cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'tide-pondmirrorwarden', name: 'Pondmirror Warden', faction: 'tide', type: 'unit', cost: 5, power: 3, health: 5, tribe: 'mage', set: 'x1',
+    text: 'Deploy: put an enemy unit in Stasis and put a Glimmer copy of it in your hand.',
+    abilities: [{
+      on: 'deploy',
+      targets: [{ what: 'unit', side: 'enemy' }],
+      ops: [{ op: 'stasis', to: 'target0' }, { op: 'copy', of: 'target0', glimmer: true }],
+    }],
+  },
+  {
+    id: 'tide-mirrordeepleviathan', name: 'Mirrordeep Leviathan', faction: 'tide', type: 'unit', cost: 7, power: 5, health: 6, tribe: 'beast', set: 'x1',
+    keywords: ['veiled'],
+    text: 'Veiled. Assault: put every enemy unit in Stasis.',
+    abilities: [{ on: 'assault', ops: [{ op: 'stasis', to: 'enemies' }] }],
+  },
+  {
+    id: 'tide-twinmoorings', name: 'Twin Moorings', faction: 'tide', type: 'glyph', cost: 2, speed: 'flash', set: 'x1',
+    keywords: ['reprise'],
+    text: 'Reprise. Put an enemy unit in combat in Stasis.',
+    targets: [{ what: 'unit', side: 'enemy', inCombat: true }],
+    ops: [{ op: 'stasis', to: 'target0' }],
+  },
+  {
+    id: 'tide-caughtreflection', name: 'Caught Reflection', faction: 'tide', type: 'glyph', cost: 2, speed: 'flash', set: 'x1',
+    text: 'Put a Glimmer copy of an enemy glyph in your hand.',
+    targets: [{ what: 'glyph', side: 'enemy' }],
+    ops: [{ op: 'copy', of: 'target0', glimmer: true }],
+  },
+  {
+    id: 'tide-ebbandecho', name: 'Ebb and Echo', faction: 'tide', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'],
+    text: "Reprise. Return an enemy unit with 3 or less power to its owner's hand.",
+    targets: [{ what: 'unit', side: 'enemy', filter: { maxPower: 3 } }],
+    ops: [{ op: 'recall', to: 'target0' }],
+  },
+  {
+    id: 'tide-echoingcurrent', name: 'Echoing Current', faction: 'tide', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'],
+    text: "Reprise. Draw 1. If you've cast 2 or more glyphs this round, draw 1 more.",
+    ops: [{ op: 'draw', n: 1 }, { op: 'if', cond: { c: 'seenRound', stat: 'glyphsCast', gte: 2 }, then: [{ op: 'draw', n: 1 }] }],
+  },
+  {
+    id: 'tide-frozenreflections', name: 'Frozen Reflections', faction: 'tide', type: 'glyph', cost: 3, speed: 'ritual', set: 'x1',
+    text: 'Draw 1. Put a Glimmer copy of each enemy unit in Stasis in your hand.',
+    ops: [{ op: 'draw', n: 1 }, { op: 'copy', of: { from: 'enemies', filter: { stasis: true } }, glimmer: true }],
+  },
 ];

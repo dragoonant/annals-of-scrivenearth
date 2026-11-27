@@ -165,4 +165,51 @@ export const tide: Subjects = {
   'tide-turnofthelocks': s(
     'a gigantic brass lock wheel turning by itself as every canal in view reverses its flow',
     'over a sprawling crystal canal district at dusk, boats and soldiers all swept back toward their starting quays'),
+
+  // ---------- set x1: The Mirror Quarter ----------
+  'tide-hesper': s(
+    'a tall woman in her thirties with close-cropped black hair and olive skin, a long deep blue coat with mirrored glass buttons, a flat disc of polished water held in both hands',
+    'kneeling at the edge of a still canal basin, her reflection in the water rising to stand beside her'),
+  'tide-hesper--ascended': s(
+    'a tall woman in her thirties with close-cropped black hair and olive skin, a long deep blue coat edged with mirrored glass plates, a pale twin of herself made of clear water at her shoulder',
+    'standing on a wide lock gate while every pool of water in the canal below holds a second image of her'),
+  'tide-canalglint': s(
+    'a slight young man in a blue apprentice smock holding a hand mirror of polished silver',
+    'angling the mirror over a narrow canal so a bright copy of a passing scout appears on the water'),
+  'tide-wakeecho': s(
+    'a sleek otter with wet silver-blue fur and pale glowing whiskers',
+    'leaping from a canal as a clear water copy of itself springs up in the spray behind it'),
+  'tide-glasswaterlookout': s(
+    'a stout construct of riveted brass and clear glass panels with a periscope head',
+    'half-submerged beside a stone bridge, its glass body nearly lost against the rippling canal'),
+  'tide-surfacemimic': s(
+    'a lean woman in her twenties with a shaved head and grey-blue robes, her skin shimmering like the face of a pond',
+    'crouched on a canal step while the water in front of her shows an enemy knight she is slowly becoming'),
+  'tide-mirrorwakecourier': s(
+    'a wiry man in his forties in a short blue oilskin cape with a satchel of glass vials',
+    'stepping backward through a doorway of standing water as a faint double of him steps out the far side'),
+  'tide-stillmirrormagus': s(
+    'an older woman with grey braids pinned in a crown, a heavy indigo robe and a round mirror of dark polished glass on a chain',
+    'raising the mirror toward an incoming bolt of fire, the flames turning to blue ice on its face'),
+  'tide-pondmirrorwarden': s(
+    'a broad-shouldered man in his fifties with a grey beard and a breastplate of polished silver glass',
+    'standing knee-deep in a moonlit garden pool, an enemy soldier rimed with frost on the bank while the soldier\'s image lingers in the water'),
+  'tide-mirrordeepleviathan': s(
+    'a colossal sea serpent with scales of mirrored glass that throw back the sky',
+    'rising out of a flooded plaza, so bright that the defenders on the walls stand stock-still'),
+  'tide-twinmoorings': s(
+    'a pair of crossed chains of iced canal water pinning a running soldier to an iron ring in a quay wall',
+    'beneath a low arched bridge at night, the chains doubled in the black water below'),
+  'tide-caughtreflection': s(
+    'a gloved hand pressing a pane of clear glass against a ball of enemy fire in mid-air',
+    'on a rooftop above the canals at dusk, an identical ball of fire blooming inside the glass'),
+  'tide-ebbandecho': s(
+    'a curling wave of grey-green water lifting an armored soldier off his feet',
+    'on a flooded market street, a fainter second wave following close behind the first'),
+  'tide-echoingcurrent': s(
+    "a ring of glowing water circling a mage's open hand, a fainter second ring trailing it",
+    'in a candlelit archive gallery where ripples of light run across the vaulted ceiling'),
+  'tide-frozenreflections': s(
+    'a sheet of clear canal ice holding the still images of enemy soldiers like insects in amber',
+    'on a wide iced-over canal at dawn, a mage kneeling to lift one image out of the ice'),
 };

@@ -905,3 +905,193 @@ describe('under cards (First Light additions)', () => {
     expect(s.players[0].spire).toBe(12);
   });
 });
+
+// ---------- set x1: The Mirror Quarter ----------
+const handOf = (s: G, seat: 0 | 1) => s.players[seat].hand.map((h) => ({ card: h.card, glimmer: !!h.glimmer }));
+
+describe('under x1 cards', () => {
+  it('under-lisk: Dawn copies the weakest enemy (Glimmer); 6 copies ascend him; Ascend copies the strongest enemy and destroys it', () => {
+    const s = board({ line: [['under-lisk'], ['ember-ashrunner', 'prism-glasswarden']] });
+    s.players[0].heroes = ['under-lisk'];
+    expect(st(s, unit(s, 0, 'under-lisk'))).toMatchObject({ power: 2, health: 3 });
+    endRound(s);
+    expect(handOf(s, 0)).toContainEqual({ card: 'prism-glasswarden', glimmer: true });
+    expect(handOf(s, 0).some((h) => h.card === 'ember-ashrunner')).toBe(false);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    expect(isAscended(s, 0, 'under-lisk')).toBe(false);
+    // 5 copies made already: the Dawn copy is the 6th
+    const a = board({ line: [['under-lisk'], ['ember-ashrunner', 'prism-glasswarden']] });
+    a.players[0].heroes = ['under-lisk'];
+    a.players[0].seen.copiesMade = 5;
+    const l = unit(a, 0, 'under-lisk');
+    l.dmg = 2;
+    endRound(a);
+    expect(isAscended(a, 0, 'under-lisk')).toBe(true);
+    expect(cards(a, 1)).toEqual(['prism-glasswarden']);
+    expect(handOf(a, 0)).toContainEqual({ card: 'ember-ashrunner', glimmer: false });
+    expect(handOf(a, 0)).toContainEqual({ card: 'prism-glasswarden', glimmer: true });
+    expect(l.dmg).toBe(0);
+    expect(st(a, l)).toMatchObject({ power: 4, health: 5 });
+    // ascended Dawn copies the strongest enemy
+    const b = board({ line: [['under-lisk'], ['ember-ashrunner', 'prism-glasswarden']] });
+    b.players[0].heroes = ['under-lisk'];
+    b.players[0].ascended = ['under-lisk'];
+    endRound(b);
+    expect(handOf(b, 0)).toContainEqual({ card: 'ember-ashrunner', glimmer: true });
+    expect(handOf(b, 0).some((h) => h.card === 'prism-glasswarden')).toBe(false);
+    expect(cards(b, 1)).toEqual(['ember-ashrunner', 'prism-glasswarden']);
+  });
+
+  it('under-coffintout: Shatter copies a random enemy unit (Glimmer)', () => {
+    const s = board({ hand: [[], ['zz-zap']], line: [['under-coffintout'], ['prism-glasswarden']], first: 1 });
+    play(s, 'zz-zap', [unit(s, 0, 'under-coffintout').iid]);
+    expect(cards(s, 0)).toEqual([]);
+    expect(handOf(s, 0)).toEqual([{ card: 'prism-glasswarden', glimmer: true }]);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('under-silkgarrotte: Veiled (the enemy cannot target it), Dread (a 2-power blocker is refused), Corrosive (destroys a big blocker)', () => {
+    const v = board({ hand: [[], ['zz-zap']], line: [['under-silkgarrotte'], []], first: 1 });
+    expect(tryPlay(v, 'zz-zap', [unit(v, 0, 'under-silkgarrotte').iid]).ok).toBe(false);
+    const s = board({ line: [['under-silkgarrotte'], ['zz-grunt', 'zz-ogre']] });
+    const g = unit(s, 0, 'under-silkgarrotte');
+    declare(s, g.iid);
+    expect(s.phase).toBe('block');
+    expect(applyAction(s, { type: 'block', unit: unit(s, 1, 'zz-grunt').iid, att: g.iid }).ok).toBe(false);
+    act(s, { type: 'block', unit: unit(s, 1, 'zz-ogre').iid, att: g.iid });
+    act(s, { type: 'blocks' });
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual(['zz-grunt']);
+  });
+
+  it("under-wiretaplistener: when the opponent casts a glyph, deal 1 to the enemy Spire; its owner's glyphs do not count", () => {
+    const s = board({ hand: [['zz-zap'], ['zz-zap']], line: [['under-wiretaplistener'], ['zz-wall']], first: 1 });
+    play(s, 'zz-zap', [unit(s, 0, 'under-wiretaplistener').iid]);
+    expect(s.players[1].spire).toBe(19);
+    expect(s.players[0].seen.glyphDamage).toBe(1);
+    pass(s);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    expect(s.players[1].spire).toBe(19);
+  });
+
+  it('under-moldtaker: Deploy copies another allied unit into hand (not Glimmer), then destroys it', () => {
+    const s = board({ hand: [['under-moldtaker'], []], line: [['prism-glasswarden'], ['ember-ashrunner']] });
+    expect(tryPlay(s, 'under-moldtaker', [unit(s, 1, 'ember-ashrunner').iid]).ok).toBe(false);
+    play(s, 'under-moldtaker', [unit(s, 0, 'prism-glasswarden').iid]);
+    expect(cards(s, 0)).toEqual(['under-moldtaker']);
+    expect(handOf(s, 0)).toEqual([{ card: 'prism-glasswarden', glimmer: false }]);
+    expect(s.players[0].seen.alliesDied).toBe(1);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('under-borrowedface: Veiled; Deploy copies an enemy unit (Glimmer)', () => {
+    const s = board({ hand: [['under-borrowedface'], ['zz-zap']], line: [[], ['ember-ashrunner', 'prism-glasswarden']] });
+    play(s, 'under-borrowedface', [unit(s, 1, 'ember-ashrunner').iid]);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: true }]);
+    expect(cards(s, 1)).toEqual(['ember-ashrunner', 'prism-glasswarden']);
+    expect(s.priority).toBe(1);
+    expect(tryPlay(s, 'zz-zap', [unit(s, 0, 'under-borrowedface').iid]).ok).toBe(false);
+  });
+
+  it('under-resurrectionist: a destroyed enemy unit is copied (Glimmer); Resonant: the copy is not Glimmer', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['under-resurrectionist'], ['ember-ashrunner']] });
+    play(s, 'zz-zap', [unit(s, 1, 'ember-ashrunner').iid]);
+    expect(cards(s, 1)).toEqual([]);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: true }]);
+    const r = board({ hand: [['zz-zap'], []], line: [['under-resurrectionist', 'under-vex'], ['ember-ashrunner']] });
+    r.players[0].ascended = ['under-vex'];
+    play(r, 'zz-zap', [unit(r, 1, 'ember-ashrunner').iid]);
+    expect(handOf(r, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: false }]);
+  });
+
+  it('under-gravebagsnatcher: Deploy copies an enemy unit with 3 or less power (not Glimmer), then destroys it', () => {
+    const s = board({ hand: [['under-gravebagsnatcher'], []], line: [[], ['ember-ashrunner', 'under-leechoverseer']] });
+    expect(tryPlay(s, 'under-gravebagsnatcher', [unit(s, 1, 'under-leechoverseer').iid]).ok).toBe(false);
+    play(s, 'under-gravebagsnatcher', [unit(s, 1, 'ember-ashrunner').iid]);
+    expect(cards(s, 1)).toEqual(['under-leechoverseer']);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: false }]);
+  });
+
+  it('under-masqueradeengine: Veiled, Corrosive; Assault copies every enemy unit (Glimmer)', () => {
+    const v = board({ hand: [[], ['zz-zap']], line: [['under-masqueradeengine'], []], first: 1 });
+    expect(tryPlay(v, 'zz-zap', [unit(v, 0, 'under-masqueradeengine').iid]).ok).toBe(false);
+    const s = board({ line: [['under-masqueradeengine'], ['ember-ashrunner', 'prism-glasswarden']] });
+    const e = unit(s, 0, 'under-masqueradeengine');
+    declare(s, e.iid);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: true }, { card: 'prism-glasswarden', glimmer: true }]);
+    act(s, { type: 'block', unit: unit(s, 1, 'prism-glasswarden').iid, att: e.iid });
+    act(s, { type: 'blocks' });
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual(['ember-ashrunner']);
+    expect(st(s, e).keywords).not.toContain('veiled');
+  });
+
+  it('under-switchedmorgue: Flash destroys an allied unit and copies the strongest enemy unit (Glimmer)', () => {
+    const s = board({ hand: [['under-switchedmorgue'], []], line: [['zz-grunt'], ['prism-glasswarden', 'ember-ashrunner']] });
+    expect(tryPlay(s, 'under-switchedmorgue', [unit(s, 1, 'ember-ashrunner').iid]).ok).toBe(false);
+    play(s, 'under-switchedmorgue', [unit(s, 0, 'zz-grunt').iid]);
+    expect(cards(s, 0)).toEqual([]);
+    expect(s.players[0].seen.alliesDied).toBe(1);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: true }]);
+  });
+
+  it('under-velvetknife: Flash gives an allied Veiled unit +2|+0 and Corrosive this round', () => {
+    const s = board({ hand: [['under-velvetknife'], []], line: [['zz-veiled', 'zz-grunt'], ['zz-ogre']] });
+    expect(tryPlay(s, 'under-velvetknife', [unit(s, 0, 'zz-grunt').iid]).ok).toBe(false);
+    const v = unit(s, 0, 'zz-veiled');
+    play(s, 'under-velvetknife', [v.iid]);
+    expect(st(s, v).power).toBe(5);
+    expect(st(s, v).keywords).toContain('corrosive');
+    attack(s, [v], [[unit(s, 1, 'zz-ogre'), v]]);
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual([]);
+    const t = board({ hand: [['under-velvetknife'], []], line: [['zz-veiled'], []] });
+    const w = unit(t, 0, 'zz-veiled');
+    play(t, 'under-velvetknife', [w.iid]);
+    endRound(t);
+    expect(st(t, w).power).toBe(3);
+    expect(st(t, w).keywords).not.toContain('corrosive');
+  });
+
+  it('under-counterfeitseal: Swift copies an enemy glyph on the stack into hand and deals 1 to the enemy Spire', () => {
+    const s = board({ hand: [['under-counterfeitseal'], ['under-streettax']], first: 1 });
+    play(s, 'under-streettax');
+    play(s, 'under-counterfeitseal', [s.stack[0].sid]);
+    pass(s); // the newest glyph resolves first
+    expect(handOf(s, 0)).toEqual([{ card: 'under-streettax', glimmer: false }]);
+    expect(s.players[1].spire).toBe(19);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('under-deadmansecho: Reprise; Swift destroys a damaged enemy unit and its Glimmer copy can do it once more', () => {
+    const s = board({ hand: [['under-deadmansecho'], []], line: [[], ['zz-ogre', 'zz-wall']] });
+    expect(tryPlay(s, 'under-deadmansecho', [unit(s, 1, 'zz-wall').iid]).ok).toBe(false);
+    unit(s, 1, 'zz-ogre').dmg = 1;
+    play(s, 'under-deadmansecho', [unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(cards(s, 1)).toEqual(['zz-wall']);
+    expect(s.players[0].hand.find((h) => h.card === 'under-deadmansecho')).toMatchObject({ glimmer: true, plain: true });
+    pass(s);
+    unit(s, 1, 'zz-wall').dmg = 1;
+    play(s, 'under-deadmansecho', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(cards(s, 1)).toEqual([]);
+    expect(s.players[0].hand.length).toBe(0);
+  });
+
+  it('under-grandforgery: Ritual copies the strongest enemy unit; Resonant also copies every enemy unit (Glimmer)', () => {
+    const s = board({ hand: [['under-grandforgery'], []], line: [[], ['prism-glasswarden', 'ember-ashrunner']] });
+    play(s, 'under-grandforgery');
+    pass(s);
+    expect(handOf(s, 0)).toEqual([{ card: 'ember-ashrunner', glimmer: false }]);
+    const r = board({ hand: [['under-grandforgery'], []], line: [['under-vex'], ['prism-glasswarden', 'ember-ashrunner']] });
+    r.players[0].ascended = ['under-vex'];
+    play(r, 'under-grandforgery');
+    pass(r);
+    expect(handOf(r, 0)).toEqual([
+      { card: 'ember-ashrunner', glimmer: false },
+      { card: 'prism-glasswarden', glimmer: true },
+      { card: 'ember-ashrunner', glimmer: true },
+    ]);
+  });
+});

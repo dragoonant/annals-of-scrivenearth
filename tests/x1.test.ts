@@ -1,7 +1,7 @@
 // Rules that arrive with The Mirror Quarter (set x1): R-K13 Veiled, R-K14 Reprise, R-E1 Glimmer, R-E2 Copy, R-E3 foe glyph.
 import { describe, expect, it } from 'vitest';
 import type { CardDef } from '../src/engine/types';
-import { hasCard, registerCards } from '../src/engine/query';
+import { hasCard, matches, registerCards } from '../src/engine/query';
 import { validateCards } from '../src/engine/validate';
 import { view } from '../src/engine/view';
 import { act, attack, board, kinds, legalActions, pass, play, resolveCombat, st, unit } from './helpers';
@@ -37,6 +37,7 @@ describe('R-K13 Veiled', () => {
     resolveCombat(s);
     expect(kinds(s)).toContain('unveil');
     expect(st(s, v).keywords).not.toContain('veiled');
+    expect(matches(s, v, { kw: 'veiled' }, true)).toBe(false); // filters that read stats before auras agree
   });
 });
 

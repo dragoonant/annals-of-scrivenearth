@@ -167,5 +167,50 @@ export const prism: Subjects = {
   'prism-grand-muster': s(
     'a great crowd of fresh recruits raising round bucklers together, a single wave of gold light rolling over every rim',
     'filling the steps of a vast crystal amphitheatre at noon, an officer\'s raised baton at the front'),
-
+  // ---------- set x1: The Mirror Quarter ----------
+  'prism-liova': s(
+    'a slender woman in her late twenties with close-cropped silver-white hair and dark brown skin, in burnished white plate polished to a bright sheen, a tall oval looking-glass shield on her left arm and a slim warden\'s mace',
+    'raising the shield in a hall of silvered panels as a stream of violet sparks strikes it and the soldier beside her gains a shining double'),
+  'prism-liova--ascended': s(
+    'a slender woman in her late twenties with close-cropped silver-white hair lifting in a pale glow, her plate turned to living silvered glass that shows the sky, a ring of floating oval panes circling her, the oval looking-glass shield grown taller than she is',
+    'standing at the centre of a vaulted crystal hall as every soldier around her steps out of a pane as a gleaming twin'),
+  'prism-glancing-sentry': s(
+    'a lean young man of about twenty with a shaved head and light white mail, a small round buckler of polished silver strapped to his forearm',
+    'tilting the buckler on a narrow footbridge at night so a violet bolt skips off it into the dark'),
+  'prism-silverer': s(
+    'a middle-aged craftswoman with soot on one cheek, rolled sleeves and a scorched leather apron, pouring molten silver from a ladle across a sheet of clear glass',
+    'in a cramped glassworks of the mirrored quarter, a soldier\'s likeness already forming in the cooling glass'),
+  'prism-reflection-picket': s(
+    'a stocky woman guard in white half-plate carrying a tall oblong shield of polished silver glass, her own likeness crisp on its face',
+    'on a lamp-lit street corner of the mirrored quarter as a second copy of her steps out of the shield behind a spray of violet sparks'),
+  'prism-glare-warden': s(
+    'a tall grey-bearded man in white plate with gold trim, a round concave shield of mirror-bright steel braced on his forearm',
+    'angling the shield on a sunny rampart so a blinding beam of sunlight leaps across the courtyard into an enemy captain\'s eyes'),
+  'prism-shrouded-lensman': s(
+    'a quiet man in a grey hooded cloak of silvered gauze that blurs into the wall behind him, a brass lens-lantern held low at his hip',
+    'slipping along a dim arcade at dusk to lay a pale shimmer of light over a sleeping guard'),
+  'prism-memory-glass': s(
+    'a tall standing oval of dark silvered glass in a heavy brass frame on clawed brass feet, the faint glowing image of a fallen soldier held inside it',
+    'in a candlelit chapel of the upper tiers, the soldier\'s image stepping forward out of the glass'),
+  'prism-mirrorhall-marshal': s(
+    'a broad woman in her fifties with a white braid wound around her head, gold-trimmed white plate, a brass spotting scope at her belt and a baton of clear crystal',
+    'inspecting a rank of shimmering soldiers in a long hall of facing panes, every soldier repeated again and again into the distance'),
+  'prism-thousand-pane-bastion': s(
+    'a towering walking fortress of overlapping silvered glass panes on a heavy brass frame, a glowing amber core behind its chest panes and pillar legs of white crystal',
+    'standing over a crowded square as violet fire splashes across its body and flashes back as gold light onto the soldiers at its feet'),
+  'prism-second-sheen': s(
+    'a gauntleted hand drawing a cloth across the rim of a round shield, a bright gold gleam racing along the edge and then racing around it once more',
+    'in the lull of a skirmish on a terrace stair, the shield bearer already rising'),
+  'prism-polished-reply': s(
+    'a silver shield catching a violet bolt of force and hurling it straight back along its own path',
+    'across a narrow canal between facing balconies, the caster on the far side flinching'),
+  'prism-mirrored-drill': s(
+    'a pair of young recruits in white tabards facing a tall wall of silvered glass, holding the same raised shield guard as their reflections',
+    'in a sunlit practice yard of the mirror quarter, a sergeant pacing behind them with a cane'),
+  'prism-facet-twin': s(
+    'a soldier in white plate and a shimmering translucent double of him stepping out of his shield side by side',
+    'at the mouth of a crystal tunnel, gold light pouring from the seam between the soldier and his double'),
+  'prism-mirror-vigil': s(
+    'a ring of tall silvered panes standing around a sleeping camp of soldiers, each pane glowing with a soft protective shimmer',
+    'on a high terrace under the night stars, a lone sentry walking the ring with a lantern'),
 };

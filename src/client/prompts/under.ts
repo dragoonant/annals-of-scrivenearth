@@ -18,4 +18,12 @@ export const under: Record<string, string[]> = {
   'under-makeexample': ['Choose an allied unit to destroy (its power is the damage)', 'Choose an enemy unit to take damage equal to that power'],
   'under-backalleylesson': ['Choose an enemy unit for each of your Dread units to strike'],
   'under-hostiletakeover': ['Choose an enemy unit to destroy (then drain 2 from the enemy Spire)'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'under-moldtaker': ['Choose another allied unit to copy into your hand, then destroy'],
+  'under-borrowedface': ['Choose an enemy unit to copy into your hand (Glimmer)'],
+  'under-gravebagsnatcher': ['Choose an enemy unit with 3 or less power to copy into your hand, then destroy'],
+  'under-switchedmorgue': ['Choose an allied unit to destroy (then copy the strongest enemy unit, Glimmer)'],
+  'under-velvetknife': ['Choose an allied unit with Veiled to get +2|+0 and Corrosive this round'],
+  'under-counterfeitseal': ['Choose an enemy glyph to copy into your hand (then deal 1 to the enemy Spire)'],
+  'under-deadmansecho': ['Choose a damaged enemy unit to destroy'],
 };

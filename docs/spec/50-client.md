@@ -59,6 +59,9 @@ engine gives a reason, and that reason is shown on hover/press next to the contr
    glyph **stack** (newest on top, each item showing its caster, card, and a line to its target).
 5. **End screen**: who won and why (`endReason`), rounds played, each hero's final progress, "Play again" and "Title".
 6. **How to play**: our own words, short, with the keyword list from one table (`KEYWORD_HELP` in `src/client/text.ts`).
+7. **Deck builder**: the collection with filters by faction, type, cost, keyword and **set** (First Light, The Mirror
+   Quarter, The Starward Rise; a set or faction appears only once it has cards). Hand cards that are Glimmer (R-E1)
+   carry a GLIMMER tag and a rose edge, on your hand and on the opponent's card backs (Glimmer is open information).
 
 ## Interaction
 - **Inspect**: hover (300 ms) or long-press any card anywhere (hand, Line, stack, Scrap, log names, deck peek) to open

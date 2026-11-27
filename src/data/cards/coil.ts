@@ -344,4 +344,104 @@ export const coil: CardDef[] = [
       { op: 'buff', to: { from: 'allies', filter: { card: 'coil-sapling' } }, power: 1, health: 1 },
     ],
   },
+
+  // ---------- set x1: The Mirror Quarter ----------
+  // Cuttings and clones: gardeners graft Glimmer copies of allied beasts, beasts copy themselves when they survive or
+  // strike, and Veiled stalkers wait in the undergrowth. Hero: the grafter (copiesMade).
+  // ---------- hero ----------
+  {
+    id: 'coil-wenlo', name: 'Wenlo Ashgraft, Cutting-Keeper', faction: 'coil', type: 'hero', cost: 3, power: 1, health: 4,
+    tribe: 'gardener', set: 'x1',
+    text: 'Dawn: put a Glimmer copy of your strongest ally (highest power) in your hand.',
+    abilities: [{ on: 'dawn', ops: [{ op: 'copy', of: 'strongestAlly', glimmer: true }] }],
+    level: { who: 'you', stat: 'copiesMade', n: 6, text: "You've made 6+ copies" },
+    ascended: {
+      name: 'Wenlo, the Endless Orchard', power: 3, health: 6, keywords: ['mend'],
+      text: 'Mend. Dawn: put a Glimmer copy of your strongest ally (highest power) in your hand and gain 2 Charge. ' +
+        'Ascend: put a Glimmer copy of each other ally in your hand.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'copy', of: 'strongestAlly', glimmer: true }, { op: 'charge', n: 2 }] },
+        { on: 'ascend', ops: [{ op: 'copy', of: 'otherAllies', glimmer: true }] },
+      ],
+    },
+  },
+  // ---------- units ----------
+  {
+    id: 'coil-sapwick-runner', name: 'Sapwick Runner', faction: 'coil', type: 'unit', cost: 1, power: 1, health: 1,
+    tribe: 'gardener', set: 'x1', text: 'Deploy: create a Glimmer Sap Surge in your hand.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'create', card: 'coil-sap-surge', glimmer: true }] }],
+  },
+  {
+    id: 'coil-cutting-gatherer', name: 'Cutting Gatherer', faction: 'coil', type: 'unit', cost: 2, power: 1, health: 2,
+    tribe: 'gardener', set: 'x1', text: 'Deploy: put a Glimmer copy of an allied beast in your hand.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally', filter: { tribe: 'beast' } }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+  },
+  {
+    id: 'coil-brushveil-lynx', name: 'Brushveil Lynx', faction: 'coil', type: 'unit', cost: 2, power: 2, health: 1,
+    keywords: ['veiled'], tribe: 'beast', set: 'x1',
+    text: 'Veiled. When the opponent casts a glyph, I get +1|+0.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'buff', to: 'self', power: 1 }] }],
+  },
+  {
+    id: 'coil-splitbark-boar', name: 'Splitbark Boar', faction: 'coil', type: 'unit', cost: 3, power: 2, health: 4,
+    tribe: 'beast', set: 'x1', text: 'When I take damage and survive, put a Glimmer copy of me in your hand.',
+    abilities: [{ on: 'survive', ops: [{ op: 'copy', of: 'self', glimmer: true }] }],
+  },
+  {
+    id: 'coil-fernshade-prowler', name: 'Fernshade Prowler', faction: 'coil', type: 'unit', cost: 3, power: 3, health: 2,
+    keywords: ['veiled', 'pierce'], tribe: 'beast', set: 'x1',
+    text: 'Veiled, Pierce. Resonant: I have +1|+1.',
+    auras: [{ to: 'self', power: 1, health: 1, cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'coil-selfsown-aurochs', name: 'Selfsown Aurochs', faction: 'coil', type: 'unit', cost: 4, power: 4, health: 4,
+    tribe: 'beast', set: 'x1', text: 'Deploy: put a Glimmer copy of me in your hand.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'copy', of: 'self', glimmer: true }] }],
+  },
+  {
+    id: 'coil-gloamthorn', name: 'Gloamthorn Stalker', faction: 'coil', type: 'unit', cost: 5, power: 4, health: 4,
+    keywords: ['veiled', 'mend'], tribe: 'beast', set: 'x1',
+    text: 'Veiled, Mend. Strike: put a Glimmer copy of me in your hand.',
+    abilities: [{ on: 'strike', ops: [{ op: 'copy', of: 'self', glimmer: true }] }],
+  },
+  {
+    id: 'coil-elder-sporehorn', name: 'Elder Sporehorn', faction: 'coil', type: 'unit', cost: 7, power: 6, health: 6,
+    keywords: ['veiled', 'pierce'], tribe: 'beast', set: 'x1',
+    text: 'Veiled, Pierce. Strike: gain 3 Charge.',
+    abilities: [{ on: 'strike', ops: [{ op: 'charge', n: 3 }] }],
+  },
+  // ---------- glyphs ----------
+  {
+    id: 'coil-take-a-cutting', name: 'Take a Cutting', faction: 'coil', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    text: 'Put a Glimmer copy of a damaged ally in your hand.',
+    targets: [{ what: 'unit', side: 'ally', filter: { damaged: true } }],
+    ops: [{ op: 'copy', of: 'target0', glimmer: true }],
+  },
+  {
+    id: 'coil-twice-grown-thorns', name: 'Twice-Grown Thorns', faction: 'coil', type: 'glyph', cost: 2, speed: 'flash', set: 'x1',
+    keywords: ['reprise'],
+    text: 'Reprise. Give an ally +2|+0 and Pierce this round.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', power: 2, dur: 'round' }, { op: 'grant', to: 'target0', kw: ['pierce'], dur: 'round' }],
+  },
+  {
+    id: 'coil-strike-from-the-ferns', name: 'Strike from the Ferns', faction: 'coil', type: 'glyph', cost: 2, speed: 'swift', set: 'x1',
+    text: 'Give a Veiled ally +2|+0 this round, then it strikes an enemy unit.', needsAllTargets: true,
+    targets: [{ what: 'unit', side: 'ally', filter: { kw: 'veiled' } }, { what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'buff', to: 'target0', power: 2, dur: 'round' }, { op: 'strike', from: 'target0', to: 'target1' }],
+  },
+  {
+    id: 'coil-second-pounce', name: 'Second Pounce', faction: 'coil', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'],
+    text: 'Reprise. Your strongest ally (highest power) strikes the weakest enemy (lowest power).',
+    ops: [{ op: 'strike', from: 'strongestAlly', to: 'weakestEnemy' }],
+  },
+  {
+    id: 'coil-season-of-cuttings', name: 'Season of Cuttings', faction: 'coil', type: 'glyph', cost: 3, speed: 'ritual', set: 'x1',
+    text: 'Put a Glimmer copy of each allied beast in your hand. Resonant: gain 3 Charge.',
+    ops: [
+      { op: 'copy', of: { from: 'allies', filter: { tribe: 'beast' } }, glimmer: true },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'charge', n: 3 }] },
+    ],
+  },
 ];

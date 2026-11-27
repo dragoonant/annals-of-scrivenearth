@@ -4,12 +4,12 @@ import '../src/data/cards/index';
 import type { FactionId } from '../src/engine/types';
 import { playGame, type Policy } from '../src/ai/arena';
 import { chooseAction } from '../src/ai/ai';
-import { BLACKWATER, collectible, HAND_BUILT, NEW_HERO_DECKS, premadeDecks } from '../src/data/decks';
+import { BLACKWATER, collectible, HAND_BUILT, NEW_HERO_DECKS, premadeDecks, X1_DECKS } from '../src/data/decks';
 import { def } from '../src/engine/query';
 import { checkDeck, FACTIONS } from '../src/engine/validate';
 
 const ai: Policy = (v, seat, rnd) => chooseAction(v, seat, 'normal', rnd);
-const HAND = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS];
+const HAND = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS, ...X1_DECKS];
 const handBuilt = (): ReturnType<typeof premadeDecks> => premadeDecks().filter((d) => HAND.some((h) => h.name === d.name));
 
 describe('premade decks', () => {
@@ -21,6 +21,7 @@ describe('premade decks', () => {
     expect(handBuilt().length).toBe(HAND.length);
     expect(HAND_BUILT.length).toBe(12);
     expect(NEW_HERO_DECKS.length).toBe(6);
+    expect(X1_DECKS.length).toBe(5);
   });
   it('the first six keep their names and old order (?decks= indices rely on it)', () => {
     expect(premadeDecks().slice(0, 6).map((d) => d.name)).toEqual(['Wall of Thorns', 'Foundry Squall', 'Cold Current', 'Skywatch', 'Wildfire Garden', 'Blackwater']);

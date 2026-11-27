@@ -9,8 +9,10 @@ import { checkDeck, FACTIONS } from '../src/engine/validate';
 
 const ai: Policy = (v, seat, rnd) => chooseAction(v, seat, 'normal', rnd);
 const rand: Policy = (v, _s, rnd) => randomAction(v, rnd);
+// Factions that have cards yet (an expansion's faction is empty until its set is written).
+const LIVE = FACTIONS.filter((f) => collectible().some((c) => c.faction === f));
 const pairs: [FactionId, FactionId][] = [];
-for (let i = 0; i < FACTIONS.length; i++) for (let j = i + 1; j < FACTIONS.length; j++) pairs.push([FACTIONS[i], FACTIONS[j]]);
+for (let i = 0; i < LIVE.length; i++) for (let j = i + 1; j < LIVE.length; j++) pairs.push([LIVE[i], LIVE[j]]);
 
 describe('card pool and decks', () => {
   it('First Light, the base set (docs/SETS.md): 300 collectible cards, 50 per faction with 4 heroes, 28 units, 18 glyphs', () => {
@@ -24,9 +26,19 @@ describe('card pool and decks', () => {
       expect(mine.filter((c) => c.type === 'glyph').length, f).toBe(18);
     }
   });
-  it('R-G1 every faction pair builds a legal deck, and all 24 premade decks are legal', () => {
+  it('The Mirror Quarter (set x1): 124 cards, Mirrorwatch 40 with 4 heroes, each older faction 14 with 1 hero', () => {
+    const x1 = collectible().filter((c) => c.set === 'x1');
+    expect(x1.length).toBe(124);
+    for (const f of FACTIONS.slice(0, 7)) {
+      const mine = x1.filter((c) => c.faction === f);
+      expect(mine.length, f).toBe(f === 'mirror' ? 40 : 14);
+      expect(mine.filter((c) => c.type === 'hero').length, f).toBe(f === 'mirror' ? 4 : 1);
+    }
+    expect(collectible().filter((c) => c.faction === 'mirror' && c.set !== 'x1')).toEqual([]);
+  });
+  it('R-G1 every faction pair builds a legal deck, and all 29 premade decks are legal', () => {
     for (const [a, b] of pairs) expect(checkDeck(autoDeck(a, b)).errors, `${a}+${b}`).toEqual([]);
-    expect(premadeDecks().length).toBe(24);
+    expect(premadeDecks().length).toBe(29);
   });
 });
 

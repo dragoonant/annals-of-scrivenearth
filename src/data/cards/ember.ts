@@ -336,4 +336,102 @@ export const ember: CardDef[] = [
     targets: [{ what: 'unit', side: 'enemy' }],
     ops: [{ op: 'damage', to: 'enemies', n: 2 }, { op: 'damage', to: 'target0', n: 3 }],
   },
+
+  // ---------- set x1: The Mirror Quarter ----------
+  // Glass-blowers' sparks: Glimmer burn glyphs, Reprise burn glyphs, Unstable constructs that leave a Glimmer
+  // copy behind. Hero: the glass-gaffer, who levels on Glimmer cards played (glimmerPlayed).
+  {
+    id: 'ember-oriel', name: 'Oriel Sandmere, Glassfire Gaffer', faction: 'ember', type: 'hero', cost: 3, power: 2, health: 3,
+    tribe: 'artificer', set: 'x1',
+    text: 'Dawn: create a Glimmer Cullet Spark in your hand.',
+    abilities: [{ on: 'dawn', ops: [{ op: 'create', card: 'ember-culletspark', glimmer: true }] }],
+    level: { who: 'you', stat: 'glimmerPlayed', n: 8, text: "You've played 8+ Glimmer cards" },
+    ascended: {
+      name: 'Oriel, Glassfire Unbound', power: 4, health: 5,
+      text: 'Dawn: create 2 Glimmer Cullet Sparks in your hand. Ascend: copy each other ally (Glimmer) and gain 2 Charge.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'create', card: 'ember-culletspark', n: 2, glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'copy', of: 'otherAllies', glimmer: true }, { op: 'charge', n: 2 }] },
+      ],
+    },
+  },
+  // units
+  {
+    id: 'ember-baublebot', name: 'Bauble Bot', faction: 'ember', type: 'unit', cost: 1, power: 2, health: 1, tribe: 'construct', set: 'x1',
+    keywords: ['unstable'], text: 'Unstable. Shatter: create a Glimmer Bauble Bot in your hand.',
+    abilities: [{ on: 'shatter', ops: [{ op: 'create', card: 'ember-baublebot', glimmer: true }] }],
+  },
+  {
+    id: 'ember-gafferapprentice', name: "Gaffer's Apprentice", faction: 'ember', type: 'unit', cost: 2, power: 1, health: 2, tribe: 'artificer', set: 'x1',
+    text: 'Deploy: create a Glimmer Cullet Spark in your hand.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'create', card: 'ember-culletspark', glimmer: true }] }],
+  },
+  {
+    id: 'ember-smokedlookout', name: 'Smoked-Glass Lookout', faction: 'ember', type: 'unit', cost: 2, power: 1, health: 3, tribe: 'artificer', set: 'x1',
+    keywords: ['veiled'], text: 'Veiled. Strike: create a Glimmer Pinprick in your hand.',
+    abilities: [{ on: 'strike', ops: [{ op: 'create', card: 'ember-pinprick', glimmer: true }] }],
+  },
+  {
+    id: 'ember-reflectorkiln', name: 'Reflector Kiln', faction: 'ember', type: 'unit', cost: 3, power: 1, health: 4, tribe: 'construct', set: 'x1',
+    text: 'When the opponent casts a glyph, create a Glimmer Slag Bolt in your hand.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'create', card: 'ember-slagbolt', glimmer: true }] }],
+  },
+  {
+    id: 'ember-lampworklancer', name: 'Lampwork Lancer', faction: 'ember', type: 'unit', cost: 3, power: 3, health: 2, tribe: 'construct', set: 'x1',
+    keywords: ['vanguard'], text: 'Vanguard. Strike: create a Glimmer Cullet Spark in your hand. Resonant: I have +1|+1.',
+    abilities: [{ on: 'strike', ops: [{ op: 'create', card: 'ember-culletspark', glimmer: true }] }],
+    auras: [{ to: 'self', power: 1, health: 1, cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'ember-mouldkeeper', name: 'Mould Keeper', faction: 'ember', type: 'unit', cost: 4, power: 3, health: 4, tribe: 'artificer', set: 'x1',
+    text: 'When another ally is destroyed, copy it (Glimmer).',
+    abilities: [{ on: 'allyDied', ops: [{ op: 'copy', of: 'trigger', glimmer: true }] }],
+  },
+  {
+    id: 'ember-lehrforeman', name: 'Lehr Foreman', faction: 'ember', type: 'unit', cost: 5, power: 3, health: 5, tribe: 'smith', set: 'x1',
+    text: "Deploy: create a Glimmer Cullet Spark in your hand. Dusk: if you've played 2+ Glimmer cards this round, deal 2 to every enemy unit.",
+    abilities: [
+      { on: 'deploy', ops: [{ op: 'create', card: 'ember-culletspark', glimmer: true }] },
+      { on: 'dusk', cond: { c: 'seenRound', stat: 'glimmerPlayed', gte: 2 }, ops: [{ op: 'damage', to: 'enemies', n: 2 }] },
+    ],
+  },
+  {
+    id: 'ember-glasscolossus', name: 'Stained-Glass Colossus', faction: 'ember', type: 'unit', cost: 8, power: 7, health: 6, tribe: 'construct', set: 'x1',
+    keywords: ['unstable'], text: 'Unstable. Deploy: deal 2 to every enemy unit. Shatter: create a Glimmer Stained-Glass Colossus in your hand.',
+    abilities: [
+      { on: 'deploy', ops: [{ op: 'damage', to: 'enemies', n: 2 }] },
+      { on: 'shatter', ops: [{ op: 'create', card: 'ember-glasscolossus', glimmer: true }] },
+    ],
+  },
+  // glyphs
+  {
+    id: 'ember-culletspark', name: 'Cullet Spark', faction: 'ember', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Deal 1 to an enemy unit.',
+    targets: [{ what: 'unit', side: 'enemy' }], ops: [{ op: 'damage', to: 'target0', n: 1 }],
+  },
+  {
+    id: 'ember-twingather', name: 'Twin Gather', faction: 'ember', type: 'glyph', cost: 2, speed: 'flash', set: 'x1',
+    text: 'An ally gets +2|+0 this round. Copy it (Glimmer).',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', power: 2, dur: 'round' }, { op: 'copy', of: 'target0', glimmer: true }],
+  },
+  {
+    id: 'ember-blowpipeflare', name: 'Blowpipe Flare', faction: 'ember', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Deal 2 to an enemy unit or the enemy Spire.',
+    targets: [{ what: 'unitOrSpire', side: 'enemy' }], ops: [{ op: 'damage', to: 'target0', n: 2 }],
+  },
+  {
+    id: 'ember-paneburst', name: 'Pane Burst', faction: 'ember', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    text: 'Deal 3 to an enemy unit. Create a Glimmer Cullet Spark in your hand. Resonant: create 2 instead.',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [
+      { op: 'damage', to: 'target0', n: 3 },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'create', card: 'ember-culletspark', n: 2, glimmer: true }], else: [{ op: 'create', card: 'ember-culletspark', glimmer: true }] },
+    ],
+  },
+  {
+    id: 'ember-shardshower', name: 'Shard Shower', faction: 'ember', type: 'glyph', cost: 3, speed: 'ritual', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Deal 1 to every enemy unit and 1 to the enemy Spire.',
+    ops: [{ op: 'damage', to: 'enemies', n: 1 }, { op: 'damage', to: 'enemySpire', n: 1 }],
+  },
 ];

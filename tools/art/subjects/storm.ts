@@ -169,4 +169,50 @@ export const storm: Subjects = {
   'storm-doubledeparture': s(
     'a pair of silver rail trains leaving a grand station side by side, teal lamps blazing and couriers clinging to the sides',
     'beneath a vaulted glass roof with steam rolling across the platforms'),
+  // ---------- set x1: The Mirror Quarter ----------
+  'storm-fen': s(
+    'a wiry woman in her thirties with a cropped black bob and a thin scar through one eyebrow, a long silvered greatcoat lined with hidden pockets, teal gloves, a parcel tucked under one arm',
+    'slipping between hanging laundry lines on a moonlit rooftop, her coat catching the light like a mirror'),
+  'storm-fen--ascended': s(
+    'a wiry woman in her thirties with a cropped black bob and a thin scar through one eyebrow, a floor-length mirrored greatcoat that flares into a pair of silver glider wings, a ring of sealed parcels orbiting her on teal threads',
+    'gliding above a mirrored plaza at midnight while her reflection glides the other way across the glass below'),
+  'storm-pocketcourier': s(
+    'a slight teenage boy in an oversized silver coat with rolled sleeves, a teal cap pulled low, a small wrapped packet pressed to his chest',
+    'ducking through a gap in a crowd of market stalls beneath strings of pale lamps'),
+  'storm-ambushrunner': s(
+    'a lean woman in her twenties in a hooded silver half-cape and teal leathers, crouched low with a short hooked baton drawn',
+    'springing out from behind a mirrored pillar in a narrow arcade, the reflections hiding where she really stands'),
+  'storm-passforger': s(
+    'an elderly man with a white goatee and half-moon spectacles in a silver waistcoat, a brass stamp in one hand and a stack of blank travel passes in the other',
+    'hunched at a cluttered workbench in a back room lit by a single green-shaded lamp'),
+  'storm-signalthief': s(
+    'a young man with shaved sides and a long braid, a silver coat with its collar turned up, a brass listening horn pressed to a humming cable',
+    'perched on a rooftop junction box among tangled teal cables, sparks flickering where he has spliced in'),
+  'storm-moonlessglider': s(
+    'a pilot in a dark silver-grey flight suit and blackened goggles beneath a matte charcoal sail-wing',
+    'drifting silently between dark towers on a starless night, a faint teal lamp on the wingtip the only light'),
+  'storm-quartermaster': s(
+    'a broad woman in her fifties with grey braids pinned up, a heavy silver longcoat, a cloth tape measure around her neck and a rack of mirrored greatcoats beside her',
+    'handing a mirrored coat across a counter in a hidden cloakroom behind a sliding wall panel'),
+  'storm-hushedskiff': s(
+    'a slim airship hull wrapped in silvered sailcloth that mirrors the sky around it, teal running lamps dimmed to a glow',
+    'hanging almost invisible against a pale dawn sky, only a faint ripple where it bends the clouds'),
+  'storm-quicksilvermail': s(
+    'a long sleek mail airship with a liquid-silver hull, teal lamps along its spine and couriers in silver coats braced along the rails',
+    'tearing through a bank of cloud at full speed, a wake of glittering vapour peeling off its hull'),
+  'storm-turnedcollar': s(
+    'a gloved hand flipping up the high silver neckband of a long coat, its inner lining mirrored',
+    'in a crowded rail station, faces in the crowd reflected and blurred in the lining'),
+  'storm-deaddrop': s(
+    'a pair of wrapped parcels tucked into the cavity behind a loose crystal brick, a teal ribbon tied around each',
+    'at the foot of a quiet alley wall with rain pooling on the paving stones'),
+  'storm-smokelantern': s(
+    'a brass hand lamp pouring out thick silver-grey vapour, a soldier inside the cloud frozen mid-step and blinking',
+    'filling a narrow stairwell between towers, the vapour curling up the steps'),
+  'storm-silveredcoats': s(
+    'a pair of couriers swinging long silver greatcoats over their shoulders in unison, the mirrored fabric throwing back the city around them',
+    'on a high rail platform at sunset, their outlines dissolving into the reflected skyline'),
+  'storm-blackoutdelivery': s(
+    'a winged pilot in a silvered coat dropping from a darkened airship hatch with a crate strapped to her back',
+    'over a city district whose street lamps have all just gone dark, only starlight on the rooftops'),
 };

@@ -817,3 +817,217 @@ describe('prism glyphs (First Light additions)', () => {
     expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
   });
 });
+
+// ---------- set x1: The Mirror Quarter ----------
+describe('prism x1 cards', () => {
+  const inHand = (s: GameState, seat: 0 | 1, card: string) => s.players[seat].hand.filter((h) => h.card === card);
+
+  it('prism-liova: Plated; Deploy copies the chosen ally (Glimmer) and nothing else; 4 copies is not enough', () => {
+    const s = board({ hand: [['prism-liova'], BOLTS[1]], line: [['prism-lampkeeper', 'prism-tierguard'], []] });
+    s.players[0].heroes = ['prism-liova'];
+    s.players[0].seen.copiesMade = 3;
+    play(s, 'prism-liova', [unit(s, 0, 'prism-lampkeeper').iid]);
+    expect(inHand(s, 0, 'prism-lampkeeper')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(inHand(s, 0, 'prism-tierguard')).toHaveLength(0);
+    expect(s.players[0].seen.copiesMade).toBe(4);
+    expect(s.players[0].ascended).not.toContain('prism-liova');
+    const l = unit(s, 0, 'prism-liova');
+    expect(st(s, l)).toMatchObject({ power: 2, health: 5 });
+    bolt(s, l.iid);
+    expect(l.dmg).toBe(1); // Plated
+  });
+
+  it('prism-liova: the 5th copy ascends her; Ascend copies every other ally (Glimmer); units and heroes cost 1 less', () => {
+    const s = board({ hand: [['prism-liova', 'prism-glasswarden', 'prism-mirror-ward'], []], line: [['prism-lampkeeper', 'prism-tierguard'], ['prism-glasswarden']] });
+    s.players[0].heroes = ['prism-liova'];
+    s.players[0].seen.copiesMade = 4;
+    play(s, 'prism-liova', [unit(s, 0, 'prism-lampkeeper').iid]);
+    expect(s.players[0].ascended).toContain('prism-liova');
+    expect(inHand(s, 0, 'prism-lampkeeper')).toHaveLength(2); // Deploy, then Ascend
+    expect(inHand(s, 0, 'prism-tierguard')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(inHand(s, 0, 'prism-liova')).toHaveLength(0); // "every other ally"
+    expect(s.players[0].seen.copiesMade).toBe(7);
+    expect(s.players[1].hand).toHaveLength(0);
+    expect(st(s, unit(s, 0, 'prism-liova'))).toMatchObject({ power: 3, health: 6 });
+    pass(s); // seat 1 yields
+    const before = s.players[0].charge;
+    play(s, 'prism-glasswarden'); // cost 1, now 0
+    expect(s.players[0].charge).toBe(before);
+    pass(s);
+    play(s, 'prism-mirror-ward', [unit(s, 0, 'prism-glasswarden').iid]); // glyphs still cost 2
+    expect(s.players[0].charge).toBe(before - 2);
+  });
+
+  it('prism-glancing-sentry: gets Ward when the opponent casts a glyph (before it lands), not for its own side', () => {
+    const s = board({ hand: [['zz-zap', 'zz-pump'], []], line: [['zz-grunt'], ['prism-glancing-sentry']] });
+    const g = unit(s, 1, 'prism-glancing-sentry');
+    expect(g.ward).toBe(false);
+    play(s, 'zz-zap', [g.iid]);
+    expect(s.players[1].line).toContain(g); // the Ward took the Zap
+    expect(g.dmg).toBe(0);
+    expect(g.ward).toBe(false);
+    play(s, 'zz-pump', [unit(s, 0, 'zz-grunt').iid]);
+    expect(g.ward).toBe(true);
+    const t = board({ hand: [[], ['zz-pump']], line: [[], ['prism-glancing-sentry']], first: 1 });
+    play(t, 'zz-pump', [unit(t, 1, 'prism-glancing-sentry').iid]);
+    expect(unit(t, 1, 'prism-glancing-sentry').ward).toBe(false);
+  });
+
+  it('prism-silverer: Deploy copies an ally with 2 or less power (Glimmer); a bigger ally cannot be chosen', () => {
+    const s = board({ hand: [['prism-silverer'], []], line: [['prism-lampkeeper', 'prism-aegis-colossus'], []] });
+    expect(tryPlay(s, 'prism-silverer', [unit(s, 0, 'prism-aegis-colossus').iid])).toBe(false);
+    play(s, 'prism-silverer', [unit(s, 0, 'prism-lampkeeper').iid]);
+    expect(inHand(s, 0, 'prism-lampkeeper')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(inHand(s, 0, 'prism-aegis-colossus')).toHaveLength(0);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('prism-reflection-picket: copies itself (Glimmer) when the opponent casts a glyph, even one that destroys it', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['zz-grunt'], ['prism-reflection-picket']] });
+    play(s, 'zz-zap', [unit(s, 1, 'prism-reflection-picket').iid]);
+    expect(s.players[1].line).toHaveLength(0);
+    expect(inHand(s, 1, 'prism-reflection-picket')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(s.players[1].seen.copiesMade).toBe(1);
+    expect(s.players[0].hand).toHaveLength(0);
+    const t = board({ hand: [[], ['zz-pump']], line: [[], ['prism-reflection-picket']], first: 1 });
+    play(t, 'zz-pump', [unit(t, 1, 'prism-reflection-picket').iid]);
+    expect(inHand(t, 1, 'prism-reflection-picket')).toHaveLength(0);
+  });
+
+  it('prism-glare-warden: Plated; deals 1 to the enemy with the highest power when the opponent casts a glyph', () => {
+    const s = board({ hand: [['zz-zap', 'zz-zap'], []], line: [['zz-grunt', 'zz-ogre'], ['prism-glare-warden']] });
+    const w = unit(s, 1, 'prism-glare-warden');
+    play(s, 'zz-zap', [w.iid]);
+    expect(w.dmg).toBe(0); // Plated
+    expect(unit(s, 0, 'zz-ogre').dmg).toBe(1);
+    expect(unit(s, 0, 'zz-grunt').dmg).toBe(0);
+    play(s, 'zz-zap', [w.iid]);
+    expect(unit(s, 0, 'zz-ogre').dmg).toBe(2);
+    const t = board({ hand: [[], ['zz-pump']], line: [['zz-ogre'], ['prism-glare-warden']], first: 1 });
+    play(t, 'zz-pump', [unit(t, 1, 'prism-glare-warden').iid]);
+    expect(unit(t, 0, 'zz-ogre').dmg).toBe(0);
+  });
+
+  it('prism-shrouded-lensman: Veiled (the enemy cannot target it); Dusk gives the ally with the lowest power Ward', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [[], ['prism-shrouded-lensman', 'zz-grunt', 'zz-wall']] });
+    const l = unit(s, 1, 'prism-shrouded-lensman');
+    expect(tryPlay(s, 'zz-zap', [l.iid])).toBe(false);
+    expect(st(s, l).keywords).toContain('veiled');
+    nextRound(s);
+    expect(unit(s, 1, 'zz-wall').ward).toBe(true);
+    expect(unit(s, 1, 'zz-grunt').ward).toBe(false);
+    expect(l.ward).toBe(false);
+  });
+
+  it('prism-memory-glass: when another ally is destroyed, copies it (Glimmer); a token is not copied', () => {
+    const s = board({ hand: [[], ['zz-bolt', 'zz-bolt']], line: [['prism-memory-glass', 'prism-lampkeeper', 'zz-grunt'], ['prism-glasswarden']], first: 1 });
+    bolt(s, unit(s, 0, 'prism-lampkeeper').iid);
+    expect(inHand(s, 0, 'prism-lampkeeper')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    bolt(s, unit(s, 0, 'zz-grunt').iid);
+    expect(s.log.some((e) => e.k === 'copyToken')).toBe(true);
+    expect(s.players[0].hand).toHaveLength(1);
+    expect(st(s, unit(s, 0, 'prism-memory-glass'))).toMatchObject({ power: 2, health: 5 });
+  });
+
+  it('prism-mirrorhall-marshal: Spotter; Deploy copies every other ally that has Ward (Glimmer), not the others', () => {
+    const s = board({ hand: [['prism-mirrorhall-marshal'], []], line: [['prism-tierguard', 'prism-glasswarden', 'prism-tierguard'], ['prism-tierguard']] });
+    play(s, 'prism-mirrorhall-marshal');
+    expect(inHand(s, 0, 'prism-tierguard')).toHaveLength(2);
+    expect(inHand(s, 0, 'prism-tierguard').every((h) => h.glimmer)).toBe(true);
+    expect(inHand(s, 0, 'prism-glasswarden')).toHaveLength(0);
+    expect(s.players[1].hand).toHaveLength(0);
+    expect(st(s, unit(s, 0, 'prism-mirrorhall-marshal')).keywords).toContain('spotter');
+  });
+
+  it('prism-thousand-pane-bastion: Plated; the opponent casting a glyph gives every other ally +1|+1 this round', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['zz-grunt'], ['prism-thousand-pane-bastion', 'zz-grunt']] });
+    const g = unit(s, 1, 'zz-grunt'), b = unit(s, 1, 'prism-thousand-pane-bastion');
+    play(s, 'zz-zap', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3, hp: 2 });
+    expect(st(s, b)).toMatchObject({ power: 5, health: 7 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, b).keywords).toContain('plated');
+  });
+
+  it('prism-second-sheen: Reprise; +1|+1 this round, and the Glimmer copy does it once more without copying again', () => {
+    const s = board({ hand: [['prism-second-sheen'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'prism-second-sheen', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(inHand(s, 0, 'prism-second-sheen')).toEqual([expect.objectContaining({ glimmer: true, plain: true })]);
+    play(s, 'prism-second-sheen', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 4, health: 4 });
+    expect(inHand(s, 0, 'prism-second-sheen')).toHaveLength(0);
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('prism-polished-reply: gives an ally Ward at once and copies the enemy glyph on the stack (Glimmer)', () => {
+    const s = board({ hand: [['prism-polished-reply'], ['ember-slagbolt']], line: [['zz-ogre'], []], first: 1 });
+    const o = unit(s, 0, 'zz-ogre');
+    play(s, 'ember-slagbolt', [o.iid]);
+    play(s, 'prism-polished-reply', [o.iid, s.stack[0].sid]);
+    expect(o.ward).toBe(true);
+    expect(inHand(s, 0, 'ember-slagbolt')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    pass(s); // Slag Bolt resolves into the Ward
+    expect(o.dmg).toBe(0);
+    expect(o.ward).toBe(false);
+  });
+
+  it('prism-mirrored-drill: Reprise; every ally with 2 or less power gets a lasting +0|+1, twice with the copy', () => {
+    const s = board({ hand: [['prism-mirrored-drill'], []], line: [['zz-grunt', 'zz-ogre'], ['zz-grunt']] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'prism-mirrored-drill');
+    pass(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 3 });
+    expect(st(s, unit(s, 0, 'zz-ogre'))).toMatchObject({ power: 5, health: 5 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(inHand(s, 0, 'prism-mirrored-drill')).toEqual([expect.objectContaining({ glimmer: true, plain: true })]);
+    pass(s); // seat 1 yields priority back
+    play(s, 'prism-mirrored-drill');
+    pass(s);
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 4 });
+    expect(inHand(s, 0, 'prism-mirrored-drill')).toHaveLength(0);
+  });
+
+  it('prism-facet-twin: the ally gets a lasting +1|+1 and is copied (Glimmer); Resonant also gives it Ward', () => {
+    const s = board({ hand: [['prism-facet-twin'], []], line: [['prism-lampkeeper', 'zz-grunt'], []] });
+    const l = unit(s, 0, 'prism-lampkeeper');
+    play(s, 'prism-facet-twin', [l.iid]);
+    pass(s);
+    expect(st(s, l)).toMatchObject({ power: 2, health: 3 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(inHand(s, 0, 'prism-lampkeeper')).toEqual([expect.objectContaining({ glimmer: true })]);
+    expect(l.ward).toBe(false);
+    const r = board({ hand: [['prism-facet-twin'], []], line: [['prism-lampkeeper', 'prism-oren'], []] });
+    resonant(r);
+    play(r, 'prism-facet-twin', [unit(r, 0, 'prism-lampkeeper').iid]);
+    pass(r);
+    expect(unit(r, 0, 'prism-lampkeeper').ward).toBe(true);
+    expect(unit(r, 0, 'prism-oren').ward).toBe(false);
+  });
+
+  it('prism-mirror-vigil: Reprise; every ally gets Ward; Resonant also repairs every ally by 2', () => {
+    const s = board({ hand: [['prism-mirror-vigil'], []], line: [['zz-grunt', 'zz-wall'], ['zz-grunt']] });
+    const w = unit(s, 0, 'zz-wall');
+    w.dmg = 3;
+    play(s, 'prism-mirror-vigil');
+    pass(s);
+    expect(unit(s, 0, 'zz-grunt').ward).toBe(true);
+    expect(w.ward).toBe(true);
+    expect(unit(s, 1, 'zz-grunt').ward).toBe(false);
+    expect(w.dmg).toBe(3);
+    expect(inHand(s, 0, 'prism-mirror-vigil')).toEqual([expect.objectContaining({ glimmer: true, plain: true })]);
+    const r = board({ hand: [['prism-mirror-vigil'], []], line: [['zz-wall', 'prism-oren'], []] });
+    resonant(r);
+    unit(r, 0, 'zz-wall').dmg = 3;
+    play(r, 'prism-mirror-vigil');
+    pass(r);
+    expect(unit(r, 0, 'zz-wall').dmg).toBe(1);
+  });
+});

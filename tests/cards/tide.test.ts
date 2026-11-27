@@ -803,3 +803,179 @@ describe('tide cards (First Light additions)', () => {
     expect(s.players[0].seen.recalled).toBe(3);
   });
 });
+
+// ---------- set x1: The Mirror Quarter ----------
+describe('tide x1 cards', () => {
+  const glimmers = (s: G, seat: 0 | 1): string[] => s.players[seat].hand.filter((h) => h.glimmer).map((h) => h.card);
+
+  it('tide-hesper: Deploy copies an ally as Glimmer; ascends on the 4th Glimmer card played, returning and copying the strongest enemy', () => {
+    const s = board({ hand: [['tide-hesper'], []], line: [['tide-sluicepage'], ['tide-stillwaterbailiff', 'tide-sluicepage']] });
+    s.players[0].heroes = ['tide-hesper'];
+    s.players[0].seen.glimmerPlayed = 2;
+    play(s, 'tide-hesper', [unit(s, 0, 'tide-sluicepage').iid]);
+    expect(glimmers(s, 0)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    pass(s);
+    play(s, 'tide-sluicepage'); // 3rd Glimmer card: not yet
+    expect(isAscended(s, 0, 'tide-hesper')).toBe(false);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['tide-stillwaterbailiff', 'tide-sluicepage']);
+    s.players[0].seen.glimmerPlayed = 3;
+    s.players[0].hand.push({ iid: 'hx', card: 'tide-sluicepage', glimmer: true });
+    pass(s);
+    play(s, 'tide-sluicepage'); // the 4th
+    expect(isAscended(s, 0, 'tide-hesper')).toBe(true);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['tide-sluicepage']);
+    expect(ids(s, 1)).toEqual(['tide-stillwaterbailiff']);
+    expect(glimmers(s, 0)).toEqual(['tide-stillwaterbailiff']);
+    expect(st(s, unit(s, 0, 'tide-hesper'))).toMatchObject({ power: 4, health: 6 });
+  });
+
+  it('tide-hesper ascended: Dawn puts a Glimmer copy of a random other ally in hand, which fades at the round end', () => {
+    const s = board({ line: [['tide-hesper', 'tide-pearlsentinel'], []] });
+    s.players[0].heroes = ['tide-hesper'];
+    s.players[0].ascended = ['tide-hesper'];
+    endRound(s);
+    expect(glimmers(s, 0)).toEqual(['tide-pearlsentinel']);
+    endRound(s);
+    expect(glimmers(s, 0)).toEqual(['tide-pearlsentinel']); // the old one faded, a new one came
+    expect(s.players[0].scrap).toContain('tide-pearlsentinel');
+  });
+
+  it('tide-canalglint: Deploy puts a Glimmer copy of an ally with 2 or less power in hand', () => {
+    const s = board({ hand: [['tide-canalglint'], []], line: [['tide-sluicepage', 'tide-stillwaterbailiff'], []] });
+    expect(tryPlay(s, 'tide-canalglint', [unit(s, 0, 'tide-stillwaterbailiff').iid]).ok).toBe(false);
+    play(s, 'tide-canalglint', [unit(s, 0, 'tide-sluicepage').iid]);
+    expect(s.players[0].hand).toEqual([expect.objectContaining({ card: 'tide-sluicepage', glimmer: true })]);
+  });
+
+  it('tide-wakeecho: when the opponent casts a glyph, a Glimmer copy of it goes to hand; my own glyphs do not', () => {
+    const s = board({ hand: [['zz-pump'], ['zz-zap']], line: [['tide-wakeecho'], []], first: 1 });
+    play(s, 'zz-zap', [unit(s, 0, 'tide-wakeecho').iid]);
+    expect(glimmers(s, 0)).toEqual(['tide-wakeecho']);
+    pass(s);
+    play(s, 'zz-pump', [unit(s, 0, 'tide-wakeecho').iid]);
+    expect(glimmers(s, 0)).toEqual(['tide-wakeecho']);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('tide-glasswaterlookout: Veiled from enemy glyphs; grows +1|+1 when the opponent casts a glyph', () => {
+    const s = board({ hand: [[], ['zz-zap']], line: [['tide-glasswaterlookout', 'zz-grunt'], []], first: 1 });
+    const l = unit(s, 0, 'tide-glasswaterlookout');
+    expect(tryPlay(s, 'zz-zap', [l.iid]).ok).toBe(false);
+    play(s, 'zz-zap', [unit(s, 0, 'zz-grunt').iid]);
+    expect(st(s, l)).toMatchObject({ power: 2, health: 3 });
+  });
+
+  it('tide-surfacemimic: Deploy copies an enemy unit as Glimmer; Resonant makes a lasting copy', () => {
+    const s = board({ hand: [['tide-surfacemimic'], []], line: [['tide-maren'], ['tide-stillwaterbailiff']] });
+    play(s, 'tide-surfacemimic', [unit(s, 1, 'tide-stillwaterbailiff').iid]);
+    expect(s.players[0].hand).toEqual([expect.objectContaining({ card: 'tide-stillwaterbailiff', glimmer: true })]);
+    expect(s.players[1].line.length).toBe(1);
+    const r = board({ hand: [['tide-surfacemimic'], []], line: [['tide-maren'], ['tide-stillwaterbailiff']] });
+    r.players[0].ascended = ['tide-maren'];
+    play(r, 'tide-surfacemimic', [unit(r, 1, 'tide-stillwaterbailiff').iid]);
+    expect(ids(r, 0)).toEqual(['tide-stillwaterbailiff']);
+    expect(glimmers(r, 0)).toEqual([]);
+  });
+
+  it('tide-mirrorwakecourier: Deploy returns an ally to hand together with a Glimmer copy of it', () => {
+    const s = board({ hand: [['tide-mirrorwakecourier'], []], line: [['tide-pearlsentinel'], []] });
+    play(s, 'tide-mirrorwakecourier', [unit(s, 0, 'tide-pearlsentinel').iid]);
+    expect(s.players[0].line.map((u) => u.card)).toEqual(['tide-mirrorwakecourier']);
+    expect(ids(s, 0).sort()).toEqual(['tide-pearlsentinel', 'tide-pearlsentinel']);
+    expect(glimmers(s, 0)).toEqual(['tide-pearlsentinel']);
+    expect(s.players[0].seen.recalled).toBe(1);
+  });
+
+  it('tide-stillmirrormagus: an enemy glyph puts the strongest enemy in Stasis; Resonant gives +1|+1', () => {
+    const s = board({ hand: [[], ['zz-zap']], line: [['tide-stillmirrormagus'], ['zz-grunt', 'zz-ogre']], first: 1 });
+    const m = unit(s, 0, 'tide-stillmirrormagus');
+    play(s, 'zz-zap', [m.iid]);
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-grunt').stasis).toBe(false);
+    expect(st(s, m)).toMatchObject({ power: 3, health: 4 });
+    s.players[0].line.push(...board({ line: [['tide-maren'], []] }).players[0].line);
+    s.players[0].ascended = ['tide-maren'];
+    expect(st(s, m)).toMatchObject({ power: 4, health: 5 });
+  });
+
+  it('tide-pondmirrorwarden: Deploy puts an enemy unit in Stasis and a Glimmer copy of it in hand', () => {
+    const s = board({ hand: [['tide-pondmirrorwarden'], []], line: [[], ['tide-stillwaterbailiff']] });
+    const b = unit(s, 1, 'tide-stillwaterbailiff');
+    play(s, 'tide-pondmirrorwarden', [b.iid]);
+    expect(b.stasis).toBe(true);
+    expect(glimmers(s, 0)).toEqual(['tide-stillwaterbailiff']);
+  });
+
+  it('tide-mirrordeepleviathan: Veiled from enemy glyphs; Assault puts every enemy in Stasis, so nothing blocks', () => {
+    const t = board({ hand: [[], ['zz-zap']], line: [['tide-mirrordeepleviathan', 'zz-grunt'], []], first: 1 });
+    expect(tryPlay(t, 'zz-zap', [unit(t, 0, 'tide-mirrordeepleviathan').iid]).ok).toBe(false);
+    const s = board({ line: [['tide-mirrordeepleviathan'], ['zz-ogre', 'zz-wall']] });
+    const l = unit(s, 0, 'tide-mirrordeepleviathan');
+    attack(s, [l]);
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-wall').stasis).toBe(true);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(15);
+  });
+
+  it('tide-twinmoorings: Flash Stasis on an attacker, and its Reprise copy stops a second one', () => {
+    const s = board({ hand: [[], ['tide-twinmoorings']], line: [['zz-ogre', 'zz-grunt'], []] });
+    const o = unit(s, 0, 'zz-ogre');
+    const g = unit(s, 0, 'zz-grunt');
+    attack(s, [o, g]);
+    pass(s);
+    play(s, 'tide-twinmoorings', [o.iid]);
+    expect(o.stasis).toBe(true);
+    expect(s.players[1].hand).toEqual([expect.objectContaining({ card: 'tide-twinmoorings', glimmer: true, plain: true })]);
+    play(s, 'tide-twinmoorings', [g.iid]);
+    expect(g.stasis).toBe(true);
+    expect(s.players[1].hand.length).toBe(0);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(20);
+  });
+
+  it('tide-caughtreflection: Flash puts a Glimmer copy of an enemy glyph on the stack in hand', () => {
+    const s = board({ hand: [['tide-caughtreflection'], ['tide-backwash']], line: [['tide-pearlsentinel'], []], first: 1 });
+    play(s, 'tide-backwash', [unit(s, 0, 'tide-pearlsentinel').iid]);
+    play(s, 'tide-caughtreflection', [s.stack[0].sid]);
+    expect(glimmers(s, 0)).toEqual(['tide-backwash']);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('tide-ebbandecho: Swift returns an enemy with 3 or less power, then its Reprise copy returns another', () => {
+    const s = board({ hand: [['tide-ebbandecho'], []], line: [[], ['tide-sluicepage', 'tide-pearlsentinel', 'zz-ogre']] });
+    expect(tryPlay(s, 'tide-ebbandecho', [unit(s, 1, 'zz-ogre').iid]).ok).toBe(false);
+    play(s, 'tide-ebbandecho', [unit(s, 1, 'tide-sluicepage').iid]);
+    pass(s);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].hand).toEqual([expect.objectContaining({ card: 'tide-ebbandecho', glimmer: true, plain: true })]);
+    pass(s);
+    play(s, 'tide-ebbandecho', [unit(s, 1, 'tide-pearlsentinel').iid]);
+    pass(s);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage', 'tide-pearlsentinel']);
+    expect(ids(s, 0)).toEqual([]);
+  });
+
+  it('tide-echoingcurrent: Swift draws 1; its Reprise copy is the 2nd glyph this round and draws 2', () => {
+    const s = board({ hand: [['tide-echoingcurrent'], []] });
+    play(s, 'tide-echoingcurrent');
+    pass(s);
+    expect(ids(s, 0).sort()).toEqual(['tide-echoingcurrent', 'zz-filler']);
+    pass(s);
+    play(s, 'tide-echoingcurrent');
+    pass(s);
+    expect(ids(s, 0)).toEqual(['zz-filler', 'zz-filler', 'zz-filler']);
+  });
+
+  it('tide-frozenreflections: Ritual draws 1 and copies each enemy unit in Stasis as Glimmer', () => {
+    const s = board({ hand: [['tide-frozenreflections'], []], line: [[], ['tide-stillwaterbailiff', 'tide-sluicepage', 'tide-pearlsentinel']] });
+    unit(s, 1, 'tide-stillwaterbailiff').stasis = true;
+    unit(s, 1, 'tide-pearlsentinel').stasis = true;
+    play(s, 'tide-frozenreflections');
+    pass(s);
+    expect(glimmers(s, 0)).toEqual(['tide-stillwaterbailiff', 'tide-pearlsentinel']);
+    expect(ids(s, 0)).toContain('zz-filler');
+    expect(s.players[0].hand.length).toBe(3);
+  });
+});

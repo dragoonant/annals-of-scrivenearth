@@ -331,4 +331,108 @@ export const under: CardDef[] = [
     targets: [{ what: 'unit', side: 'enemy' }],
     ops: [{ op: 'destroy', to: 'target0' }, { op: 'drain', to: 'enemySpire', n: 2 }],
   },
+
+  // ---------- set x1: The Mirror Quarter ----------
+  // Forgers and body-snatchers: copies of destroyed enemies, Veiled assassins with Corrosive, forged enemy glyphs.
+  // The forger (Lisk): copiesMade.
+  {
+    id: 'under-lisk', name: 'Ansel Lisk, Facesmith', faction: 'under', type: 'hero', cost: 3, power: 2, health: 3,
+    tribe: 'syndicate', set: 'x1',
+    text: 'Dawn: copy the weakest enemy unit (Glimmer).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'copy', of: 'weakestEnemy', glimmer: true }] }],
+    level: { who: 'you', stat: 'copiesMade', n: 6, text: "You've copied 6+ cards" },
+    ascended: {
+      name: 'Lisk, Who Wears the Dead', power: 4, health: 5,
+      text: 'Dawn: copy the strongest enemy unit (Glimmer). Ascend: copy the strongest enemy unit, then destroy it.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'copy', of: 'strongestEnemy', glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'copy', of: 'strongestEnemy' }, { op: 'destroy', to: 'strongestEnemy' }] },
+      ],
+    },
+  },
+  {
+    id: 'under-coffintout', name: 'Coffin Tout', faction: 'under', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'syndicate', set: 'x1',
+    text: 'Shatter: copy a random enemy unit (Glimmer).',
+    abilities: [{ on: 'shatter', ops: [{ op: 'copy', of: 'randomEnemy', glimmer: true }] }],
+  },
+  {
+    id: 'under-silkgarrotte', name: 'Silk Garrotte', faction: 'under', type: 'unit', cost: 2, power: 1, health: 1, tribe: 'syndicate', set: 'x1',
+    keywords: ['veiled', 'corrosive', 'dread'],
+    text: 'Veiled, Corrosive, Dread.',
+  },
+  {
+    id: 'under-wiretaplistener', name: 'Wiretap Listener', faction: 'under', type: 'unit', cost: 2, power: 2, health: 2, tribe: 'syndicate', set: 'x1',
+    text: 'When the opponent casts a glyph, deal 1 damage to the enemy Spire.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'damage', to: 'enemySpire', n: 1 }] }],
+  },
+  {
+    id: 'under-moldtaker', name: 'Mold-Taker', faction: 'under', type: 'unit', cost: 3, power: 3, health: 3, tribe: 'syndicate', set: 'x1',
+    text: 'Deploy: copy another allied unit, then destroy it.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0' }, { op: 'destroy', to: 'target0' }] }],
+  },
+  {
+    id: 'under-borrowedface', name: 'Borrowed Face', faction: 'under', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'syndicate', set: 'x1',
+    keywords: ['veiled'],
+    text: 'Veiled. Deploy: copy an enemy unit (Glimmer).',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+  },
+  {
+    id: 'under-resurrectionist', name: 'Midnight Resurrectionist', faction: 'under', type: 'unit', cost: 4, power: 3, health: 4, tribe: 'syndicate', set: 'x1',
+    text: 'When an enemy unit is destroyed, copy it (Glimmer). Resonant: the copy is not Glimmer.',
+    abilities: [{
+      on: 'enemyDied',
+      ops: [{
+        op: 'if', cond: { c: 'resonant' },
+        then: [{ op: 'copy', of: 'trigger' }],
+        else: [{ op: 'copy', of: 'trigger', glimmer: true }],
+      }],
+    }],
+  },
+  {
+    id: 'under-gravebagsnatcher', name: 'Gravebag Snatcher', faction: 'under', type: 'unit', cost: 5, power: 3, health: 3, tribe: 'syndicate', set: 'x1',
+    text: 'Deploy: copy an enemy unit with 3 or less power, then destroy it.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'enemy', filter: { maxPower: 3 } }],
+      ops: [{ op: 'copy', of: 'target0' }, { op: 'destroy', to: 'target0' }],
+    }],
+  },
+  {
+    id: 'under-masqueradeengine', name: 'Masquerade Engine', faction: 'under', type: 'unit', cost: 7, power: 5, health: 5, tribe: 'construct', set: 'x1',
+    keywords: ['veiled', 'corrosive'],
+    text: 'Veiled, Corrosive. Assault: copy every enemy unit (Glimmer).',
+    abilities: [{ on: 'assault', ops: [{ op: 'copy', of: 'enemies', glimmer: true }] }],
+  },
+  {
+    id: 'under-switchedmorgue', name: 'Switched at the Morgue', faction: 'under', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    text: 'Destroy an allied unit. Copy the strongest enemy unit (Glimmer).',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'destroy', to: 'target0' }, { op: 'copy', of: 'strongestEnemy', glimmer: true }],
+  },
+  {
+    id: 'under-velvetknife', name: 'Velvet Knife', faction: 'under', type: 'glyph', cost: 2, speed: 'flash', set: 'x1',
+    text: 'An allied unit with Veiled gets +2|+0 and gains Corrosive this round.',
+    targets: [{ what: 'unit', side: 'ally', filter: { kw: 'veiled' } }],
+    ops: [{ op: 'buff', to: 'target0', power: 2, dur: 'round' }, { op: 'grant', to: 'target0', kw: ['corrosive'], dur: 'round' }],
+  },
+  {
+    id: 'under-counterfeitseal', name: 'Counterfeit Seal', faction: 'under', type: 'glyph', cost: 2, speed: 'swift', set: 'x1',
+    text: 'Copy an enemy glyph. Deal 1 damage to the enemy Spire.',
+    targets: [{ what: 'glyph', side: 'enemy' }],
+    ops: [{ op: 'copy', of: 'target0' }, { op: 'damage', to: 'enemySpire', n: 1 }],
+  },
+  {
+    id: 'under-deadmansecho', name: "Dead Man's Echo", faction: 'under', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'],
+    text: 'Reprise. Destroy a damaged enemy unit.',
+    targets: [{ what: 'unit', side: 'enemy', filter: { damaged: true } }],
+    ops: [{ op: 'destroy', to: 'target0' }],
+  },
+  {
+    id: 'under-grandforgery', name: 'The Grand Forgery', faction: 'under', type: 'glyph', cost: 3, speed: 'ritual', set: 'x1',
+    text: 'Copy the strongest enemy unit. Resonant: also copy every enemy unit (Glimmer).',
+    ops: [
+      { op: 'copy', of: 'strongestEnemy' },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'copy', of: 'enemies', glimmer: true }] },
+    ],
+  },
 ];

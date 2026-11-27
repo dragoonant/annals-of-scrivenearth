@@ -12,8 +12,8 @@ export const FACTION_INFO: Record<FactionId, { name: string; blurb: string; hue:
   coil: { name: 'Verdant Coil', blurb: 'The rooftop biodomes. Extra Charge and enormous beasts with Pierce.', hue: 135 },
   under: { name: 'Undervolt', blurb: 'The undercity syndicate. Drain, Dread and profit from every unit lost.', hue: 285 },
   storm: { name: 'Stormrail', blurb: 'The sky couriers. Aerial strikes, Vanguard and second attacks.', hue: 180 },
-  orrery: { name: 'Orrery Conclave', blurb: 'The astronomers of the highest spire. Foresight, units that Unfold, and constructs of starlight.', hue: 250 },
   mirror: { name: 'Mirrorwatch', blurb: 'The mirror quarter. Copies, Veiled spies and glyphs that come back for more.', hue: 330 },
+  orrery: { name: 'Orrery Conclave', blurb: 'The astronomers of the highest spire. Foresight, units that Unfold, and constructs of starlight.', hue: 250 },
 };
 
 /** The card sets (docs/SETS.md). A card with no `set` field is in the base set. */
@@ -247,6 +247,52 @@ export const NEW_HERO_DECKS: HandDeck[] = [
   },
 ];
 
+/**
+ * Five premades for The Mirror Quarter (set x1), each led by two of its ten heroes. Win rates: BALANCE.md B-6.
+ */
+export const X1_DECKS: HandDeck[] = [
+  {
+    name: 'Stolen Faces', about: "Steal the enemy's best units as copies and leave the originals in the Scrap.",
+    cards: {
+      'mirror-sabeline': 3, 'under-lisk': 3,
+      'mirror-glintpicker': 3, 'mirror-twincourier': 2, 'mirror-facethief': 2, 'mirror-whisperbroker': 2, 'mirror-gallerycopyist': 2, 'mirror-curatoroffaces': 1, 'mirror-glanceback': 2, 'mirror-stolenverse': 2, 'mirror-vanityglass': 1,
+      'under-coffintout': 3, 'under-silkgarrotte': 2, 'under-borrowedface': 2, 'under-resurrectionist': 2, 'under-gravebagsnatcher': 2, 'under-masqueradeengine': 1, 'under-counterfeitseal': 2, 'under-deadmansecho': 2, 'under-grandforgery': 1,
+    },
+  },
+  {
+    name: 'Glassfire Choir', about: 'Fill every round with sparks and glyphs that come back for a second cast.',
+    cards: {
+      'mirror-ottavine': 3, 'ember-oriel': 3,
+      'mirror-sparkglazier': 3, 'mirror-lanternmimic': 2, 'mirror-echoscribe': 2, 'mirror-choirofechoes': 2, 'mirror-echocolossus': 1, 'mirror-flickeredge': 2, 'mirror-echoneedle': 2, 'mirror-ricochetlight': 2, 'mirror-encoreofglass': 1,
+      'ember-baublebot': 3, 'ember-gafferapprentice': 2, 'ember-lampworklancer': 2, 'ember-reflectorkiln': 2, 'ember-lehrforeman': 1, 'ember-glasscolossus': 1, 'ember-culletspark': 2, 'ember-blowpipeflare': 2, 'ember-paneburst': 2,
+    },
+  },
+  {
+    name: 'Silvercoat Run', about: 'Slip Veiled couriers and spies past every answer and hit the Spire before they are seen.',
+    cards: {
+      'mirror-wystan': 3, 'storm-fen': 3,
+      'mirror-veilrunner': 2, 'mirror-backstairknife': 3, 'mirror-whisperbroker': 2, 'mirror-masquedancer': 2, 'mirror-rooftopinformant': 2, 'mirror-shadowglassassassin': 1, 'mirror-sleightofglass': 1, 'mirror-backdoorsignal': 1,
+      'storm-pocketcourier': 2, 'storm-railglider': 2, 'storm-galecourier': 2, 'storm-ambushrunner': 2, 'storm-moonlessglider': 2, 'storm-thunderkite': 2, 'storm-hushedskiff': 1, 'storm-stormcaller': 1, 'storm-cyclonebarge': 1, 'storm-quicksilvermail': 1, 'storm-silveredcoats': 2, 'storm-turnedcollar': 1, 'storm-deaddrop': 1,
+    },
+  },
+  {
+    name: 'Answering Glass', about: 'Every glyph the enemy casts costs them: wards rise, mirrors answer and the Spire takes the bill.',
+    cards: {
+      'mirror-ondrine': 3, 'prism-liova': 3,
+      'mirror-panesentry': 3, 'mirror-polishedbulwark': 2, 'mirror-shardcantor': 2, 'mirror-lookingglassgolem': 2, 'mirror-silveredbastion': 1, 'mirror-splitimage': 2, 'mirror-falseglare': 2, 'mirror-reversepane': 2,
+      'prism-glancing-sentry': 3, 'prism-silverer': 2, 'prism-reflection-picket': 2, 'prism-glare-warden': 2, 'prism-memory-glass': 2, 'prism-mirrorhall-marshal': 1, 'prism-thousand-pane-bastion': 1, 'prism-second-sheen': 2, 'prism-facet-twin': 2, 'prism-mirror-vigil': 1,
+    },
+  },
+  {
+    name: 'Cutting Tide', about: 'Copy your best beasts and units again and again until the Line is all yours.',
+    cards: {
+      'tide-hesper': 3, 'coil-wenlo': 3,
+      'tide-canalglint': 2, 'tide-wakeecho': 2, 'tide-surfacemimic': 2, 'tide-mirrorwakecourier': 1, 'tide-stillmirrormagus': 2, 'tide-pondmirrorwarden': 1, 'tide-lockkeeper': 2, 'tide-pearlsentinel': 2, 'tide-twinmoorings': 2,
+      'coil-cutting-gatherer': 2, 'coil-splitbark-boar': 2, 'coil-fernshade-prowler': 2, 'coil-selfsown-aurochs': 2, 'coil-spearhorn': 2, 'coil-crownmaw': 2, 'coil-tuskhide': 1, 'coil-canopy-titan': 1, 'coil-elder-sporehorn': 1, 'coil-take-a-cutting': 1, 'coil-season-of-cuttings': 2,
+    },
+  },
+];
+
 /** A premade deck; `about` is the one-line plan shown on the New game screen (hand-built decks only). */
 export interface PremadeDeck extends DeckList { about?: string }
 
@@ -254,11 +300,11 @@ const expand = (cards: Record<string, number>): string[] => Object.entries(cards
 
 /**
  * Premade decks: the original six first, in their old order (so `?decks=` indices stay the same), then the twelve
- * hand-built ones, then the six led by the First Light heroes. Only decks that pass checkDeck are offered (a deck is never silently patched);
+ * hand-built ones, then the six led by the First Light heroes, then the five for The Mirror Quarter. Only decks that pass checkDeck are offered (a deck is never silently patched);
  * tests/decks.test.ts fails if any is dropped.
  */
 export function premadeDecks(): PremadeDeck[] {
   const curve: PremadeDeck[] = CURVE.map((d) => ({ name: d.name, cards: expand(d.cards) }));
-  const hand = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
+  const hand = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS, ...X1_DECKS].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
   return [...curve, ...hand].filter((d) => checkDeck(d.cards).ok);
 }

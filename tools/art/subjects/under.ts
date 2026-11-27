@@ -169,4 +169,50 @@ export const under: Subjects = {
   'under-hostiletakeover': s(
     'a heavy brass seal pressed onto a toppled crystal throne, violet wires creeping over it like ivy',
     'in an emptied guildhall with its doors broken open and the crowd of syndicate masks filing in'),
+  // ---------- set x1: The Mirror Quarter ----------
+  'under-lisk': s(
+    'a stooped man in his fifties with long grey hair tied back, ink-black fingertips, a leather apron hung with fine carving knives, a pale plaster face-mould in his hands',
+    'at a cluttered workbench in a mirrored back room, a row of blank plaster faces drying on a shelf behind him'),
+  'under-lisk--ascended': s(
+    'a stooped man in his fifties with long grey hair tied back, his own face hidden behind a shifting mask of cracked mirror glass, a long coat stitched from many mismatched sleeves',
+    'standing in a hall of tall mirrors where every reflection wears a different stolen face'),
+  'under-coffintout': s(
+    'a scrawny youth in an oversized black coat and a battered top hat, a hand bell in one fist and a brass casket handle in the other',
+    'calling out to passers-by beside a cart of plain pine caskets at a foggy tunnel corner'),
+  'under-silkgarrotte': s(
+    'a slender woman in close-fitting black silk with a veil of fine dark mesh over her face, a thin glowing violet cord stretched between her gloved hands',
+    'dropping silently from a ceiling grate above a lamplit corridor of mirrored tiles'),
+  'under-wiretaplistener': s(
+    'a hunched man in his forties with brass ear trumpets strapped over a knitted cap, a thin copper wire clipped to a fat cable, a knotted tally cord around his wrist',
+    'crouched in a cramped crawlspace under a mirrored parlour floor, listening with his eyes closed'),
+  'under-moldtaker': s(
+    'a broad-shouldered woman in her thirties with plaster-white forearms, a heavy rubber apron and a bucket of wet plaster',
+    'pressing a soft plaster cast over the face of a sleeping syndicate thug on a stone slab in a cold cellar'),
+  'under-borrowedface': s(
+    'a tall lean person in a grey suit wearing a thin flesh-toned mask that mirrors the face of a crystal-armoured soldier, eyes glinting violet through the eyeholes',
+    'stepping through a doorway of a glittering mirrored arcade as the guards salute and wave him through'),
+  'under-resurrectionist': s(
+    'a gaunt man in his sixties in a mud-stained frock coat, a lantern hooded with violet glass and a long-handled spade over his shoulder',
+    'kneeling over an opened grave in a walled undercity cemetery deep in the night, lifting out a wrapped body'),
+  'under-gravebagsnatcher': s(
+    'a huge hulking man in a patched oilcloth coat and a sackcloth hood, a large canvas body-bag slung over one shoulder',
+    'hauling his load up a slick iron ladder out of a flooded storm drain'),
+  'under-masqueradeengine': s(
+    'a towering clockwork automaton of black iron and violet glass, its head a rotating ring of porcelain masks, long jointed arms ending in dripping green-violet blades',
+    'stalking through a grand mirrored ballroom as masked dancers scatter from its path'),
+  'under-switchedmorgue': s(
+    'a pair of shrouded bodies on mortuary trolleys swapped by gloved hands, one sheet pulled back to show a pale crystal-armoured soldier',
+    'in a tiled undercity mortuary under a single swinging lamp'),
+  'under-velvetknife': s(
+    'a slim gloved hand drawing a thin curved blade from a black satin sleeve, the edge wet with glowing green-violet venom',
+    'in the shadow of a curtained balcony above a crowded mirrored theatre'),
+  'under-counterfeitseal': s(
+    'a heavy brass seal pressing into a pool of warm violet wax beside its perfect twin, the forged impression still glowing',
+    'on a forger\'s desk crowded with tiny engraving tools and loupes under a green-shaded lamp'),
+  'under-deadmansecho': s(
+    'a ghostly violet afterimage of a masked assassin repeating the same downward knife stroke a moment after the real one',
+    'in a narrow mirrored alley where the reflections lag a heartbeat behind'),
+  'under-grandforgery': s(
+    'a vast workshop wall hung with perfect replica suits of crystal armour and wax faces, a single master forger stepping back to admire the whole collection',
+    'inside a hidden vault behind a false mirror, lit by rows of violet lamps'),
 };

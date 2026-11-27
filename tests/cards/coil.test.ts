@@ -801,3 +801,230 @@ describe('coil glyphs (First Light)', () => {
     expect(s.players[0].seen.tokensSummoned).toBe(3);
   });
 });
+
+// ---------- set x1: The Mirror Quarter ----------
+describe('coil x1 cards', () => {
+  const glimmers = (s: GameState, card: string) => s.players[0].hand.filter((h) => h.card === card && h.glimmer);
+  /** Seat 1 tries to Zap a unit of seat 0 (R-K13: refused when it is Veiled). */
+  const zapRefused = (s: GameState, iid: string): boolean => {
+    const hc = s.players[1].hand.find((h) => h.card === 'zz-zap')!;
+    return !applyAction(s, { type: 'play', iid: hc.iid, targets: [iid] }).ok;
+  };
+
+  it('coil-wenlo: Dawn puts a Glimmer copy of the strongest ally in hand; it fades at the end of the round', () => {
+    const s = board({ line: [['coil-wenlo', 'coil-spearhorn', 'coil-canopy-titan'], []] });
+    nextRound(s);
+    expect(glimmers(s, 'coil-canopy-titan')).toHaveLength(1);
+    expect(s.players[0].hand.some((h) => h.card === 'coil-spearhorn')).toBe(false);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    expect(s.log.some((e) => e.k === 'charge' && e.via === 'coil-wenlo')).toBe(false); // the base face gains no Charge
+    nextRound(s);
+    expect(glimmers(s, 'coil-canopy-titan')).toHaveLength(1); // last round's copy burned, a new one made
+    expect(s.players[0].seen.copiesMade).toBe(2);
+  });
+
+  it('coil-wenlo: ascends on the 6th copy; Ascend copies each other ally, then Dawn also gains 2 Charge; Mend', () => {
+    const s = board({ line: [['coil-wenlo', 'coil-spearhorn', 'coil-canopy-titan'], []] });
+    s.players[0].heroes = ['coil-wenlo'];
+    s.players[0].seen.copiesMade = 5;
+    unit(s, 0, 'coil-wenlo').dmg = 2;
+    nextRound(s);
+    expect(s.players[0].ascended).toContain('coil-wenlo');
+    expect(glimmers(s, 'coil-canopy-titan')).toHaveLength(2); // Dawn, then Ascend
+    expect(glimmers(s, 'coil-spearhorn')).toHaveLength(1);
+    expect(glimmers(s, 'coil-wenlo')).toHaveLength(0); // "each other ally"
+    expect(s.players[0].seen.copiesMade).toBe(8);
+    const w = unit(s, 0, 'coil-wenlo');
+    expect(st(s, w)).toMatchObject({ power: 3, health: 6, keywords: ['mend'] });
+    w.dmg = 3;
+    const before = s.players[0].maxCharge;
+    nextRound(s);
+    expect(w.dmg).toBe(0);
+    expect(glimmers(s, 'coil-canopy-titan')).toHaveLength(1);
+    expect(s.players[0].charge).toBe(before + 2);
+    expect(s.log.some((e) => e.k === 'charge' && e.via === 'coil-wenlo' && e.n === 2)).toBe(true);
+  });
+
+  it('coil-sapwick-runner: Deploy creates a Glimmer Sap Surge that gains 2 Charge, or fades at round end', () => {
+    const s = board({ hand: [['coil-sapwick-runner'], []] });
+    play(s, 'coil-sapwick-runner');
+    const g = s.players[0].hand.find((h) => h.card === 'coil-sap-surge');
+    expect(g?.glimmer).toBe(true);
+    pass(s);
+    play(s, 'coil-sap-surge');
+    expect(s.players[0].charge).toBe(10 - 1 - 1 + 2);
+    expect(s.players[0].seen.glimmerPlayed).toBe(1);
+    const t = board({ hand: [['coil-sapwick-runner'], []] });
+    play(t, 'coil-sapwick-runner');
+    nextRound(t);
+    expect(t.players[0].hand.some((h) => h.card === 'coil-sap-surge')).toBe(false);
+  });
+
+  it('coil-cutting-gatherer: Deploy puts a Glimmer copy of the chosen allied beast in hand; not a non-beast', () => {
+    const s = board({ hand: [['coil-cutting-gatherer', 'coil-cutting-gatherer'], []], line: [['coil-sprout-tender', 'coil-spearhorn'], []] });
+    const hc = s.players[0].hand[0];
+    expect(applyAction(s, { type: 'play', iid: hc.iid, targets: [unit(s, 0, 'coil-sprout-tender').iid] }).ok).toBe(false);
+    play(s, 'coil-cutting-gatherer', [unit(s, 0, 'coil-spearhorn').iid]);
+    expect(glimmers(s, 'coil-spearhorn')).toHaveLength(1);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('coil-brushveil-lynx: Veiled; grows +1|+0 each time the opponent casts a glyph, not for your own', () => {
+    const s = board({ hand: [['zz-pump'], ['zz-zap', 'zz-zap']], line: [['coil-brushveil-lynx', 'zz-wall'], []], first: 1 });
+    const l = unit(s, 0, 'coil-brushveil-lynx');
+    expect(zapRefused(s, l.iid)).toBe(true);
+    play(s, 'zz-zap', [unit(s, 0, 'zz-wall').iid]);
+    expect(st(s, l)).toMatchObject({ power: 3, health: 1 });
+    play(s, 'zz-zap', [unit(s, 0, 'zz-wall').iid]);
+    expect(st(s, l).power).toBe(4);
+    pass(s);
+    play(s, 'zz-pump', [unit(s, 0, 'zz-wall').iid]);
+    expect(st(s, l).power).toBe(4);
+  });
+
+  it('coil-splitbark-boar: taking damage and surviving puts a Glimmer copy of it in hand; dying does not', () => {
+    const s = board({ hand: [[], ['zz-bolt']], line: [['coil-splitbark-boar'], []], first: 1 });
+    const b = unit(s, 0, 'coil-splitbark-boar');
+    play(s, 'zz-bolt', [b.iid]);
+    pass(s);
+    expect(b.dmg).toBe(2);
+    expect(glimmers(s, 'coil-splitbark-boar')).toHaveLength(1);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    const t = board({ line: [['coil-splitbark-boar'], ['zz-ogre']], first: 1 });
+    attack(t, [unit(t, 1, 'zz-ogre')], [[unit(t, 0, 'coil-splitbark-boar'), unit(t, 1, 'zz-ogre')]]);
+    resolveCombat(t);
+    expect(t.players[0].line).toHaveLength(0);
+    expect(t.players[0].hand).toHaveLength(0);
+  });
+
+  it('coil-fernshade-prowler: Veiled until it strikes, Pierce, Resonant +1|+1', () => {
+    const s = board({ hand: [[], ['zz-zap']], line: [['coil-fernshade-prowler'], []], first: 1 });
+    expect(zapRefused(s, unit(s, 0, 'coil-fernshade-prowler').iid)).toBe(true);
+    const t = board({ line: [['coil-fernshade-prowler'], ['zz-filler']] });
+    const p = unit(t, 0, 'coil-fernshade-prowler');
+    expect(st(t, p)).toMatchObject({ power: 3, health: 2 });
+    attack(t, [p], [[unit(t, 1, 'zz-filler'), p]]);
+    resolveCombat(t);
+    expect(t.players[1].spire).toBe(18); // 3 into a 1|1, 2 through
+    expect(st(t, p).keywords).not.toContain('veiled');
+    const u = board({ line: [['coil-aruvi', 'coil-fernshade-prowler'], []] });
+    u.players[0].ascended = ['coil-aruvi'];
+    expect(st(u, unit(u, 0, 'coil-fernshade-prowler'))).toMatchObject({ power: 4, health: 3 });
+  });
+
+  it('coil-selfsown-aurochs: Deploy puts a Glimmer copy of it in hand; the copy makes another when played', () => {
+    const s = board({ hand: [['coil-selfsown-aurochs'], []] });
+    play(s, 'coil-selfsown-aurochs');
+    expect(glimmers(s, 'coil-selfsown-aurochs')).toHaveLength(1);
+    pass(s);
+    play(s, 'coil-selfsown-aurochs');
+    expect(s.players[0].line.filter((u) => u.card === 'coil-selfsown-aurochs')).toHaveLength(2);
+    expect(glimmers(s, 'coil-selfsown-aurochs')).toHaveLength(1);
+    expect(s.players[0].seen.copiesMade).toBe(2);
+    expect(s.players[0].seen.glimmerPlayed).toBe(1);
+    expect(s.players[0].charge).toBe(2);
+  });
+
+  it('coil-gloamthorn: Veiled, Mend; each Strike puts a Glimmer copy of it in hand and drops the veil', () => {
+    const v = board({ hand: [[], ['zz-zap']], line: [['coil-gloamthorn'], []], first: 1 });
+    expect(zapRefused(v, unit(v, 0, 'coil-gloamthorn').iid)).toBe(true);
+    const s = board({ line: [['coil-gloamthorn'], ['zz-wall']] });
+    const g = unit(s, 0, 'coil-gloamthorn');
+    attack(s, [g], [[unit(s, 1, 'zz-wall'), g]]);
+    resolveCombat(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(4);
+    expect(glimmers(s, 'coil-gloamthorn')).toHaveLength(1);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    expect(st(s, g).keywords).toEqual(['mend']);
+    g.dmg = 3;
+    nextRound(s);
+    expect(g.dmg).toBe(0);
+  });
+
+  it('coil-elder-sporehorn: Veiled, Pierce; Strike gains 3 Charge', () => {
+    const v = board({ hand: [[], ['zz-zap']], line: [['coil-elder-sporehorn'], []], first: 1 });
+    expect(zapRefused(v, unit(v, 0, 'coil-elder-sporehorn').iid)).toBe(true);
+    const s = board({ line: [['coil-elder-sporehorn'], ['zz-filler']] });
+    const e = unit(s, 0, 'coil-elder-sporehorn');
+    attack(s, [e], [[unit(s, 1, 'zz-filler'), e]]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(15); // 6 into a 1|1, 5 through
+    expect(s.players[0].charge).toBe(13);
+    expect(st(s, e).keywords).toEqual(['pierce']);
+  });
+
+  it('coil-take-a-cutting: Flash; puts a Glimmer copy of a damaged ally in hand, not an undamaged one', () => {
+    const s = board({ hand: [['coil-take-a-cutting'], []], line: [['coil-crownmaw', 'coil-spearhorn'], []] });
+    unit(s, 0, 'coil-spearhorn').dmg = 1;
+    const hc = s.players[0].hand[0];
+    expect(applyAction(s, { type: 'play', iid: hc.iid, targets: [unit(s, 0, 'coil-crownmaw').iid] }).ok).toBe(false);
+    play(s, 'coil-take-a-cutting', [unit(s, 0, 'coil-spearhorn').iid]);
+    expect(glimmers(s, 'coil-spearhorn')).toHaveLength(1);
+    expect(s.players[0].hand.some((h) => h.card === 'coil-crownmaw')).toBe(false);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+    expect(s.priority).toBe(0);
+  });
+
+  it('coil-twice-grown-thorns: Reprise; +2|+0 and Pierce this round, cast twice for +4|+0', () => {
+    const s = board({ hand: [['coil-twice-grown-thorns'], []], line: [['coil-crownmaw'], []] });
+    const c = unit(s, 0, 'coil-crownmaw');
+    play(s, 'coil-twice-grown-thorns', [c.iid]);
+    expect(st(s, c)).toMatchObject({ power: 5, health: 3 });
+    expect(st(s, c).keywords).toContain('pierce');
+    expect(s.players[0].hand.find((h) => h.card === 'coil-twice-grown-thorns')).toMatchObject({ glimmer: true, plain: true });
+    play(s, 'coil-twice-grown-thorns', [c.iid]);
+    expect(st(s, c).power).toBe(7);
+    expect(s.players[0].hand.some((h) => h.card === 'coil-twice-grown-thorns')).toBe(false);
+    nextRound(s);
+    expect(st(s, c)).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, c).keywords).not.toContain('pierce');
+  });
+
+  it('coil-strike-from-the-ferns: a Veiled ally gets +2|+0 this round and strikes the enemy unit; not a plain ally', () => {
+    const s = board({ hand: [['coil-strike-from-the-ferns'], []], line: [['coil-spearhorn', 'zz-veiled'], ['zz-wall']] });
+    const hc = s.players[0].hand[0];
+    const w = unit(s, 1, 'zz-wall');
+    expect(applyAction(s, { type: 'play', iid: hc.iid, targets: [unit(s, 0, 'coil-spearhorn').iid, w.iid] }).ok).toBe(false);
+    const v = unit(s, 0, 'zz-veiled');
+    play(s, 'coil-strike-from-the-ferns', [v.iid, w.iid]);
+    pass(s);
+    expect(w.dmg).toBe(5);
+    expect(v.dmg).toBe(0);
+    expect(st(s, v)).toMatchObject({ power: 5, health: 3 });
+    expect(st(s, v).keywords).not.toContain('veiled');
+  });
+
+  it('coil-second-pounce: Reprise; your strongest ally strikes the weakest enemy, then again from the Glimmer copy', () => {
+    const s = board({ hand: [['coil-second-pounce'], []], line: [['zz-grunt', 'zz-ogre'], ['zz-grunt', 'zz-wall']] });
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'coil-second-pounce');
+    pass(s);
+    expect(w.dmg).toBe(5);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+    expect(unit(s, 0, 'zz-ogre').dmg).toBe(0);
+    expect(strikes(s).every((e) => e.card === 'zz-ogre')).toBe(true);
+    expect(s.players[0].hand.find((h) => h.card === 'coil-second-pounce')).toMatchObject({ glimmer: true, plain: true });
+    pass(s);
+    play(s, 'coil-second-pounce');
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-grunt']);
+    expect(s.players[0].hand.some((h) => h.card === 'coil-second-pounce')).toBe(false);
+  });
+
+  it('coil-season-of-cuttings: a Glimmer copy of each allied beast (tokens and gardeners skipped); Resonant gains 3 Charge', () => {
+    const s = board({ hand: [['coil-season-of-cuttings'], []], line: [['coil-spearhorn', 'coil-crownmaw', 'coil-sprout-tender', 'coil-packwolf'], []] });
+    play(s, 'coil-season-of-cuttings');
+    pass(s);
+    expect(glimmers(s, 'coil-spearhorn')).toHaveLength(1);
+    expect(glimmers(s, 'coil-crownmaw')).toHaveLength(1);
+    expect(s.players[0].hand).toHaveLength(2);
+    expect(s.players[0].seen.copiesMade).toBe(2);
+    expect(s.players[0].charge).toBe(7);
+    const t = board({ hand: [['coil-season-of-cuttings'], []], line: [['coil-aruvi', 'coil-spearhorn'], []] });
+    t.players[0].ascended = ['coil-aruvi'];
+    play(t, 'coil-season-of-cuttings');
+    pass(t);
+    expect(glimmers(t, 'coil-spearhorn')).toHaveLength(1);
+    expect(t.players[0].charge).toBe(10);
+  });
+});

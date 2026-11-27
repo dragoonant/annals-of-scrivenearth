@@ -318,4 +318,103 @@ export const storm: CardDef[] = [
     text: 'Allies get +2|+1 this round. You may attack again this round.',
     ops: [{ op: 'buff', to: 'allies', power: 2, health: 1, dur: 'round' }, { op: 'rally' }],
   },
+
+  // ---------- set x1: The Mirror Quarter ----------
+  // Smugglers in silvered coats: Veiled couriers, Reprise tempo glyphs, dead drops that leave Glimmer cards in hand.
+  {
+    id: 'storm-fen', name: 'Fen Halloway, Silvercoat', faction: 'storm', type: 'hero', cost: 3, power: 2, health: 3, set: 'x1',
+    keywords: ['veiled'], tribe: 'courier',
+    text: 'Veiled. Assault: create a Glimmer Anchor Leg in your hand.',
+    abilities: [{ on: 'assault', ops: [{ op: 'create', card: 'storm-anchorleg', glimmer: true }] }],
+    level: { who: 'you', stat: 'glimmerPlayed', n: 6, text: "You've played 6+ Glimmer cards" },
+    ascended: {
+      name: 'Fen, Queen of the Dead Drops', power: 3, health: 5, keywords: ['veiled', 'aerial'],
+      text: 'Veiled, Aerial. Assault: create 2 Glimmer Anchor Legs in your hand. Ascend: other allies gain Veiled. Draw 2 cards.',
+      abilities: [
+        { on: 'assault', ops: [{ op: 'create', card: 'storm-anchorleg', n: 2, glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'grant', to: 'otherAllies', kw: ['veiled'] }, { op: 'draw', n: 2 }] },
+      ],
+    },
+  },
+  // units
+  {
+    id: 'storm-pocketcourier', name: 'Pocket Courier', faction: 'storm', type: 'unit', cost: 1, power: 1, health: 1, set: 'x1', tribe: 'courier',
+    keywords: ['veiled'], text: 'Veiled. Deploy: create a Glimmer Tailwind in your hand.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'create', card: 'storm-tailwind', glimmer: true }] }],
+  },
+  {
+    id: 'storm-ambushrunner', name: 'Ambush Runner', faction: 'storm', type: 'unit', cost: 2, power: 2, health: 1, set: 'x1', tribe: 'courier',
+    keywords: ['veiled'], text: 'Veiled. Assault: if I am Veiled, I get +2|+0 this round.',
+    abilities: [{ on: 'assault', ops: [{ op: 'buff', to: { from: 'self', filter: { kw: 'veiled' } }, power: 2, dur: 'round' }] }],
+  },
+  {
+    id: 'storm-passforger', name: 'Pass Forger', faction: 'storm', type: 'unit', cost: 2, power: 1, health: 2, set: 'x1', tribe: 'courier',
+    text: 'Deploy: copy an ally (Glimmer).',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+  },
+  {
+    id: 'storm-signalthief', name: 'Signal Thief', faction: 'storm', type: 'unit', cost: 3, power: 3, health: 3, set: 'x1', tribe: 'courier',
+    text: 'When the opponent casts a glyph, create a Glimmer Sinking Air in your hand.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'create', card: 'storm-sinkingair', glimmer: true }] }],
+  },
+  {
+    id: 'storm-moonlessglider', name: 'Moonless Glider', faction: 'storm', type: 'unit', cost: 3, power: 2, health: 2, set: 'x1', tribe: 'kite',
+    keywords: ['veiled', 'aerial'], text: 'Veiled, Aerial. When I strike the enemy Spire, create a Glimmer Parcel Drop in your hand.',
+    abilities: [{ on: 'spireHit', ops: [{ op: 'create', card: 'storm-parceldrop', glimmer: true }] }],
+  },
+  {
+    id: 'storm-quartermaster', name: 'Silvercoat Quartermaster', faction: 'storm', type: 'unit', cost: 4, power: 3, health: 4, set: 'x1', tribe: 'courier',
+    text: 'Deploy: an ally gets +1|+1 and gains Veiled.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'ally' }],
+      ops: [{ op: 'buff', to: 'target0', power: 1, health: 1 }, { op: 'grant', to: 'target0', kw: ['veiled'] }],
+    }],
+  },
+  {
+    id: 'storm-hushedskiff', name: 'Hushed Skiff', faction: 'storm', type: 'unit', cost: 5, power: 3, health: 4, set: 'x1', tribe: 'courier',
+    keywords: ['veiled', 'aerial'], text: 'Veiled, Aerial. Dusk: if I am Veiled, I get +1|+1.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'buff', to: { from: 'self', filter: { kw: 'veiled' } }, power: 1, health: 1 }] }],
+  },
+  {
+    id: 'storm-quicksilvermail', name: 'Quicksilver Mail', faction: 'storm', type: 'unit', cost: 7, power: 6, health: 5, set: 'x1', tribe: 'courier',
+    keywords: ['veiled', 'aerial'], text: 'Veiled, Aerial. When I strike the enemy Spire, create a Glimmer Reroute in your hand.',
+    abilities: [{ on: 'spireHit', ops: [{ op: 'create', card: 'storm-reroute', glimmer: true }] }],
+  },
+  // glyphs
+  {
+    id: 'storm-turnedcollar', name: 'Turned Collar', faction: 'storm', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. An ally gets +1|+0 and Veiled this round.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', power: 1, dur: 'round' }, { op: 'grant', to: 'target0', kw: ['veiled'], dur: 'round' }],
+  },
+  {
+    id: 'storm-deaddrop', name: 'Dead Drop', faction: 'storm', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    text: 'Create a Glimmer Tailwind and a Glimmer Updraft in your hand. Resonant: draw a card.',
+    ops: [
+      { op: 'create', card: 'storm-tailwind', glimmer: true },
+      { op: 'create', card: 'storm-updraft', glimmer: true },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'draw', n: 1 }] },
+    ],
+  },
+  {
+    id: 'storm-smokelantern', name: 'Smoke Lantern', faction: 'storm', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Put an enemy unit with 3 or less power in Stasis.',
+    targets: [{ what: 'unit', side: 'enemy', filter: { maxPower: 3 } }], ops: [{ op: 'stasis', to: 'target0' }],
+  },
+  {
+    id: 'storm-silveredcoats', name: 'Silvered Coats', faction: 'storm', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    text: 'Allies gain Veiled this round. Resonant: they also get +1|+0 this round.',
+    ops: [
+      { op: 'grant', to: 'allies', kw: ['veiled'], dur: 'round' },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'buff', to: 'allies', power: 1, dur: 'round' }] },
+    ],
+  },
+  {
+    id: 'storm-blackoutdelivery', name: 'Blackout Delivery', faction: 'storm', type: 'glyph', cost: 3, speed: 'ritual', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Summon a Wingmate, then your Wingmates gain Veiled.',
+    ops: [
+      { op: 'summon', card: 'storm-wingmate' },
+      { op: 'grant', to: { from: 'allies', filter: { card: 'storm-wingmate' } }, kw: ['veiled'] },
+    ],
+  },
 ];

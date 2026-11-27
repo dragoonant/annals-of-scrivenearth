@@ -18,4 +18,10 @@ export const prism: Record<string, string[]> = {
   'prism-covering-fire': ['Choose the allied Spotter that strikes', 'Choose the fighting enemy it strikes'],
   'prism-shoulder-to-shoulder': ['Choose an ally to get +2|+2'],
   'prism-focused-volley': ['Choose the enemy every allied Spotter strikes'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'prism-liova': ['Choose an ally to copy into your hand (Glimmer)'],
+  'prism-silverer': ['Choose an ally with 2 or less power to copy (Glimmer)'],
+  'prism-second-sheen': ['Choose an ally to get +1|+1 this round'],
+  'prism-polished-reply': ['Choose an ally to gain Ward', 'Choose the enemy glyph to copy (Glimmer)'],
+  'prism-facet-twin': ['Choose an ally to get +1|+1 and be copied (Glimmer)'],
 };

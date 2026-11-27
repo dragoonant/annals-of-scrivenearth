@@ -175,4 +175,50 @@ export const coil: Subjects = {
   'coil-sow-the-rooftops': s(
     'a flurry of glowing seeds blown on the wind, sprouts bursting from every gutter and tile they touch',
     'over a long row of slate roofs at sunrise, chimneys wreathed in green'),
+  // ---------- set x1: The Mirror Quarter ----------
+  'coil-wenlo': s(
+    'a lean grey-bearded man in his sixties with a brass-framed magnifying monocle, a leather grafting apron hung with pruning knives and twine, and a moss-green wool cap',
+    'binding a glowing green sprig onto a mirrored glass rootstock at a potting bench in a greenhouse lined with polished mirrors'),
+  'coil-wenlo--ascended': s(
+    'a lean grey-bearded man in his sixties with a brass-framed monocle, now crowned with a living wreath of glass-leaved branches, his leather apron sprouting green shoots and his hands glowing green-gold',
+    'standing between two rows of identical bark-plated beasts grown from rooted sprigs under a vast mirrored glasshouse dome at dawn'),
+  'coil-sapwick-runner': s(
+    'a wiry teenage boy in a short green smock with a copper flask of glowing sap slung across his chest and bare dirty feet',
+    'sprinting along a narrow plank between two rooftop planters, sap splashing from the flask in bright drops'),
+  'coil-cutting-gatherer': s(
+    'a stocky middle-aged woman with cropped red hair in a canvas coat with many small pockets, holding curved shears and a glass vial',
+    'snipping a glowing tuft of moss from the shoulder of a patient bark-plated elk in a misty rooftop meadow'),
+  'coil-brushveil-lynx': s(
+    'a sleek grey-green lynx whose fur shimmers like rippled glass, tufted ears tipped with tiny crystal points',
+    'crouched low and half-seen among tall reflective grasses beside a mirrored greenhouse wall'),
+  'coil-splitbark-boar': s(
+    'a heavy bark-plated wild boar with a split down its plated back from which a smaller green boar is budding',
+    'standing its ground in a trampled rooftop vegetable bed, splinters of bark scattered around its hooves'),
+  'coil-fernshade-prowler': s(
+    'a long low panther with deep green fur patterned like overlapping fern fronds and pale glowing eyes',
+    'slipping through a dense bank of giant ferns under a dripping glass canopy, only its eyes catching the light'),
+  'coil-selfsown-aurochs': s(
+    'a massive wild ox with sweeping crystal-tipped horns and a mossy hide, a twin calf of green vines unfolding at its flank',
+    'grazing on a wide grass terrace atop a tower, seed heads drifting from its back onto the turf'),
+  'coil-gloamthorn': s(
+    'a gaunt thorn-backed wolf of dark bramble and bark with violet-green eyes, its outline doubled by a faint glassy reflection',
+    'emerging from a twilight thicket of black brambles on a high garden ledge, dew glinting on every thorn'),
+  'coil-elder-sporehorn': s(
+    'an enormous ancient stag with antlers of branching mushroom caps and a hide of shaggy moss, glowing spores drifting from its antlers',
+    'stepping out of a fog-filled overgrown atrium of a ruined glass tower, ferns parting around its legs'),
+  'coil-take-a-cutting': s(
+    'a gloved hand pinching off a glowing green sprig from the scraped flank of a wounded bark-plated beast',
+    'in the dim shelter of a rooftop shed during a rainstorm, a lantern swinging overhead'),
+  'coil-twice-grown-thorns': s(
+    'a pair of thorned vines spiralling up a beast foreleg, a second ghostly glass copy of the vines growing in step beside them',
+    'in a sunlit courtyard of cracked flagstones, petals swirling in the air'),
+  'coil-strike-from-the-ferns': s(
+    'a green-furred panther bursting out of a wall of giant fronds with claws extended toward an armoured guard',
+    'on a narrow rain-slick rooftop path at night, leaves exploding outward'),
+  'coil-second-pounce': s(
+    'a great bark-plated bear mid-leap toward a staggering steel machine, a glassy afterimage of the same leap trailing behind it',
+    'across a gap between two mossy balconies above a canal'),
+  'coil-season-of-cuttings': s(
+    'rows of glass jars on wooden shelves, each holding a rooted glowing sprig with a tiny beast curled in its leaves',
+    'in a warm candlelit propagation house with fogged windows and a brass watering can on the floor'),
 };

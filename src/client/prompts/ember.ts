@@ -24,4 +24,9 @@ export const ember: Record<string, string[]> = {
   'ember-overpressure': ['Choose an enemy unit or the enemy Spire to take 4 damage (you gain 3 Charge)'],
   'ember-titlebout': ['Choose an ally with Vanguard to get +1|+1 (you may attack again this round)'],
   'ember-moltentorrent': ['Choose an enemy unit to take 3 more damage (every enemy unit takes 2)'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'ember-culletspark': ['Choose an enemy unit to take 1 damage'],
+  'ember-twingather': ['Choose an ally to get +2|+0 this round and be copied into your hand (Glimmer)'],
+  'ember-blowpipeflare': ['Choose an enemy unit or the enemy Spire to take 2 damage'],
+  'ember-paneburst': ['Choose an enemy unit to take 3 damage (you also get a Glimmer Cullet Spark, 2 while Resonant)'],
 };

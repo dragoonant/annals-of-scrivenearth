@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { act, applyAction, attack, board, pass, play, resolveCombat, st, unit } from '../helpers';
+import { act, applyAction, attack, board, legalActions, pass, play, resolveCombat, st, unit } from '../helpers';
 import type { GameState } from '../../src/engine/types';
 import { face, isAscended } from '../../src/engine/query';
 
@@ -735,5 +735,195 @@ describe('storm cards', () => {
     pass(s);
     expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 4, health: 3 });
     expect(s.players[0].extraAttacks).toBe(1);
+  });
+});
+
+// ---------- set x1: The Mirror Quarter ----------
+const glimmers = (s: GameState, seat: 0 | 1, card: string) => s.players[seat].hand.filter((h) => h.card === card && h.glimmer);
+/** Can the seat with priority play this hand card with this unit as a target? */
+const canTarget = (s: GameState, card: string, iid: string): boolean => legalActions(s).some(
+  (a) => a.type === 'play' && s.players[s.priority].hand.find((h) => h.iid === a.iid)?.card === card && (a.targets ?? []).includes(iid));
+
+describe('storm x1 cards', () => {
+  it('storm-fen: Assault creates a Glimmer Anchor Leg; the 6th Glimmer card ascends her: other allies gain Veiled, draw 2', () => {
+    const s = board({ line: [['storm-fen', 'zz-grunt'], []] });
+    s.players[0].heroes = ['storm-fen'];
+    s.players[0].seen.glimmerPlayed = 5;
+    const f = unit(s, 0, 'storm-fen');
+    const g = unit(s, 0, 'zz-grunt');
+    attack(s, [f, g]);
+    expect(glimmers(s, 0, 'storm-anchorleg')).toHaveLength(1);
+    expect(isAscended(s, 0, 'storm-fen')).toBe(false);
+    const before = s.players[0].hand.length;
+    play(s, 'storm-anchorleg', [g.iid]); // the 6th Glimmer card played
+    expect(isAscended(s, 0, 'storm-fen')).toBe(true);
+    expect(face(s, 0, 'storm-fen').name).toBe('Fen, Queen of the Dead Drops');
+    expect(s.players[0].hand.length).toBe(before - 1 + 2);
+    expect(st(s, g).keywords).toContain('veiled');
+    expect(st(s, f)).toMatchObject({ power: 3, health: 5 });
+    expect(st(s, f).keywords).toEqual(expect.arrayContaining(['veiled', 'aerial']));
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(20 - 3 - 3);
+  });
+
+  it('storm-fen ascended: Assault creates 2 Glimmer Anchor Legs', () => {
+    const s = board({ line: [['storm-fen'], []] });
+    s.players[0].heroes = ['storm-fen'];
+    s.players[0].ascended = ['storm-fen'];
+    attack(s, [unit(s, 0, 'storm-fen')]);
+    expect(glimmers(s, 0, 'storm-anchorleg')).toHaveLength(2);
+  });
+
+  it('storm-pocketcourier: Veiled; Deploy creates a Glimmer Tailwind that fades at the end of the round', () => {
+    const s = board({ hand: [['storm-pocketcourier'], ['zz-zap']] });
+    play(s, 'storm-pocketcourier');
+    expect(glimmers(s, 0, 'storm-tailwind')).toHaveLength(1);
+    expect(canTarget(s, 'zz-zap', unit(s, 0, 'storm-pocketcourier').iid)).toBe(false);
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(s.players[0].hand.some((h) => h.card === 'storm-tailwind')).toBe(false);
+  });
+
+  it('storm-ambushrunner: +2|+0 on its first (Veiled) attack; once it has struck, no bonus', () => {
+    const s = board({ line: [['storm-ambushrunner'], []] });
+    const r = unit(s, 0, 'storm-ambushrunner');
+    attack(s, [r]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(16);
+    expect(st(s, r).keywords).not.toContain('veiled');
+    const t = board({ line: [['storm-ambushrunner'], []] });
+    unit(t, 0, 'storm-ambushrunner').unveiled = true;
+    attack(t, [unit(t, 0, 'storm-ambushrunner')]);
+    resolveCombat(t);
+    expect(t.players[1].spire).toBe(18);
+  });
+
+  it('storm-passforger: Deploy copies an ally into hand as a Glimmer card', () => {
+    const s = board({ hand: [['storm-passforger'], []], line: [['storm-thunderkite'], []] });
+    play(s, 'storm-passforger', [unit(s, 0, 'storm-thunderkite').iid]);
+    expect(glimmers(s, 0, 'storm-thunderkite')).toHaveLength(1);
+    expect(s.players[0].seen.copiesMade).toBe(1);
+  });
+
+  it('storm-signalthief: when the opponent casts a glyph, create a Glimmer Sinking Air; my own glyphs do not', () => {
+    const s = board({ hand: [['zz-pump'], ['zz-zap']], line: [['storm-signalthief'], ['zz-grunt']], first: 1 });
+    play(s, 'zz-zap', [unit(s, 0, 'storm-signalthief').iid]);
+    expect(glimmers(s, 0, 'storm-sinkingair')).toHaveLength(1);
+    pass(s);
+    play(s, 'zz-pump', [unit(s, 0, 'storm-signalthief').iid]);
+    expect(glimmers(s, 0, 'storm-sinkingair')).toHaveLength(1);
+  });
+
+  it('storm-moonlessglider: Veiled, Aerial; a Spire strike creates a Glimmer Parcel Drop and unveils it', () => {
+    const s = board({ line: [['storm-moonlessglider'], ['zz-grunt']] });
+    const m = unit(s, 0, 'storm-moonlessglider');
+    act(s, { type: 'declare', unit: m.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // Aerial: the grunt cannot block
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(18);
+    expect(glimmers(s, 0, 'storm-parceldrop')).toHaveLength(1);
+    expect(st(s, m).keywords).not.toContain('veiled');
+  });
+
+  it('storm-quartermaster: Deploy gives an ally +1|+1 and Veiled, so the enemy cannot target it', () => {
+    const s = board({ hand: [['storm-quartermaster'], ['zz-zap']], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'storm-quartermaster', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(s.priority).toBe(1);
+    expect(canTarget(s, 'zz-zap', g.iid)).toBe(false);
+    expect(canTarget(s, 'zz-zap', unit(s, 0, 'storm-quartermaster').iid)).toBe(true);
+  });
+
+  it('storm-hushedskiff: Dusk +1|+1 while still Veiled; nothing once it has struck', () => {
+    const s = board({ line: [['storm-hushedskiff'], []] });
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(st(s, unit(s, 0, 'storm-hushedskiff'))).toMatchObject({ power: 4, health: 5 });
+    const t = board({ line: [['storm-hushedskiff'], []] });
+    unit(t, 0, 'storm-hushedskiff').unveiled = true;
+    pass(t); pass(t);
+    expect(st(t, unit(t, 0, 'storm-hushedskiff'))).toMatchObject({ power: 3, health: 4 });
+  });
+
+  it('storm-quicksilvermail: a Spire strike creates a Glimmer Reroute, which lets you attack again', () => {
+    const s = board({ line: [['storm-quicksilvermail'], []] });
+    attack(s, [unit(s, 0, 'storm-quicksilvermail')]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(14);
+    expect(glimmers(s, 0, 'storm-reroute')).toHaveLength(1);
+    pass(s); // the defender has priority after the strikes
+    play(s, 'storm-reroute');
+    pass(s);
+    expect(s.players[0].canAttack).toBe(true);
+  });
+
+  it('storm-turnedcollar: Reprise; an ally gets +1|+0 and Veiled this round, and a Glimmer copy comes back once', () => {
+    const s = board({ hand: [['storm-turnedcollar'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'storm-turnedcollar', [g.iid]);
+    expect(st(s, g).power).toBe(3);
+    expect(st(s, g).keywords).toContain('veiled');
+    expect(s.players[0].hand.find((h) => h.card === 'storm-turnedcollar')).toMatchObject({ glimmer: true, plain: true });
+    play(s, 'storm-turnedcollar', [g.iid]);
+    expect(st(s, g).power).toBe(4);
+    expect(s.players[0].hand.some((h) => h.card === 'storm-turnedcollar')).toBe(false);
+    pass(s); pass(s);
+    expect(st(s, g).keywords).not.toContain('veiled');
+  });
+
+  it('storm-deaddrop: creates a Glimmer Tailwind and a Glimmer Updraft; Resonant also draws a card', () => {
+    const s = board({ hand: [['storm-deaddrop'], []] });
+    play(s, 'storm-deaddrop');
+    expect(glimmers(s, 0, 'storm-tailwind')).toHaveLength(1);
+    expect(glimmers(s, 0, 'storm-updraft')).toHaveLength(1);
+    expect(s.players[0].hand).toHaveLength(2);
+    const t = board({ hand: [['storm-deaddrop'], []], line: [['storm-jax'], []] });
+    resonant(t);
+    play(t, 'storm-deaddrop');
+    expect(t.players[0].hand).toHaveLength(3);
+  });
+
+  it('storm-smokelantern: Reprise; Stasis on an enemy with 3 or less power, then a Glimmer copy for a second one', () => {
+    const s = board({ hand: [['storm-smokelantern'], []], line: [[], ['zz-grunt', 'zz-ogre', 'zz-grunt']] });
+    expect(canTarget(s, 'storm-smokelantern', unit(s, 1, 'zz-ogre').iid)).toBe(false);
+    const a = unit(s, 1, 'zz-grunt', 0);
+    play(s, 'storm-smokelantern', [a.iid]);
+    pass(s);
+    expect(a.stasis).toBe(true);
+    expect(glimmers(s, 0, 'storm-smokelantern')).toHaveLength(1);
+    pass(s);
+    play(s, 'storm-smokelantern', [unit(s, 1, 'zz-grunt', 1).iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-grunt', 1).stasis).toBe(true);
+    expect(s.players[0].hand.some((h) => h.card === 'storm-smokelantern')).toBe(false);
+  });
+
+  it('storm-silveredcoats: allies gain Veiled this round; Resonant also gives them +1|+0 this round', () => {
+    const s = board({ hand: [['storm-silveredcoats'], ['zz-zap']], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'storm-silveredcoats');
+    pass(s);
+    expect(st(s, g)).toMatchObject({ power: 2 });
+    expect(s.priority).toBe(1);
+    expect(canTarget(s, 'zz-zap', g.iid)).toBe(false);
+    const t = board({ hand: [['storm-silveredcoats'], []], line: [['storm-jax', 'zz-grunt'], []] });
+    resonant(t);
+    play(t, 'storm-silveredcoats');
+    pass(t);
+    expect(st(t, unit(t, 0, 'zz-grunt')).power).toBe(3);
+    expect(st(t, unit(t, 0, 'zz-grunt')).keywords).toContain('veiled');
+  });
+
+  it('storm-blackoutdelivery: Reprise; summons a Wingmate and Veils every Wingmate, then a Glimmer copy comes back', () => {
+    const s = board({ hand: [['storm-blackoutdelivery'], []], line: [['storm-wingmate', 'zz-grunt'], []] });
+    play(s, 'storm-blackoutdelivery');
+    pass(s);
+    expect(names(s, 0)).toEqual(['storm-wingmate', 'zz-grunt', 'storm-wingmate']);
+    expect(st(s, unit(s, 0, 'storm-wingmate', 0)).keywords).toContain('veiled');
+    expect(st(s, unit(s, 0, 'storm-wingmate', 1)).keywords).toContain('veiled');
+    expect(st(s, unit(s, 0, 'zz-grunt')).keywords).not.toContain('veiled');
+    expect(glimmers(s, 0, 'storm-blackoutdelivery')).toHaveLength(1);
   });
 });

@@ -348,4 +348,99 @@ export const prism: CardDef[] = [
     text: 'Summon two 1|1 Tier Recruits, then give every ally +1|+1.',
     ops: [{ op: 'summon', card: 'prism-tier-recruit', n: 2 }, { op: 'buff', to: 'allies', power: 1, health: 1 }],
   },
+  // ---------- set x1: The Mirror Quarter ----------
+  // Mirror-shields: wardens who answer enemy glyphs (foeGlyph), Ward and buff glyphs with Reprise, and polished
+  // shields that copy an ally's card as a Glimmer reinforcement. Hero archetype: the mirror-warden (copiesMade).
+  {
+    id: 'prism-liova', name: 'Liova Tain, Mirror-Warden', faction: 'prism', type: 'hero', cost: 4, power: 2, health: 5,
+    keywords: ['plated'], tribe: 'warden', set: 'x1',
+    text: 'Plated. Deploy: copy an ally (Glimmer).',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+    level: { who: 'you', stat: 'copiesMade', n: 5, text: "You've copied 5+ cards" },
+    ascended: {
+      name: 'Liova, the Answering Glass', power: 3, health: 6, keywords: ['plated'],
+      text: 'Plated. Your units and heroes cost 1 less. Deploy: copy an ally (Glimmer). Ascend: copy every other ally (Glimmer).',
+      costAuras: [{ type: 'unit', n: -1 }],
+      abilities: [
+        { on: 'deploy', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'copy', of: 'otherAllies', glimmer: true }] },
+      ],
+    },
+  },
+  {
+    id: 'prism-glancing-sentry', name: 'Glancing Sentry', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 1,
+    tribe: 'warden', set: 'x1', text: 'When the opponent casts a glyph, give me Ward.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'grant', to: 'self', kw: ['ward'] }] }],
+  },
+  {
+    id: 'prism-silverer', name: 'Silverer', faction: 'prism', type: 'unit', cost: 2, power: 1, health: 2,
+    tribe: 'lens-wright', set: 'x1', text: 'Deploy: copy an ally with 2 or less power (Glimmer).',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally', filter: { maxPower: 2 } }], ops: [{ op: 'copy', of: 'target0', glimmer: true }] }],
+  },
+  {
+    id: 'prism-reflection-picket', name: 'Reflection Picket', faction: 'prism', type: 'unit', cost: 2, power: 2, health: 1,
+    tribe: 'warden', set: 'x1', text: 'When the opponent casts a glyph, copy me (Glimmer).',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'copy', of: 'self', glimmer: true }] }],
+  },
+  {
+    id: 'prism-glare-warden', name: 'Glare Warden', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 3,
+    keywords: ['plated'], tribe: 'warden', set: 'x1',
+    text: 'Plated. When the opponent casts a glyph, deal 1 to the strongest enemy (highest power).',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'damage', to: 'strongestEnemy', n: 1 }] }],
+  },
+  {
+    id: 'prism-shrouded-lensman', name: 'Shrouded Lensman', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 2,
+    keywords: ['veiled'], tribe: 'lens-wright', set: 'x1', text: 'Veiled. Dusk: give the weakest ally (lowest power) Ward.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'grant', to: 'weakestAlly', kw: ['ward'] }] }],
+  },
+  {
+    id: 'prism-memory-glass', name: 'Memory Glass', faction: 'prism', type: 'unit', cost: 4, power: 2, health: 5,
+    tribe: 'construct', set: 'x1', text: 'When another ally is destroyed, copy it (Glimmer).',
+    abilities: [{ on: 'allyDied', ops: [{ op: 'copy', of: 'trigger', glimmer: true }] }],
+  },
+  {
+    id: 'prism-mirrorhall-marshal', name: 'Mirrorhall Marshal', faction: 'prism', type: 'unit', cost: 5, power: 3, health: 5,
+    keywords: ['spotter'], tribe: 'warden', set: 'x1', text: 'Spotter. Deploy: copy every other ally with Ward (Glimmer).',
+    abilities: [{ on: 'deploy', ops: [{ op: 'copy', of: { from: 'otherAllies', filter: { kw: 'ward' } }, glimmer: true }] }],
+  },
+  {
+    id: 'prism-thousand-pane-bastion', name: 'Thousand-Pane Bastion', faction: 'prism', type: 'unit', cost: 7, power: 5, health: 7,
+    keywords: ['plated'], tribe: 'construct', set: 'x1',
+    text: 'Plated. When the opponent casts a glyph, give every other ally +1|+1 this round.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'buff', to: 'otherAllies', power: 1, health: 1, dur: 'round' }] }],
+  },
+  {
+    id: 'prism-second-sheen', name: 'Second Sheen', faction: 'prism', type: 'glyph', cost: 1, speed: 'flash', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Give an ally +1|+1 this round.',
+    targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'buff', to: 'target0', power: 1, health: 1, dur: 'round' }],
+  },
+  {
+    id: 'prism-polished-reply', name: 'Polished Reply', faction: 'prism', type: 'glyph', cost: 3, speed: 'flash', set: 'x1',
+    text: 'Give an ally Ward, then copy an enemy glyph (Glimmer).',
+    targets: [{ what: 'unit', side: 'ally' }, { what: 'glyph', side: 'enemy' }],
+    ops: [{ op: 'grant', to: 'target0', kw: ['ward'] }, { op: 'copy', of: 'target1', glimmer: true }],
+  },
+  {
+    id: 'prism-mirrored-drill', name: 'Mirrored Drill', faction: 'prism', type: 'glyph', cost: 2, speed: 'swift', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Give every ally with 2 or less power +0|+1.',
+    ops: [{ op: 'buff', to: { from: 'allies', filter: { maxPower: 2 } }, health: 1 }],
+  },
+  {
+    id: 'prism-facet-twin', name: 'Facet Twin', faction: 'prism', type: 'glyph', cost: 3, speed: 'swift', set: 'x1',
+    text: 'Give an ally +1|+1 and copy it (Glimmer). Resonant: also give it Ward.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [
+      { op: 'buff', to: 'target0', power: 1, health: 1 },
+      { op: 'copy', of: 'target0', glimmer: true },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'grant', to: 'target0', kw: ['ward'] }] },
+    ],
+  },
+  {
+    id: 'prism-mirror-vigil', name: 'Mirror Vigil', faction: 'prism', type: 'glyph', cost: 4, speed: 'ritual', set: 'x1',
+    keywords: ['reprise'], text: 'Reprise. Give every ally Ward. Resonant: also repair every ally by 2.',
+    ops: [
+      { op: 'grant', to: 'allies', kw: ['ward'] },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'heal', to: 'allies', n: 2 }] },
+    ],
+  },
 ];

@@ -95,6 +95,7 @@ function baseStats(s: GameState, u: Unit): Stats {
   }
   kws.delete('ward');
   if (u.ward) kws.add('ward');
+  if (u.unveiled) kws.delete('veiled'); // R-K13: filters that read stats before auras also see it lost
   return { power, health, hp: health - u.dmg, keywords: [...kws] };
 }
 

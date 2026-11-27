@@ -14,4 +14,9 @@ export const coil: Record<string, string[]> = {
   'coil-run-down': ['Choose the damaged enemy unit every ally strikes'],
   'coil-thorn-volley': ['Choose the enemy unit every allied Sapling strikes'],
   'coil-transplant': ['Choose your Sapling to replace with a Thornwood'],
+  // ---------- set x1: The Mirror Quarter ----------
+  'coil-cutting-gatherer': ['Choose your beast to put a Glimmer copy of in your hand'],
+  'coil-take-a-cutting': ['Choose your damaged unit to put a Glimmer copy of in your hand'],
+  'coil-twice-grown-thorns': ['Choose an ally to get +2|+0 and Pierce this round'],
+  'coil-strike-from-the-ferns': ['Choose your Veiled unit to get +2|+0 and strike', 'Choose the enemy unit it strikes'],
 };
