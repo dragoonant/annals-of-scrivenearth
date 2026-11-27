@@ -29,12 +29,17 @@ Cost 7+ units should end games. Glyph rates: 1 Charge is about 2 damage to a uni
 1 more at Ritual; damage that can hit a Spire costs 1 more; drawing a card is about 1.5 Charge;
 +2|+2 this round is about 2 Charge at Flash.
 
-## Shape of a faction's 25 collectible cards
-2 heroes (already written), 14 units, 9 glyphs.
+## Shape of a faction's 50 collectible cards (base set, docs/SETS.md)
+4 heroes, 28 units, 18 glyphs: the original 25 plus 25 added in the same shape:
+2 heroes, 14 units, 9 glyphs.
 - Units by cost: three at 1, three at 2, three at 3, two at 4, one at 5, one at 6, one at 7 or 8.
 - Glyphs: three Flash, four Swift, two Ritual; costs spread 1-6.
 - At least 4 cards that advance each hero's level condition, and at least 2 with a **Resonant** bonus.
-- Every card should make a player decide something. No two cards that differ only by a number.
+- Every card should make a player decide something. No two cards that differ only by a number, and no card that is
+  an existing card with a number changed.
+- Card art: every card (and every hero's `--ascended` face) needs a subject in `tools/art/subjects/<faction>.ts`:
+  one person, creature or object and one scene, never a scene clause another card already uses.
+  `npx tsx tools/art/build-prompts.ts` lints them.
 
 ## Worked examples
 ```ts

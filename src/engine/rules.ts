@@ -190,6 +190,7 @@ function summon(s: GameState, seat: Seat, cardId: string, via: string): Unit | n
   };
   p.line.push(u);
   bump(s, seat, 'unitsSummoned');
+  if (d.token) bump(s, seat, 'tokensSummoned');
   if (stats(s, u).power >= 5) bump(s, seat, 'bigSummoned');
   log(s, { k: 'summon', seat, card: cardId, unit: u.iid, via });
   for (const ally of p.line) if (ally !== u) emit(s, 'allySummoned', ally, u);
@@ -326,6 +327,7 @@ function amount(s: GameState, ctx: Ctx, a: Amount | undefined, dflt = 0): number
     case 'glyphsThisRound': n = p.seenRound.glyphsCast ?? 0; break;
     case 'alliesDiedThisRound': n = p.seenRound.alliesDied ?? 0; break;
     case 'ascendedHeroes': n = p.ascended.length; break;
+    case 'hand': n = p.hand.length; break;
   }
   n = n * (a.mul ?? 1) + (a.plus ?? 0);
   if (a.max !== undefined) n = Math.min(n, a.max);
@@ -429,6 +431,7 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
       const health = amount(s, ctx, op.health);
       for (const u of unitsOf(resolve(s, ctx, op.to))) {
         u.mods.push({ power, health, dur: op.dur ?? 'perm' });
+        if (u.owner === ctx.seat && (power > 0 || health > 0)) bump(s, ctx.seat, 'buffsGiven');
         log(s, { k: 'buff', seat: u.owner, tunit: u.iid, tcard: u.card, n: power, m: health, via: ctx.via, s: op.dur ?? 'perm' });
       }
       return;
@@ -466,6 +469,7 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
     case 'recall': {
       for (const u of unitsOf(resolve(s, ctx, op.to))) {
         removeFromLine(s, u);
+        bump(s, ctx.seat, 'recalled');
         const owner = s.players[u.owner];
         log(s, { k: 'recall', seat: u.owner, tunit: u.iid, tcard: u.card, via: ctx.via });
         if (def(u.card).token) continue; // tokens are not cards: they vanish

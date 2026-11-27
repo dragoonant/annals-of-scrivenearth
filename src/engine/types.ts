@@ -6,6 +6,7 @@ export type Seat = 0 | 1;
 export type FactionId = 'prism' | 'ember' | 'tide' | 'coil' | 'under' | 'storm';
 export type CardType = 'unit' | 'hero' | 'glyph';
 export type Speed = 'flash' | 'swift' | 'ritual';
+export type CardSet = 'base' | 'x1' | 'x2';
 
 export type Keyword =
   | 'vanguard' // R-K1 strikes first when attacking
@@ -88,7 +89,8 @@ export type Amount =
         | 'target0Power'
         | 'glyphsThisRound' // glyphs you cast this round
         | 'alliesDiedThisRound'
-        | 'ascendedHeroes'; // your heroes that have Ascended
+        | 'ascendedHeroes' // your heroes that have Ascended
+        | 'hand'; // cards in your hand
       mul?: number;
       plus?: number;
       max?: number;
@@ -177,6 +179,9 @@ export type SeenStat =
   | 'allySurvivals' // times an allied unit took damage and survived
   | 'cardsDrawn'
   | 'chargeSpent'
+  | 'buffsGiven' // times you gave an allied unit a stat buff (one per unit buffed)
+  | 'recalled' // units you returned to a hand, yours or the enemy's
+  | 'tokensSummoned' // allied tokens that entered your Line
   // unit-level only:
   | 'strikes'
   | 'damageDealt'
@@ -213,6 +218,8 @@ export interface CardDef {
   text: string;
   flavor?: string;
   tribe?: string;
+  /** The set the card belongs to (docs/SETS.md). Omitted = the base set, First Light. */
+  set?: CardSet;
   /** Not collectible: only made by other cards (summon/create). */
   token?: boolean;
   // units and heroes

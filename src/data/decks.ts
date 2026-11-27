@@ -51,12 +51,16 @@ export function autoDeck(a: FactionId, b: FactionId): string[] {
   return deck;
 }
 
-const PAIRS: [FactionId, FactionId, string][] = [
-  ['prism', 'coil', 'Wall of Thorns'],
-  ['ember', 'storm', 'Foundry Squall'],
-  ['tide', 'under', 'Cold Current'],
-  ['storm', 'prism', 'Skywatch'],
-  ['coil', 'ember', 'Wildfire Garden'],
+/**
+ * The first five premades, as autoDeck built them from the original 150-card pool (frozen 2026-11-26, PLAN D26, so that
+ * new cards do not change decks players already know).
+ */
+const CURVE: { name: string; cards: Record<string, number> }[] = [
+  { name: 'Wall of Thorns', cards: { 'prism-ysolde': 3, 'coil-aruvi': 3, 'prism-facet-initiate': 1, 'coil-rootling': 1, 'prism-glasswarden': 1, 'coil-sap-surge': 1, 'prism-hold-the-line': 1, 'coil-sprout-tender': 1, 'prism-lampkeeper': 1, 'coil-thornback-cub': 1, 'prism-patch-the-pane': 1, 'coil-bristle': 1, 'prism-bracewright': 1, 'coil-duel-of-thorns': 1, 'prism-call-out': 1, 'coil-hothouse-bloom': 1, 'prism-mirror-ward': 1, 'coil-sap-engine': 1, 'prism-pane-mender': 1, 'coil-spearhorn': 1, 'prism-tierguard': 1, 'coil-vinewhip': 1, 'prism-choir-of-facets': 1, 'coil-bloomcaller': 1, 'prism-chorus-warden': 1, 'coil-crownmaw': 1, 'prism-crystal-bulwark': 1, 'coil-lash-out': 1, 'prism-lightwall-oath': 1, 'coil-lashvine': 1, 'prism-sentinel-lens': 1, 'coil-overgrowth': 1, 'prism-aegis-colossus': 1, 'coil-grafting': 1, 'prism-tier-rally': 1, 'coil-spore-herald': 1 } },
+  { name: 'Foundry Squall', cards: { 'ember-kessa': 3, 'storm-jax': 3, 'ember-ashrunner': 1, 'storm-flagbearer': 1, 'ember-cinderscamp': 1, 'storm-signalkite': 1, 'ember-kilnhand': 1, 'storm-tailwind': 1, 'ember-overdrive': 1, 'storm-tickettaker': 1, 'ember-fuseguard': 1, 'storm-dispatcher': 1, 'ember-pinprick': 1, 'storm-gustcaller': 1, 'ember-scrapburst': 1, 'storm-railglider': 1, 'ember-slagbolt': 1, 'storm-updraft': 1, 'ember-slagsmith': 1, 'storm-airmail': 1, 'ember-sparkforge': 1, 'storm-crosswind': 1, 'ember-arcwelder': 1, 'storm-galecourier': 1, 'ember-furnacebrute': 1, 'storm-galesurge': 1, 'ember-furnacetender': 1, 'storm-reroute': 1, 'ember-heatlance': 1, 'storm-skyhook': 1, 'ember-sparkcascade': 1, 'storm-sparkrider': 1, 'ember-ventburst': 1, 'storm-squadcaller': 1, 'ember-blastminer': 1, 'storm-jetstream': 1 } },
+  { name: 'Cold Current', cards: { 'tide-maren': 3, 'under-sable': 3, 'tide-mirroreel': 1, 'under-burnoutrunner': 1, 'tide-ripplescribe': 1, 'under-fuserunner': 1, 'tide-slipunder': 1, 'under-leechtick': 1, 'tide-sluicepage': 1, 'under-pullplug': 1, 'tide-driftseer': 1, 'under-acidbath': 1, 'tide-eddycourier': 1, 'under-acidlamplighter': 1, 'tide-heldbreath': 1, 'under-burnledger': 1, 'tide-quickcurrent': 1, 'under-pitaccountant': 1, 'tide-tidalveil': 1, 'under-ratwrangler': 1, 'tide-wardtender': 1, 'under-siphontap': 1, 'tide-backwash': 1, 'under-backalleyenforcer': 1, 'tide-glassarchivist': 1, 'under-furnacehand': 1, 'tide-hushwateradept': 1, 'under-leechwiresurgeon': 1, 'tide-lockkeeper': 1, 'under-snuffedfuse': 1, 'tide-unwrite': 1, 'under-wiremarket': 1, 'tide-pearlsentinel': 1, 'under-bleeddry': 1, 'tide-sluiceclose': 1, 'under-leechharvest': 1 } },
+  { name: 'Skywatch', cards: { 'storm-jax': 3, 'prism-ysolde': 3, 'storm-flagbearer': 1, 'prism-facet-initiate': 1, 'storm-signalkite': 1, 'prism-glasswarden': 1, 'storm-tailwind': 1, 'prism-hold-the-line': 1, 'storm-tickettaker': 1, 'prism-lampkeeper': 1, 'storm-dispatcher': 1, 'prism-patch-the-pane': 1, 'storm-gustcaller': 1, 'prism-bracewright': 1, 'storm-railglider': 1, 'prism-call-out': 1, 'storm-updraft': 1, 'prism-mirror-ward': 1, 'storm-airmail': 1, 'prism-pane-mender': 1, 'storm-crosswind': 1, 'prism-tierguard': 1, 'storm-galecourier': 1, 'prism-choir-of-facets': 1, 'storm-galesurge': 1, 'prism-chorus-warden': 1, 'storm-reroute': 1, 'prism-crystal-bulwark': 1, 'storm-skyhook': 1, 'prism-lightwall-oath': 1, 'storm-sparkrider': 1, 'prism-sentinel-lens': 1, 'storm-squadcaller': 1, 'prism-aegis-colossus': 1, 'storm-jetstream': 1, 'prism-tier-rally': 1 } },
+  { name: 'Wildfire Garden', cards: { 'coil-aruvi': 3, 'ember-kessa': 3, 'coil-rootling': 1, 'ember-ashrunner': 1, 'coil-sap-surge': 1, 'ember-cinderscamp': 1, 'coil-sprout-tender': 1, 'ember-kilnhand': 1, 'coil-thornback-cub': 1, 'ember-overdrive': 1, 'coil-bristle': 1, 'ember-fuseguard': 1, 'coil-duel-of-thorns': 1, 'ember-pinprick': 1, 'coil-hothouse-bloom': 1, 'ember-scrapburst': 1, 'coil-sap-engine': 1, 'ember-slagbolt': 1, 'coil-spearhorn': 1, 'ember-slagsmith': 1, 'coil-vinewhip': 1, 'ember-sparkforge': 1, 'coil-bloomcaller': 1, 'ember-arcwelder': 1, 'coil-crownmaw': 1, 'ember-furnacebrute': 1, 'coil-lash-out': 1, 'ember-furnacetender': 1, 'coil-lashvine': 1, 'ember-heatlance': 1, 'coil-overgrowth': 1, 'ember-sparkcascade': 1, 'coil-grafting': 1, 'ember-ventburst': 1, 'coil-spore-herald': 1, 'ember-blastminer': 1 } },
 ];
 
 type HandDeck = { name: string; about: string; cards: Record<string, number> };
@@ -189,7 +193,7 @@ const expand = (cards: Record<string, number>): string[] => Object.entries(cards
  * tests/decks.test.ts fails if any is dropped.
  */
 export function premadeDecks(): PremadeDeck[] {
-  const curve: PremadeDeck[] = PAIRS.map(([a, b, name]) => ({ name, cards: autoDeck(a, b) }));
+  const curve: PremadeDeck[] = CURVE.map((d) => ({ name: d.name, cards: expand(d.cards) }));
   const hand = [BLACKWATER, ...HAND_BUILT].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
   return [...curve, ...hand].filter((d) => checkDeck(d.cards).ok);
 }
