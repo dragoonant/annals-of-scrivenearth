@@ -444,4 +444,106 @@ export const coil: CardDef[] = [
       { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'charge', n: 3 }] },
     ],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // The turning seasons: seeds and young beasts that Unfold after rounds on the Line, gardeners and beasts that Chart
+  // for the next beast, and growth that rewards a unit and a glyph in the same round. Hero: the almanac reader (charted).
+  // ---------- hero ----------
+  {
+    id: 'coil-maelin', name: 'Maelin Furrowgold, Almanac-Keeper', faction: 'coil', type: 'hero', cost: 4, power: 2, health: 3,
+    tribe: 'gardener', set: 'x2',
+    text: 'Dawn: Chart a beast (3).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 3, find: { tribe: 'beast' } }] }],
+    level: { who: 'you', stat: 'charted', n: 5, text: "You've drawn 5+ cards by Chart" },
+    ascended: {
+      name: 'Maelin, the Turning Year', power: 4, health: 6, keywords: ['mend'],
+      text: 'Mend. Dawn: Chart a beast (4) and gain 1 Charge. Ascend: Chart a beast (6) twice and gain 3 Charge.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'chart', n: 4, find: { tribe: 'beast' } }, { op: 'charge', n: 1 }] },
+        {
+          on: 'ascend',
+          ops: [{ op: 'chart', n: 6, find: { tribe: 'beast' } }, { op: 'chart', n: 6, find: { tribe: 'beast' } }, { op: 'charge', n: 3 }],
+        },
+      ],
+    },
+  },
+  // ---------- units ----------
+  {
+    id: 'coil-wintering-seed', name: 'Wintering Seed', faction: 'coil', type: 'unit', cost: 1, power: 0, health: 2,
+    keywords: ['mend'], tribe: 'plant', set: 'x2', text: 'Mend.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Wakened Oak', power: 3, health: 4, keywords: ['mend'],
+      text: 'Mend. Unfold: gain 2 Charge.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'charge', n: 2 }] }],
+    },
+  },
+  {
+    id: 'coil-skyglass-gardener', name: 'Skyglass Gardener', faction: 'coil', type: 'unit', cost: 2, power: 1, health: 1,
+    tribe: 'gardener', set: 'x2', text: 'Deploy: Chart a beast (4).',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 4, find: { tribe: 'beast' } }] }],
+  },
+  {
+    id: 'coil-yearling-tusker', name: 'Yearling Tusker', faction: 'coil', type: 'unit', cost: 3, power: 2, health: 4,
+    tribe: 'beast', set: 'x2', text: '',
+    level: { who: 'self', stat: 'strikes', n: 2, text: 'Struck 2 times' },
+    ascended: { name: 'Greytusk Elder', power: 5, health: 5, keywords: ['pierce'], text: 'Pierce.' },
+  },
+  {
+    id: 'coil-leaffall-gardener', name: 'Leaffall Gardener', faction: 'coil', type: 'unit', cost: 3, power: 2, health: 3,
+    tribe: 'gardener', set: 'x2', text: 'Shatter: summon a Wintering Seed.',
+    abilities: [{ on: 'shatter', ops: [{ op: 'summon', card: 'coil-wintering-seed' }] }],
+  },
+  {
+    id: 'coil-trailfinder-elk', name: 'Trailfinder Elk', faction: 'coil', type: 'unit', cost: 4, power: 4, health: 3,
+    tribe: 'beast', set: 'x2', text: 'Assault: Chart a beast (3).',
+    abilities: [{ on: 'assault', ops: [{ op: 'chart', n: 3, find: { tribe: 'beast' } }] }],
+  },
+  {
+    id: 'coil-stormbark-yew', name: 'Stormbark Yew', faction: 'coil', type: 'unit', cost: 5, power: 3, health: 6,
+    keywords: ['mend'], tribe: 'plant', set: 'x2', text: 'Mend.',
+    level: { who: 'self', stat: 'survivals', n: 2, text: 'Took damage and survived 2 times' },
+    ascended: {
+      name: 'Stormcrown Yew', power: 6, health: 7, keywords: ['pierce', 'mend'],
+      text: 'Pierce, Mend. Unfold: Chart a beast (4).',
+      abilities: [{ on: 'unfold', ops: [{ op: 'chart', n: 4, find: { tribe: 'beast' } }] }],
+    },
+  },
+  {
+    id: 'coil-highsummer-colossus', name: 'Highsummer Colossus', faction: 'coil', type: 'unit', cost: 6, power: 5, health: 5,
+    keywords: ['pierce'], tribe: 'beast', set: 'x2', text: 'Pierce. Dusk: if Conjunction, I get +2|+2.',
+    abilities: [{ on: 'dusk', cond: { c: 'conjunction' }, ops: [{ op: 'buff', to: 'self', power: 2, health: 2 }] }],
+  },
+  // ---------- glyphs ----------
+  {
+    id: 'coil-spring-rush', name: 'Spring Rush', faction: 'coil', type: 'glyph', cost: 2, speed: 'flash', set: 'x2',
+    text: 'Give an ally +2|+2 this round. Conjunction: it also gets a lasting +1|+1.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [
+      { op: 'buff', to: 'target0', power: 2, health: 2, dur: 'round' },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'buff', to: 'target0', power: 1, health: 1 }] },
+    ],
+  },
+  {
+    id: 'coil-foragers-almanac', name: "Forager's Almanac", faction: 'coil', type: 'glyph', cost: 2, speed: 'swift', set: 'x2',
+    text: 'Chart a beast (5). Conjunction: gain 2 Charge.',
+    ops: [
+      { op: 'chart', n: 5, find: { tribe: 'beast' } },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'charge', n: 2 }] },
+    ],
+  },
+  {
+    id: 'coil-rutting-season', name: 'Rutting Season', faction: 'coil', type: 'glyph', cost: 3, speed: 'swift', set: 'x2',
+    text: 'Your strongest ally (highest power) and the strongest enemy (highest power) strike each other.',
+    ops: [{ op: 'duel', a: 'strongestAlly', b: 'strongestEnemy' }],
+  },
+  {
+    id: 'coil-midsummer-planting', name: 'Midsummer Planting', faction: 'coil', type: 'glyph', cost: 3, speed: 'ritual', set: 'x2',
+    text: 'Chart a unit costing 5+ (6) and raise your maximum Charge by 1. Resonant: gain 3 Charge.',
+    ops: [
+      { op: 'chart', n: 6, find: { type: 'unit', minCost: 5 } },
+      { op: 'maxCharge', n: 1 },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'charge', n: 3 }] },
+    ],
+  },
 ];

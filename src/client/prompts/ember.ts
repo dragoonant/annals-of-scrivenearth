@@ -29,4 +29,9 @@ export const ember: Record<string, string[]> = {
   'ember-twingather': ['Choose an ally to get +2|+0 this round and be copied into your hand (Glimmer)'],
   'ember-blowpipeflare': ['Choose an enemy unit or the enemy Spire to take 2 damage'],
   'ember-paneburst': ['Choose an enemy unit to take 3 damage (you also get a Glimmer Cullet Spark, 2 while Resonant)'],
+  // ---------- set x2: The Starward Rise ----------
+  'ember-craterforeman': ['Choose an enemy unit to take 2 damage (with Conjunction you also summon a Slagling)'],
+  'ember-quenchhiss': ['Choose an ally to get +1|+2 this round, then take 1 damage'],
+  'ember-bolideshard': ['Choose an enemy unit to take 2 damage (then you Chart a glyph from the top 3)'],
+  'ember-tektitevolley': ["Choose an enemy unit or the enemy Spire to take 1 damage per glyph you've cast this round (at most 4)"],
 };

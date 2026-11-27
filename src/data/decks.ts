@@ -293,6 +293,60 @@ export const X1_DECKS: HandDeck[] = [
   },
 ];
 
+/**
+ * Six premades for The Starward Rise (set x2), led by its eleven heroes (Pell leads two). Win rates: BALANCE.md B-7.
+ */
+export const X2_DECKS: HandDeck[] = [
+  {
+    name: 'Night Roads', about: 'Read the stars every dawn: Chart the right courier and glyph each turn and fly them straight at the Spire.',
+    cards: {
+      'orrery-vessaly': 3, 'storm-isra': 3,
+      'orrery-lenspolisher': 3, 'orrery-chartscribe': 2, 'orrery-quadrantkeeper': 2, 'orrery-cometherald': 2, 'orrery-eclipseknight': 2, 'orrery-zenithseer': 1, 'orrery-firstglimpse': 2, 'orrery-starreckoning': 2, 'orrery-cometlance': 1,
+      'storm-sextantcadet': 3, 'storm-dawnrunner': 2, 'storm-wayfinder': 2, 'storm-meridianrider': 2, 'storm-zenithlookout': 2, 'storm-cometexpress': 2, 'storm-nightgalleon': 1, 'storm-plotacourse': 2, 'storm-starsurvey': 1,
+    },
+  },
+  {
+    name: 'Patient Lens', about: 'Hold the Line round after round until every patient construct wakes into something enormous.',
+    cards: {
+      'orrery-elsbet': 3, 'prism-quenna': 3,
+      'orrery-pocketorrery': 2, 'orrery-brasssentinel': 2, 'orrery-armillarywarden': 2, 'orrery-orreryengine': 2, 'orrery-gyrewarden': 2, 'orrery-dormantstartitan': 1, 'orrery-lanternacolyte': 2, 'orrery-longpatience': 2, 'orrery-hourofmending': 2,
+      'prism-dome-sweeper': 3, 'prism-starglass-shell': 2, 'prism-zenith-spotter': 2, 'prism-aperture-captain': 2, 'prism-dawnwatch-engine': 2, 'prism-great-refractor': 1, 'prism-brace-by-starlight': 2, 'prism-rekindle-the-lens': 2, 'prism-long-exposure': 1,
+    },
+  },
+  {
+    name: 'Spring Tide', about: 'Play a unit and a glyph every round so every Conjunction lands, and lock the tide behind it.',
+    cards: {
+      'orrery-pell': 3, 'tide-orsa': 3,
+      'orrery-novicestargazer': 3, 'orrery-orbitacolyte': 2, 'orrery-lodestarprior': 2, 'orrery-meridianconstruct': 1, 'orrery-trinelight': 2, 'orrery-brassshelter': 2, 'orrery-gravitywell': 2, 'orrery-starreckoning': 2, 'orrery-occultation': 1,
+      'tide-almanacrunner': 2, 'tide-neapgatekeeper': 2, 'tide-highwatercantor': 2, 'tide-breakwatersentry': 2, 'tide-lunarephemerist': 2, 'tide-moonboundfloodwarden': 1, 'tide-moonhaulleviathan': 1, 'tide-tidelockbrace': 2, 'tide-moonpull': 2, 'tide-tidetables': 1,
+    },
+  },
+  {
+    name: 'Turning Year', about: 'Ramp through the seasons, Chart your biggest beasts and fill the Line with giants of starlight.',
+    cards: {
+      'orrery-aurelind': 3, 'coil-maelin': 3,
+      'orrery-armillarywarden': 2, 'orrery-celestinebastion': 2, 'orrery-eclipseknight': 2, 'orrery-sleepingconstellation': 1, 'orrery-starforgetitan': 1, 'orrery-meridianconstruct': 1, 'orrery-kindlethecolossus': 1, 'orrery-seekthebrightones': 1, 'orrery-rainofglassstars': 1,
+      'coil-wintering-seed': 3, 'coil-skyglass-gardener': 3, 'coil-yearling-tusker': 2, 'coil-leaffall-gardener': 2, 'coil-trailfinder-elk': 2, 'coil-stormbark-yew': 2, 'coil-highsummer-colossus': 2, 'coil-spring-rush': 2, 'coil-foragers-almanac': 2, 'coil-midsummer-planting': 2,
+    },
+  },
+  {
+    name: 'Meteor Market', about: 'Chart for the burn you need, sell fortunes in the back room and let the meteors fall.',
+    cards: {
+      'ember-imra': 3, 'under-hollis': 3,
+      'ember-cratersifter': 3, 'ember-starhound': 2, 'ember-nightassayer': 2, 'ember-meteorram': 2, 'ember-craterforeman': 2, 'ember-fallenanvil': 1, 'ember-bolidefurnace': 1, 'ember-quenchhiss': 1, 'ember-bolideshard': 2, 'ember-tektitevolley': 1, 'ember-fallingiron': 1,
+      'under-cutpurseclairvoyant': 2, 'under-starsignheavy': 2, 'under-horoscopehawker': 2, 'under-enveloperunner': 2, 'under-luckbreaker': 2, 'under-ledgerastrologer': 1, 'under-pawnedplanetarium': 1, 'under-coldreading': 2, 'under-paidinadvance': 1, 'under-foretoldcollection': 1,
+    },
+  },
+  {
+    name: 'Binary Star', about: 'Every unit and glyph played together doubles: twin your cheap allies and burn the enemy with the spares.',
+    cards: {
+      'mirror-vesperine': 3, 'orrery-pell': 3,
+      'mirror-pairedwick': 3, 'mirror-quicksilvershell': 2, 'mirror-twinlensaugur': 2, 'mirror-backlitwarden': 2, 'mirror-twinstaroutrider': 2, 'mirror-twinsunsentinel': 2, 'mirror-pairedsuns': 1, 'mirror-pairedglint': 2, 'mirror-binaryflare': 1, 'mirror-starwardglance': 1, 'mirror-twinephemeris': 1,
+      'orrery-novicestargazer': 2, 'orrery-orbitacolyte': 2, 'orrery-cometherald': 2, 'orrery-lodestarprior': 2, 'orrery-eclipseknight': 2, 'orrery-trinelight': 2, 'orrery-brassshelter': 2, 'orrery-cometlance': 1,
+    },
+  },
+];
+
 /** A premade deck; `about` is the one-line plan shown on the New game screen (hand-built decks only). */
 export interface PremadeDeck extends DeckList { about?: string }
 
@@ -300,11 +354,11 @@ const expand = (cards: Record<string, number>): string[] => Object.entries(cards
 
 /**
  * Premade decks: the original six first, in their old order (so `?decks=` indices stay the same), then the twelve
- * hand-built ones, then the six led by the First Light heroes, then the five for The Mirror Quarter. Only decks that pass checkDeck are offered (a deck is never silently patched);
+ * hand-built ones, then the six led by the First Light heroes, then the five for The Mirror Quarter and the six for The Starward Rise. Only decks that pass checkDeck are offered (a deck is never silently patched);
  * tests/decks.test.ts fails if any is dropped.
  */
 export function premadeDecks(): PremadeDeck[] {
   const curve: PremadeDeck[] = CURVE.map((d) => ({ name: d.name, cards: expand(d.cards) }));
-  const hand = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS, ...X1_DECKS].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
+  const hand = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS, ...X1_DECKS, ...X2_DECKS].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
   return [...curve, ...hand].filter((d) => checkDeck(d.cards).ok);
 }

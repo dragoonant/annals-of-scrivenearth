@@ -1028,3 +1028,199 @@ describe('coil x1 cards', () => {
     expect(t.players[0].charge).toBe(10);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+// The opening hand and the round-1 draw come off the top before board() replaces the hand, so five fillers go first.
+const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+const FOE = Array<string>(20).fill('zz-filler');
+/** A deck for seat 0 written from the top down (the engine keeps the top at the end of the array). */
+const fromTop = (cards: string[]): [string[], string[]] => [[...OPEN, ...cards].reverse(), FOE];
+const handIds = (s: GameState, seat: 0 | 1 = 0) => s.players[seat].hand.map((h) => h.card);
+
+describe('coil x2 cards', () => {
+  it('coil-maelin: Dawn charts a beast (3); ascends at 5 charted: two beasts (6) and 3 Charge; Ascended: Mend, Dawn charts (4) and gains 1 Charge', () => {
+    const s = board({
+      line: [['coil-maelin'], []],
+      deck: fromTop([
+        'zz-filler', // round 2 draw
+        'zz-filler', 'zz-filler', 'coil-spearhorn', // Dawn: Chart a beast (3) finds the third card; the two fillers stay on top
+        'coil-crownmaw', 'coil-thornback-cub', // Ascend: two Charts (6), each past the same two fillers
+        'zz-filler', 'zz-filler', 'coil-spearhorn', // round 3: one top filler is drawn, then Chart a beast (4) finds the fourth card
+        'zz-filler',
+      ]),
+    });
+    s.players[0].heroes = ['coil-maelin'];
+    s.players[0].seen.charted = 4;
+    const m = unit(s, 0, 'coil-maelin');
+    expect(st(s, m)).toMatchObject({ power: 2, health: 3 });
+    nextRound(s);
+    expect(s.players[0].ascended).toContain('coil-maelin');
+    expect(s.players[0].seen.charted).toBe(7);
+    expect(handIds(s)).toEqual(['zz-filler', 'coil-spearhorn', 'coil-crownmaw', 'coil-thornback-cub']);
+    expect(s.players[0].charge).toBe(13);
+    expect(st(s, m)).toMatchObject({ power: 4, health: 6 });
+    m.dmg = 3;
+    nextRound(s);
+    expect(m.dmg).toBe(0);
+    expect(handIds(s).filter((c) => c === 'coil-spearhorn')).toHaveLength(2);
+    expect(s.players[0].charge).toBe(11);
+    // the base face's Chart looks at only 3 cards
+    const t = board({ line: [['coil-maelin'], []], deck: fromTop(['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'coil-spearhorn', 'zz-filler']) });
+    t.players[0].heroes = ['coil-maelin'];
+    nextRound(t);
+    expect(handIds(t)).toEqual(['zz-filler']);
+    expect(t.players[0].seen.charted ?? 0).toBe(0);
+  });
+
+  it('coil-wintering-seed: Mend; Unfolds after 2 rounds on the Line into a 3|4 Mend that gains 2 Charge', () => {
+    const s = board({ line: [['coil-wintering-seed'], []] });
+    const w = unit(s, 0, 'coil-wintering-seed');
+    expect(st(s, w)).toMatchObject({ power: 0, health: 2 });
+    w.dmg = 1;
+    nextRound(s);
+    expect(w.dmg).toBe(0);
+    expect(w.unfolded).toBeFalsy();
+    expect(s.players[0].charge).toBe(10);
+    nextRound(s);
+    expect(w.unfolded).toBe(true);
+    expect(st(s, w)).toMatchObject({ power: 3, health: 4 });
+    expect(s.players[0].charge).toBe(12);
+    expect(st(s, w).keywords).toContain('mend');
+  });
+
+  it('coil-skyglass-gardener: Deploy charts a beast among the top 4, not the 5th', () => {
+    const s = board({ hand: [['coil-skyglass-gardener'], []], deck: fromTop(['zz-filler', 'coil-sprout-tender', 'zz-filler', 'coil-spearhorn', 'zz-filler']) });
+    play(s, 'coil-skyglass-gardener');
+    expect(handIds(s)).toEqual(['coil-spearhorn']);
+    expect(s.players[0].seen.charted).toBe(1);
+    const t = board({ hand: [['coil-skyglass-gardener'], []], deck: fromTop(['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'coil-spearhorn']) });
+    play(t, 'coil-skyglass-gardener');
+    expect(t.players[0].hand).toHaveLength(0);
+  });
+
+  it('coil-yearling-tusker: Unfolds on its second strike, repaired, into a 5|5 with Pierce', () => {
+    const s = board({ line: [['coil-yearling-tusker'], ['zz-grunt']] });
+    const y = unit(s, 0, 'coil-yearling-tusker');
+    expect(st(s, y)).toMatchObject({ power: 2, health: 4 });
+    y.seen.strikes = 1;
+    attack(s, [y], [[unit(s, 1, 'zz-grunt'), y]]);
+    resolveCombat(s);
+    expect(y.unfolded).toBe(true);
+    expect(y.dmg).toBe(0);
+    expect(st(s, y)).toMatchObject({ power: 5, health: 5 });
+    const t = board({ line: [['coil-yearling-tusker'], ['zz-filler']] });
+    const z = unit(t, 0, 'coil-yearling-tusker');
+    z.unfolded = true;
+    attack(t, [z], [[unit(t, 1, 'zz-filler'), z]]);
+    resolveCombat(t);
+    expect(t.players[1].spire).toBe(16); // 5 into a 1|1, 4 through
+  });
+
+  it('coil-leaffall-gardener: Shatter summons a Wintering Seed', () => {
+    const s = board({ line: [['coil-leaffall-gardener'], ['zz-ogre']] });
+    const g = unit(s, 0, 'coil-leaffall-gardener');
+    attack(s, [g], [[unit(s, 1, 'zz-ogre'), g]]);
+    resolveCombat(s);
+    expect(s.players[0].line.map((u) => u.card)).toEqual(['coil-wintering-seed']);
+    expect(s.players[0].seen.unitsSummoned).toBe(1);
+  });
+
+  it('coil-trailfinder-elk: Assault charts a beast among the top 3, skipping a gardener', () => {
+    const s = board({ line: [['coil-trailfinder-elk'], []], deck: fromTop(['coil-sprout-tender', 'zz-filler', 'coil-crownmaw', 'zz-filler']) });
+    attack(s, [unit(s, 0, 'coil-trailfinder-elk')]);
+    expect(handIds(s)).toEqual(['coil-crownmaw']);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(16);
+    expect(s.players[0].deck.slice(-2)).toEqual(['zz-filler', 'coil-sprout-tender']);
+  });
+
+  it('coil-stormbark-yew: Mend; Unfolds on its second survival into a 6|7 Pierce, Mend that charts a beast (4)', () => {
+    const s = board({ hand: [[], ['zz-bolt']], line: [['coil-stormbark-yew'], []], first: 1, deck: fromTop(['zz-filler', 'zz-filler', 'zz-filler', 'coil-spearhorn', 'zz-filler']) });
+    const y = unit(s, 0, 'coil-stormbark-yew');
+    expect(st(s, y)).toMatchObject({ power: 3, health: 6 });
+    expect(st(s, y).keywords).toEqual(['mend']);
+    y.seen.survivals = 1;
+    play(s, 'zz-bolt', [y.iid]);
+    pass(s);
+    expect(y.unfolded).toBe(true);
+    expect(y.dmg).toBe(0);
+    expect(st(s, y)).toMatchObject({ power: 6, health: 7 });
+    expect(st(s, y).keywords).toEqual(expect.arrayContaining(['pierce', 'mend']));
+    expect(handIds(s)).toEqual(['coil-spearhorn']);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('coil-highsummer-colossus: Pierce; Dusk gives it +2|+2 only if you played a unit and cast a glyph this round', () => {
+    const s = board({ hand: [['coil-highsummer-colossus', 'coil-sap-surge'], []] });
+    play(s, 'coil-highsummer-colossus');
+    pass(s);
+    play(s, 'coil-sap-surge');
+    const c = unit(s, 0, 'coil-highsummer-colossus');
+    nextRound(s);
+    expect(st(s, c)).toMatchObject({ power: 7, health: 7 });
+    expect(st(s, c).keywords).toContain('pierce');
+    const t = board({ hand: [['coil-highsummer-colossus'], []] });
+    play(t, 'coil-highsummer-colossus');
+    nextRound(t);
+    expect(st(t, unit(t, 0, 'coil-highsummer-colossus'))).toMatchObject({ power: 5, health: 5 });
+  });
+
+  it('coil-spring-rush: Flash +2|+2 this round; Conjunction adds a lasting +1|+1', () => {
+    const s = board({ hand: [['coil-spring-rush'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'coil-spring-rush', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 4, health: 4 });
+    expect(s.priority).toBe(0);
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+    const t = board({ hand: [['coil-spearhorn', 'coil-spring-rush'], []], line: [['zz-grunt'], []] });
+    const h = unit(t, 0, 'zz-grunt');
+    play(t, 'coil-spearhorn');
+    pass(t);
+    play(t, 'coil-spring-rush', [h.iid]);
+    expect(st(t, h)).toMatchObject({ power: 5, health: 5 });
+    nextRound(t);
+    expect(st(t, h)).toMatchObject({ power: 3, health: 3 });
+  });
+
+  it('coil-foragers-almanac: Swift; charts a beast among the top 5; Conjunction gains 2 Charge', () => {
+    const s = board({ hand: [['coil-foragers-almanac'], []], deck: fromTop(['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'coil-crownmaw', 'zz-filler']) });
+    play(s, 'coil-foragers-almanac');
+    pass(s);
+    expect(handIds(s)).toEqual(['coil-crownmaw']);
+    expect(s.players[0].charge).toBe(8);
+    const t = board({ hand: [['coil-spearhorn', 'coil-foragers-almanac'], []], deck: fromTop(['coil-crownmaw', 'zz-filler']) });
+    play(t, 'coil-spearhorn');
+    pass(t);
+    play(t, 'coil-foragers-almanac');
+    pass(t);
+    expect(handIds(t)).toEqual(['coil-crownmaw']);
+    expect(t.players[0].charge).toBe(8); // 10 - 2 - 2 + 2
+  });
+
+  it('coil-rutting-season: your strongest ally and the strongest enemy strike each other; the others are untouched', () => {
+    const s = board({ hand: [['coil-rutting-season'], []], line: [['zz-grunt', 'coil-domewyrm'], ['zz-ogre', 'zz-grunt']] });
+    play(s, 'coil-rutting-season');
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-grunt']);
+    expect(unit(s, 0, 'coil-domewyrm').dmg).toBe(5);
+    expect(unit(s, 0, 'zz-grunt').dmg).toBe(0);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+  });
+
+  it('coil-midsummer-planting: Ritual; charts a unit costing 5+ (6) and raises maximum Charge by 1; Resonant gains 3 Charge', () => {
+    const deck = fromTop(['coil-spearhorn', 'coil-sap-surge', 'coil-crownmaw', 'coil-spore-herald', 'coil-sprout-tender', 'coil-canopy-titan', 'coil-domewyrm']);
+    const s = board({ hand: [['coil-midsummer-planting'], []], charge: 5, deck });
+    play(s, 'coil-midsummer-planting');
+    pass(s);
+    expect(handIds(s)).toEqual(['coil-canopy-titan']);
+    expect(s.players[0].maxCharge).toBe(6);
+    expect(s.players[0].charge).toBe(2);
+    const t = board({ hand: [['coil-midsummer-planting'], []], line: [['coil-aruvi'], []], charge: 5, deck });
+    t.players[0].ascended = ['coil-aruvi'];
+    play(t, 'coil-midsummer-planting');
+    pass(t);
+    expect(t.players[0].charge).toBe(5);
+    expect(t.players[0].maxCharge).toBe(6);
+  });
+});

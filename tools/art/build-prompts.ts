@@ -10,7 +10,7 @@ const problems: string[] = [...lintPrompt('STYLE', '', STYLE, banned), ...lintPr
 const out: { id: string; prompt: string; aspect: string }[] = [];
 const seen = new Map<string, string>();
 for (const c of allCards().filter((x) => !x.id.startsWith('zz-'))) {
-  const keys = c.type === 'hero' ? [c.id, `${c.id}--ascended`] : [c.id];
+  const keys = c.ascended ? [c.id, `${c.id}--ascended`] : [c.id]; // heroes and units that Unfold (R-E5) have a second face
   for (const key of keys) {
     const s = SUBJECTS[key];
     if (!s) { problems.push(`${key}: no subject entry (every card needs its own subject and scene)`); continue; }

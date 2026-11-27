@@ -417,4 +417,113 @@ export const storm: CardDef[] = [
       { op: 'grant', to: { from: 'allies', filter: { card: 'storm-wingmate' } }, kw: ['veiled'] },
     ],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // Navigation by the stars: navigators who Chart for the next kite, couriers that Unfold after their first
+  // deliveries, and Conjunction bonuses on tempo glyphs. Hero archetype: the navigator (cards charted).
+  {
+    id: 'storm-isra', name: 'Navigator Isra Vantelle', faction: 'storm', type: 'hero', cost: 3, power: 2, health: 3, set: 'x2',
+    tribe: 'courier',
+    text: 'Dawn: Chart a kite (3).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 3, find: { type: 'unit', tribe: 'kite' } }] }],
+    level: { who: 'you', stat: 'charted', n: 5, text: "You've charted 5+ cards" },
+    ascended: {
+      name: 'Isra, Reader of the Night Roads', power: 3, health: 5, keywords: ['aerial'],
+      text: 'Aerial. Dawn: Chart a unit (3). Ascend: Chart a unit (6), then Chart a glyph (6).',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'chart', n: 3, find: { type: 'unit' } }] },
+        { on: 'ascend', ops: [{ op: 'chart', n: 6, find: { type: 'unit' } }, { op: 'chart', n: 6, find: { type: 'glyph' } }] },
+      ],
+    },
+  },
+  // units
+  {
+    id: 'storm-sextantcadet', name: 'Sextant Cadet', faction: 'storm', type: 'unit', cost: 1, power: 1, health: 1, set: 'x2', tribe: 'courier',
+    text: 'Deploy: Chart a kite (3).',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 3, find: { type: 'unit', tribe: 'kite' } }] }],
+  },
+  {
+    id: 'storm-dawnrunner', name: 'Dawnrunner Kite', faction: 'storm', type: 'unit', cost: 2, power: 2, health: 1, set: 'x2', tribe: 'kite',
+    keywords: ['aerial'], text: 'Aerial.',
+    level: { who: 'self', stat: 'damageDealt', n: 4, text: 'It has dealt 4+ damage' },
+    ascended: { name: 'Daybreak Kite', power: 3, health: 3, keywords: ['aerial', 'vanguard'], text: 'Aerial, Vanguard.' },
+  },
+  {
+    id: 'storm-meridianrider', name: 'Meridian Rider', faction: 'storm', type: 'unit', cost: 3, power: 3, health: 2, set: 'x2', tribe: 'courier',
+    keywords: ['vanguard'], text: 'Vanguard. Deploy: if Conjunction, I get +1|+2.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'buff', to: 'self', power: 1, health: 2 }] }] }],
+  },
+  {
+    id: 'storm-wayfinder', name: 'Wayfinder Glider', faction: 'storm', type: 'unit', cost: 3, power: 2, health: 2, set: 'x2', tribe: 'kite',
+    keywords: ['aerial'], text: 'Aerial.',
+    level: { who: 'self', stat: 'strikes', n: 2, text: 'It has struck 2+ times' },
+    ascended: {
+      name: 'Wayfinder, Star-Led', power: 4, health: 4, keywords: ['aerial'],
+      text: 'Aerial. Strike: Chart a glyph (3).',
+      abilities: [{ on: 'strike', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] }],
+    },
+  },
+  {
+    id: 'storm-zenithlookout', name: 'Zenith Lookout', faction: 'storm', type: 'unit', cost: 4, power: 2, health: 4, set: 'x2', tribe: 'courier',
+    keywords: ['spotter'], text: 'Spotter. Deploy: Chart a glyph (4). Resonant: also Chart a kite (4).',
+    abilities: [{
+      on: 'deploy',
+      ops: [
+        { op: 'chart', n: 4, find: { type: 'glyph' } },
+        { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'chart', n: 4, find: { type: 'unit', tribe: 'kite' } }] },
+      ],
+    }],
+  },
+  {
+    id: 'storm-cometexpress', name: 'Comet Express', faction: 'storm', type: 'unit', cost: 5, power: 4, health: 4, set: 'x2', tribe: 'courier',
+    keywords: ['vanguard'], text: 'Vanguard.',
+    level: { who: 'self', stat: 'damageDealt', n: 6, text: 'It has dealt 6+ damage' },
+    ascended: {
+      name: 'Comet Express, Tail Ablaze', power: 6, health: 5, keywords: ['vanguard', 'aerial'],
+      text: 'Vanguard, Aerial. Unfold: you may attack again this round.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'rally' }] }],
+    },
+  },
+  {
+    id: 'storm-nightgalleon', name: 'Night-Sky Galleon', faction: 'storm', type: 'unit', cost: 6, power: 4, health: 5, set: 'x2', tribe: 'courier',
+    keywords: ['aerial'], text: 'Aerial. Deploy: Chart a unit (5). Conjunction: I have +2|+2.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 5, find: { type: 'unit' } }] }],
+    auras: [{ to: 'self', power: 2, health: 2, cond: { c: 'conjunction' } }],
+  },
+  // glyphs
+  {
+    id: 'storm-coursecorrection', name: 'Course Correction', faction: 'storm', type: 'glyph', cost: 1, speed: 'flash', set: 'x2',
+    text: 'An ally gets +1|+0 and Vanguard this round. Conjunction: it also gets +0|+2 this round.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [
+      { op: 'buff', to: 'target0', power: 1, dur: 'round' },
+      { op: 'grant', to: 'target0', kw: ['vanguard'], dur: 'round' },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'buff', to: 'target0', health: 2, dur: 'round' }] },
+    ],
+  },
+  {
+    id: 'storm-plotacourse', name: 'Plot a Course', faction: 'storm', type: 'glyph', cost: 2, speed: 'swift', set: 'x2',
+    text: 'Chart a kite (4). Conjunction: also Chart a glyph (4).',
+    ops: [
+      { op: 'chart', n: 4, find: { type: 'unit', tribe: 'kite' } },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'chart', n: 4, find: { type: 'glyph' } }] },
+    ],
+  },
+  {
+    id: 'storm-homewardbearing', name: 'Homeward Bearing', faction: 'storm', type: 'glyph', cost: 4, speed: 'swift', set: 'x2',
+    text: 'Allies get +1|+0 this round. Conjunction: you may attack again this round.',
+    ops: [
+      { op: 'buff', to: 'allies', power: 1, dur: 'round' },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'rally' }] },
+    ],
+  },
+  {
+    id: 'storm-starsurvey', name: 'Star Survey', faction: 'storm', type: 'glyph', cost: 4, speed: 'ritual', set: 'x2',
+    text: 'Chart a kite (4), then Chart a unit (4), then Chart a glyph (4).',
+    ops: [
+      { op: 'chart', n: 4, find: { type: 'unit', tribe: 'kite' } },
+      { op: 'chart', n: 4, find: { type: 'unit' } },
+      { op: 'chart', n: 4, find: { type: 'glyph' } },
+    ],
+  },
 ];

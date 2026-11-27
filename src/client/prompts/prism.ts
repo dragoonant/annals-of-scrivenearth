@@ -24,4 +24,7 @@ export const prism: Record<string, string[]> = {
   'prism-second-sheen': ['Choose an ally to get +1|+1 this round'],
   'prism-polished-reply': ['Choose an ally to gain Ward', 'Choose the enemy glyph to copy (Glimmer)'],
   'prism-facet-twin': ['Choose an ally to get +1|+1 and be copied (Glimmer)'],
+  // ---------- set x2: The Starward Rise ----------
+  'prism-brace-by-starlight': ['Choose an ally to get +0|+2 this round'],
+  'prism-rekindle-the-lens': ['Choose an ally to repair fully (a construct also gains Ward)'],
 };

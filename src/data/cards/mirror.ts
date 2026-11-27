@@ -284,4 +284,120 @@ export const mirror: CardDef[] = [
     text: 'Put a copy of every enemy unit in your hand.',
     ops: [{ op: 'copy', of: 'enemies' }],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // Twin stars: Conjunction bonuses that make copies, mirror-glass constructs that Unfold, Chart for the glyph to copy.
+  // Hero: Vesperine (twin-maker, unitsPlayed): every unit she sees played after a glyph gets a Glimmer twin.
+  {
+    id: 'mirror-vesperine', name: 'Vesperine Twinglass', faction: 'mirror', type: 'hero', set: 'x2', cost: 3, power: 2, health: 3,
+    tribe: 'glasswright',
+    text: 'When another ally is summoned, if Conjunction and it has 2 or less power, put a Glimmer copy of it in your hand.',
+    abilities: [{ on: 'allySummoned', cond: { c: 'conjunction' }, ops: [{ op: 'copy', of: { from: 'trigger', filter: { maxPower: 2 } }, glimmer: true }] }],
+    level: { who: 'you', stat: 'unitsPlayed', n: 10, text: "You've played 10+ units" },
+    ascended: {
+      name: 'Vesperine, the Binary Star', power: 4, health: 5,
+      text: 'When another ally is summoned, if Conjunction, put a Glimmer copy of it in your hand. Ascend: summon two Reflections and Chart a unit (6).',
+      abilities: [
+        { on: 'allySummoned', cond: { c: 'conjunction' }, ops: [{ op: 'copy', of: 'trigger', glimmer: true }] },
+        { on: 'ascend', ops: [{ op: 'summon', card: 'mirror-reflection', n: 2 }, { op: 'chart', n: 6, find: { type: 'unit' } }] },
+      ],
+    },
+  },
+  {
+    id: 'mirror-pairedwick', name: 'Paired Wick', faction: 'mirror', type: 'unit', set: 'x2', cost: 1, power: 1, health: 1, tribe: 'illusionist',
+    text: 'Deploy: if Conjunction, put a Glimmer copy of me in your hand.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'copy', of: 'self', glimmer: true }] }] }],
+  },
+  {
+    id: 'mirror-quicksilvershell', name: 'Quicksilver Shell', faction: 'mirror', type: 'unit', set: 'x2', cost: 2, power: 1, health: 3, tribe: 'construct',
+    text: 'Unfolds after surviving damage twice.',
+    level: { who: 'self', stat: 'survivals', n: 2, text: 'Survived damage 2 times' },
+    ascended: {
+      name: 'Shell of Two Moons', power: 3, health: 5,
+      text: 'Unfold: summon two Reflections.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'summon', card: 'mirror-reflection', n: 2 }] }],
+    },
+  },
+  {
+    id: 'mirror-twinlensaugur', name: 'Twin-Lens Augur', faction: 'mirror', type: 'unit', set: 'x2', cost: 3, power: 2, health: 3, tribe: 'spy',
+    text: 'Deploy: Chart a glyph (4). Conjunction: also Chart a unit (4).',
+    abilities: [{
+      on: 'deploy',
+      ops: [
+        { op: 'chart', n: 4, find: { type: 'glyph' } },
+        { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'chart', n: 4, find: { type: 'unit' } }] },
+      ],
+    }],
+  },
+  {
+    id: 'mirror-backlitwarden', name: 'Backlit Warden', faction: 'mirror', type: 'unit', set: 'x2', cost: 3, power: 2, health: 3, tribe: 'construct',
+    text: 'When the opponent casts a glyph, deal 1 to the strongest enemy. Unfolds after dealing four damage.',
+    abilities: [{ on: 'foeGlyph', ops: [{ op: 'damage', to: 'strongestEnemy', n: 1 }] }],
+    level: { who: 'self', stat: 'damageDealt', n: 4, text: 'Dealt 4+ damage' },
+    ascended: {
+      name: 'Warden of the Double Sun', power: 4, health: 5,
+      text: 'When the opponent casts a glyph, deal 2 to the strongest enemy.',
+      abilities: [{ on: 'foeGlyph', ops: [{ op: 'damage', to: 'strongestEnemy', n: 2 }] }],
+    },
+  },
+  {
+    id: 'mirror-twinstaroutrider', name: 'Twin-Star Outrider', faction: 'mirror', type: 'unit', set: 'x2', cost: 4, power: 3, health: 3, tribe: 'spy',
+    keywords: ['veiled'],
+    text: 'Veiled. Assault: if Conjunction, put a copy of me in your hand.',
+    abilities: [{ on: 'assault', cond: { c: 'conjunction' }, ops: [{ op: 'copy', of: 'self' }] }],
+  },
+  {
+    id: 'mirror-twinsunsentinel', name: 'Twin-Sun Sentinel', faction: 'mirror', type: 'unit', set: 'x2', cost: 5, power: 3, health: 5, tribe: 'construct',
+    keywords: ['plated'],
+    text: 'Plated. Unfolds after starting two rounds on the Line.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Twin-Sun Colossus', power: 6, health: 7, keywords: ['plated'],
+      text: 'Plated. Unfold: put a copy of me in your hand.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'copy', of: 'self' }] }],
+    },
+  },
+  {
+    id: 'mirror-pairedsuns', name: 'Mirror of Paired Suns', faction: 'mirror', type: 'unit', set: 'x2', cost: 6, power: 5, health: 5, tribe: 'construct',
+    text: 'Deploy: put a Glimmer copy of each other ally with 3 or less power in your hand. Conjunction: the copies are not Glimmer.',
+    abilities: [{
+      on: 'deploy',
+      ops: [{
+        op: 'if', cond: { c: 'conjunction' },
+        then: [{ op: 'copy', of: { from: 'otherAllies', filter: { maxPower: 3 } } }],
+        else: [{ op: 'copy', of: { from: 'otherAllies', filter: { maxPower: 3 } }, glimmer: true }],
+      }],
+    }],
+  },
+  {
+    id: 'mirror-pairedglint', name: 'Paired Glint', faction: 'mirror', type: 'glyph', set: 'x2', cost: 2, speed: 'flash',
+    text: 'Give an allied unit +1|+1 this round. Conjunction: put a Glimmer copy of it in your hand.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [
+      { op: 'buff', to: 'target0', power: 1, health: 1, dur: 'round' },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'copy', of: 'target0', glimmer: true }] },
+    ],
+  },
+  {
+    id: 'mirror-starwardglance', name: 'Starward Glance', faction: 'mirror', type: 'glyph', set: 'x2', cost: 2, speed: 'swift',
+    text: 'Chart a glyph (4). Resonant: also Chart a unit (4).',
+    ops: [
+      { op: 'chart', n: 4, find: { type: 'glyph' } },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'chart', n: 4, find: { type: 'unit' } }] },
+    ],
+  },
+  {
+    id: 'mirror-binaryflare', name: 'Binary Flare', faction: 'mirror', type: 'glyph', set: 'x2', cost: 3, speed: 'swift',
+    text: 'Deal 2 to an enemy unit. Conjunction: deal 2 to another enemy unit too.',
+    targets: [{ what: 'unit', side: 'enemy' }, { what: 'unit', side: 'enemy' }],
+    ops: [
+      { op: 'damage', to: 'target0', n: 2 },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'damage', to: 'target1', n: 2 }] },
+    ],
+  },
+  {
+    id: 'mirror-twinephemeris', name: 'Twin Ephemeris', faction: 'mirror', type: 'glyph', set: 'x2', cost: 3, speed: 'ritual',
+    text: 'Chart a unit (5). Chart a glyph (5).',
+    ops: [{ op: 'chart', n: 5, find: { type: 'unit' } }, { op: 'chart', n: 5, find: { type: 'glyph' } }],
+  },
 ];

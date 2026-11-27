@@ -443,4 +443,110 @@ export const prism: CardDef[] = [
       { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'heal', to: 'allies', n: 2 }] },
     ],
   },
+  // ---------- set x2: The Starward Rise ----------
+  // Star-lens observatories: Spotters that Chart for the next defender, patient wardens and constructs that Unfold
+  // after holding the Line or surviving hits, and Conjunction bonuses when a glyph and a unit land in the same round.
+  // Hero archetype: the sky-reader (charted).
+  {
+    id: 'prism-quenna', name: 'Quenna Dalmere, Star-Lens Keeper', faction: 'prism', type: 'hero', cost: 4, power: 2, health: 4,
+    keywords: ['spotter'], tribe: 'warden', set: 'x2',
+    text: 'Spotter. Dawn: Chart a warden (3).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 3, find: { tribe: 'warden' } }] }],
+    level: { who: 'you', stat: 'charted', n: 5, text: "You've charted 5+ cards" },
+    ascended: {
+      name: 'Quenna, Eye of the Upper Dark', power: 4, health: 6, keywords: ['spotter', 'plated'],
+      text: 'Spotter, Plated. Dawn: Chart a unit (4). Ascend: Chart a unit (6), then Chart a glyph (6).',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'chart', n: 4, find: { type: 'unit' } }] },
+        { on: 'ascend', ops: [{ op: 'chart', n: 6, find: { type: 'unit' } }, { op: 'chart', n: 6, find: { type: 'glyph' } }] },
+      ],
+    },
+  },
+  {
+    id: 'prism-dome-sweeper', name: 'Dome Sweeper', faction: 'prism', type: 'unit', cost: 1, power: 1, health: 1,
+    keywords: ['spotter'], tribe: 'warden', set: 'x2', text: 'Spotter.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Dome Watcher', power: 2, health: 3, keywords: ['spotter'],
+      text: 'Spotter. Unfold: Chart a unit (3).',
+      abilities: [{ on: 'unfold', ops: [{ op: 'chart', n: 3, find: { type: 'unit' } }] }],
+    },
+  },
+  {
+    id: 'prism-starglass-shell', name: 'Starglass Shell', faction: 'prism', type: 'unit', cost: 2, power: 1, health: 3,
+    keywords: ['plated'], tribe: 'construct', set: 'x2', text: 'Plated.',
+    level: { who: 'self', stat: 'survivals', n: 2, text: "I've survived damage 2+ times" },
+    ascended: { name: 'Starglass Rampart', power: 3, health: 5, keywords: ['plated', 'ward'], text: 'Plated, Ward.' },
+  },
+  {
+    id: 'prism-zenith-spotter', name: 'Zenith Spotter', faction: 'prism', type: 'unit', cost: 3, power: 1, health: 3,
+    keywords: ['spotter'], tribe: 'warden', set: 'x2',
+    text: 'Spotter. Deploy: Chart a unit (3). Conjunction: also give me Ward.',
+    abilities: [{
+      on: 'deploy',
+      ops: [
+        { op: 'chart', n: 3, find: { type: 'unit' } },
+        { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'grant', to: 'self', kw: ['ward'] }] },
+      ],
+    }],
+  },
+  {
+    id: 'prism-alignment-herald', name: 'Alignment Herald', faction: 'prism', type: 'unit', cost: 3, power: 2, health: 3,
+    tribe: 'warden', set: 'x2', text: 'Deploy: if Conjunction, give every other ally +1|+1.',
+    abilities: [{ on: 'deploy', cond: { c: 'conjunction' }, ops: [{ op: 'buff', to: 'otherAllies', power: 1, health: 1 }] }],
+  },
+  {
+    id: 'prism-aperture-captain', name: 'Aperture Captain', faction: 'prism', type: 'unit', cost: 4, power: 3, health: 4,
+    tribe: 'warden', set: 'x2', text: 'When another ally is summoned, if Conjunction, give it Ward.',
+    abilities: [{ on: 'allySummoned', cond: { c: 'conjunction' }, ops: [{ op: 'grant', to: 'trigger', kw: ['ward'] }] }],
+  },
+  {
+    id: 'prism-dawnwatch-engine', name: 'Dawnwatch Engine', faction: 'prism', type: 'unit', cost: 5, power: 3, health: 5,
+    keywords: ['plated'], tribe: 'construct', set: 'x2', text: 'Plated.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Dawnwatch Colossus', power: 5, health: 7, keywords: ['plated'],
+      text: 'Plated. Unfold: give every other ally +1|+1.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'buff', to: 'otherAllies', power: 1, health: 1 }] }],
+    },
+  },
+  {
+    id: 'prism-great-refractor', name: 'Great Refractor', faction: 'prism', type: 'unit', cost: 6, power: 3, health: 6,
+    keywords: ['plated', 'spotter'], tribe: 'construct', set: 'x2', text: 'Plated, Spotter.',
+    level: { who: 'self', stat: 'dawns', n: 1, text: 'Started 1 round on the Line' },
+    ascended: {
+      name: 'Kindled Refractor', power: 5, health: 8, keywords: ['plated', 'spotter'],
+      text: 'Plated, Spotter. Dawn: deal 2 to the strongest enemy (highest power).',
+      abilities: [{ on: 'dawn', ops: [{ op: 'damage', to: 'strongestEnemy', n: 2 }] }],
+    },
+  },
+  {
+    id: 'prism-brace-by-starlight', name: 'Brace by Starlight', faction: 'prism', type: 'glyph', cost: 1, speed: 'flash', set: 'x2',
+    text: 'Give an ally +0|+2 this round. Conjunction: Chart a unit (3).',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [
+      { op: 'buff', to: 'target0', health: 2, dur: 'round' },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'chart', n: 3, find: { type: 'unit' } }] },
+    ],
+  },
+  {
+    id: 'prism-rekindle-the-lens', name: 'Rekindle the Lens', faction: 'prism', type: 'glyph', cost: 2, speed: 'swift', set: 'x2',
+    text: 'Repair an ally fully. If it is a construct, also give it Ward.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'heal', to: 'target0', n: 99 }, { op: 'grant', to: { from: 'target0', filter: { tribe: 'construct' } }, kw: ['ward'] }],
+  },
+  {
+    id: 'prism-hold-until-dawn', name: 'Hold Until Dawn', faction: 'prism', type: 'glyph', cost: 4, speed: 'swift', set: 'x2',
+    text: 'Give every ally +0|+2 this round. Repair your Spire by 1 for each ally you have.',
+    ops: [{ op: 'buff', to: 'allies', health: 2, dur: 'round' }, { op: 'heal', to: 'mySpire', n: { count: 'allies', mul: 1 } }],
+  },
+  {
+    id: 'prism-long-exposure', name: 'Long Exposure', faction: 'prism', type: 'glyph', cost: 4, speed: 'ritual', set: 'x2',
+    text: 'Chart a unit (4), then Chart a glyph (4). Resonant: also give every ally Ward.',
+    ops: [
+      { op: 'chart', n: 4, find: { type: 'unit' } },
+      { op: 'chart', n: 4, find: { type: 'glyph' } },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'grant', to: 'allies', kw: ['ward'] }] },
+    ],
+  },
 ];

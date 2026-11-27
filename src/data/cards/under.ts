@@ -435,4 +435,122 @@ export const under: CardDef[] = [
       { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'copy', of: 'enemies', glimmer: true }] },
     ],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // The fortune-tellers' racket: back-room seers who Chart for the card they need, heavies who Unfold after their
+  // first kill, Conjunction bonuses on cheap drain and removal. The seer (Hollis): charted.
+  {
+    id: 'under-hollis', name: 'Wenna Hollis, Back-Room Seer', faction: 'under', type: 'hero', cost: 3, power: 2, health: 3,
+    tribe: 'syndicate', set: 'x2',
+    text: 'Dawn: Chart a glyph (3).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] }],
+    level: { who: 'you', stat: 'charted', n: 5, text: "You've drawn 5+ cards by Chart" },
+    ascended: {
+      name: 'Hollis, Who Sold the Stars', power: 4, health: 5,
+      text: 'Dawn: Chart a glyph (4) and Chart a unit (4). Ascend: destroy every enemy unit with 2 or less power.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'chart', n: 4, find: { type: 'glyph' } }, { op: 'chart', n: 4, find: { type: 'unit' } }] },
+        { on: 'ascend', ops: [{ op: 'destroy', to: { from: 'enemies', filter: { maxPower: 2 } } }] },
+      ],
+    },
+  },
+  {
+    id: 'under-cutpurseclairvoyant', name: 'Cutpurse Clairvoyant', faction: 'under', type: 'unit', cost: 1, power: 1, health: 1,
+    tribe: 'syndicate', set: 'x2',
+    text: 'Deploy: if Conjunction, drain 2 from an enemy unit.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }],
+      ops: [{ op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'drain', to: 'target0', n: 2 }] }],
+    }],
+  },
+  {
+    id: 'under-starsignheavy', name: 'Star-Sign Heavy', faction: 'under', type: 'unit', cost: 2, power: 2, health: 2,
+    tribe: 'syndicate', set: 'x2',
+    text: '',
+    level: { who: 'self', stat: 'kills', n: 1, text: "I've destroyed a unit" },
+    ascended: {
+      name: 'Heavy, Marked by Fate', power: 3, health: 4, keywords: ['dread'],
+      text: 'Dread. Unfold: drain 1 from the enemy Spire.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'drain', to: 'enemySpire', n: 1 }] }],
+    },
+  },
+  {
+    id: 'under-horoscopehawker', name: 'Horoscope Hawker', faction: 'under', type: 'unit', cost: 3, power: 2, health: 2,
+    tribe: 'syndicate', set: 'x2',
+    text: 'Deploy: Chart a unit (3). Conjunction: also drain 2 from an enemy unit.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }],
+      ops: [
+        { op: 'chart', n: 3, find: { type: 'unit' } },
+        { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'drain', to: 'target0', n: 2 }] },
+      ],
+    }],
+  },
+  {
+    id: 'under-enveloperunner', name: 'Envelope Runner', faction: 'under', type: 'unit', cost: 3, power: 3, health: 2,
+    tribe: 'syndicate', set: 'x2',
+    text: 'Shatter: Chart a unit (4).',
+    abilities: [{ on: 'shatter', ops: [{ op: 'chart', n: 4, find: { type: 'unit' } }] }],
+  },
+  {
+    id: 'under-luckbreaker', name: 'Luck-Breaker', faction: 'under', type: 'unit', cost: 4, power: 3, health: 4,
+    tribe: 'syndicate', set: 'x2', keywords: ['dread'],
+    text: 'Dread.',
+    level: { who: 'self', stat: 'kills', n: 1, text: "I've destroyed a unit" },
+    ascended: {
+      name: 'Luck-Breaker, Made in Full', power: 4, health: 5, keywords: ['dread', 'corrosive'],
+      text: 'Dread, Corrosive.',
+    },
+  },
+  {
+    id: 'under-ledgerastrologer', name: 'Ledger Astrologer', faction: 'under', type: 'unit', cost: 5, power: 4, health: 4,
+    tribe: 'syndicate', set: 'x2',
+    text: 'Dusk: Chart a glyph (3). Resonant: I have Dread.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] }],
+    auras: [{ to: 'self', kw: ['dread'], cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'under-pawnedplanetarium', name: 'Pawned Planetarium', faction: 'under', type: 'unit', cost: 6, power: 4, health: 6,
+    tribe: 'construct', set: 'x2', keywords: ['siphon'],
+    text: 'Siphon.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: "I've started 2 rounds on the Line" },
+    ascended: {
+      name: 'Planetarium, Fully Lit', power: 6, health: 7, keywords: ['siphon'],
+      text: 'Siphon. Unfold: drain 2 from every enemy unit.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'drain', to: 'enemies', n: 2 }] }],
+    },
+  },
+  {
+    id: 'under-coldreading', name: 'Cold Reading', faction: 'under', type: 'glyph', cost: 1, speed: 'flash', set: 'x2',
+    text: 'Drain 1 from an enemy unit. Conjunction: also Chart a glyph (3).',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [
+      { op: 'drain', to: 'target0', n: 1 },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] },
+    ],
+  },
+  {
+    id: 'under-foretoldcollection', name: 'Foretold Collection', faction: 'under', type: 'glyph', cost: 3, speed: 'swift', set: 'x2',
+    text: 'An allied unit strikes an enemy unit. Conjunction: first, the allied unit gets +2|+0 this round.',
+    targets: [{ what: 'unit', side: 'ally' }, { what: 'unit', side: 'enemy' }], needsAllTargets: true,
+    ops: [
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'buff', to: 'target0', power: 2, dur: 'round' }] },
+      { op: 'strike', from: 'target0', to: 'target1' },
+    ],
+  },
+  {
+    id: 'under-paidinadvance', name: 'Paid in Advance', faction: 'under', type: 'glyph', cost: 3, speed: 'swift', set: 'x2',
+    text: 'Deal 2 damage to an enemy unit. Chart a unit (4).',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'damage', to: 'target0', n: 2 }, { op: 'chart', n: 4, find: { type: 'unit' } }],
+  },
+  {
+    id: 'under-longreading', name: 'The Long Reading', faction: 'under', type: 'glyph', cost: 4, speed: 'ritual', set: 'x2',
+    text: 'Chart a unit (5) and Chart a glyph (5). Resonant: Chart a unit (5) again.',
+    ops: [
+      { op: 'chart', n: 5, find: { type: 'unit' } },
+      { op: 'chart', n: 5, find: { type: 'glyph' } },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'chart', n: 5, find: { type: 'unit' } }] },
+    ],
+  },
 ];

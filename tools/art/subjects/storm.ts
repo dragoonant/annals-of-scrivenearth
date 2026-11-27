@@ -215,4 +215,53 @@ export const storm: Subjects = {
   'storm-blackoutdelivery': s(
     'a winged pilot in a silvered coat dropping from a darkened airship hatch with a crate strapped to her back',
     'over a city district whose street lamps have all just gone dark, only starlight on the rooftops'),
+  // ---------- set x2: The Starward Rise ----------
+  'storm-isra': s(
+    'a tall woman in her forties with close-cropped silver hair and dark brown skin, a teal flight coat studded with tiny brass rivets in star patterns, a brass astrolabe on a chain at her chest, a pair of folded silver wings at her back',
+    'standing on the open deck of a courier airship before dawn, sighting a bright star through the astrolabe while the crew waits behind her'),
+  'storm-isra--ascended': s(
+    'a tall woman in her forties with close-cropped silver hair and dark brown skin, a long teal coat whose lining glows with points of starlight, broad silver wings fully spread, a pair of brass astronomical rings turning slowly around her',
+    'gliding high above the clouds under a sky crowded with stars, faint glowing route lines stretching from her outstretched hand toward distant spires'),
+  'storm-sextantcadet': s(
+    'a young man of about eighteen with curly red hair and freckles in a short teal flight jacket, squinting through a brass sighting instrument held up to one eye',
+    'on a narrow rooftop observation ledge at twilight, a single bright star hanging above the horizon'),
+  'storm-dawnrunner': s(
+    'a slim silver-framed kite with pale gold cloth wings and a small lamp glowing at its nose',
+    'racing low over rooftops toward the first line of sunrise, its long tail ribbons streaming'),
+  'storm-dawnrunner--ascended': s(
+    'a broad silver-framed kite with blazing gold cloth wings, a sharpened brass prow and its lamp burning as bright as a small sun',
+    'diving out of a sunrise sky straight at an enemy tower, sparks trailing off its wingtips'),
+  'storm-meridianrider': s(
+    'a muscular woman in her thirties with a shaved head and a brass hoop earring, teal rail armour with a silver stripe down the centre of the breastplate, a short lance tipped with a teal lamp',
+    'riding a rail-sled along an arched track at high noon, the sun directly overhead throwing her shadow straight down'),
+  'storm-wayfinder': s(
+    'a lean pilot in his twenties with a long dark ponytail, a teal flight suit and a slim sail-wing of pale blue cloth, a small brass compass strapped to one wrist',
+    'drifting between towers at dusk, checking the compass against the first faint stars'),
+  'storm-wayfinder--ascended': s(
+    'a lean pilot in his twenties with a long dark ponytail, a wide sail-wing of deep blue cloth sewn with glowing silver star points, the brass compass on his wrist shining white',
+    'sweeping down through a starry sky toward a distant beacon, a trail of faint light marking his route behind him'),
+  'storm-zenithlookout': s(
+    'an old man in his sixties with a bushy white beard and a teal knitted cap, a heavy teal greatcoat and a long brass telescope braced on one shoulder',
+    'perched in the crow\'s nest at the very top of a crystal mast, peering straight up at the sky overhead'),
+  'storm-cometexpress': s(
+    'a long rail train with a pointed silver nose and a teal headlamp, couriers in teal leathers clinging to its side rails',
+    'thundering out of a tunnel mouth cut through a tower wall, a plume of white steam trailing behind'),
+  'storm-cometexpress--ascended': s(
+    'a long rail train with a pointed silver nose wrapped in white-gold fire, its carriages lifting off the rails on short silver wings',
+    'leaping off the end of a broken rail bridge into open sky, a blazing tail of flame and sparks streaming behind it'),
+  'storm-nightgalleon': s(
+    'a huge wooden-hulled airship with teal sails stitched with silver star points and brass lanterns along its rails',
+    'sailing slowly across a dark starry sky above the sleeping city, its lanterns mirrored in the crystal towers below'),
+  'storm-coursecorrection': s(
+    'a gloved hand hauling hard on a brass steering lever, a compass needle swinging wildly beside it',
+    'in the cramped cockpit of a rail-sled leaning into a sharp bend, sparks spraying from the wheels'),
+  'storm-plotacourse': s(
+    'a pair of brass dividers walking across a glowing star globe on a wooden table',
+    'in a cramped airship cabin lit by a single swinging lantern, starlight falling through the round porthole'),
+  'storm-homewardbearing': s(
+    'a pair of couriers on silver wings wheeling round in a tight turn, their faces lit by a distant teal beacon',
+    'turning back toward their home tower at blue dusk, its beacon blazing on the summit'),
+  'storm-starsurvey': s(
+    'an elderly woman with long white braids at an enormous brass telescope, a young apprentice beside her holding up a lantern',
+    'inside an open-roofed dome on a spire summit, the sky above crowded with bright stars'),
 };

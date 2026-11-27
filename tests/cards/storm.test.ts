@@ -927,3 +927,204 @@ describe('storm x1 cards', () => {
     expect(glimmers(s, 0, 'storm-blackoutdelivery')).toHaveLength(1);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+// The opening hand and the round-1 draw come off the top before board() replaces the hand: five fillers on top.
+const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+const FOE = Array<string>(20).fill('zz-filler');
+const inHand = (s: GameState, seat: 0 | 1): string[] => s.players[seat].hand.map((h) => h.card);
+/** Play a unit from hand so Conjunction can hold, then the opponent passes priority back. */
+const playUnit = (s: GameState, card = 'zz-grunt'): void => { play(s, card); pass(s); };
+
+describe('storm x2 cards', () => {
+  it('storm-isra: Dawn Charts a kite; the 5th charted card ascends her, and Ascend Charts a unit and a glyph', () => {
+    const s = board({ line: [['storm-isra'], []], deck: [['zz-filler', 'storm-signalkite', 'zz-grunt', 'zz-filler', ...OPEN], FOE] });
+    pass(s); pass(s); // round 2: the round draw takes the top filler, then Dawn looks at the next 3
+    expect(inHand(s, 0)).toEqual(['zz-filler', 'storm-signalkite']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-grunt']);
+    expect(s.players[0].seen.charted).toBe(1);
+
+    const t = board({ hand: [['storm-sextantcadet'], []], line: [['storm-isra'], []], deck: [['storm-tailwind', 'zz-grunt', 'storm-signalkite', ...OPEN], FOE] });
+    t.players[0].heroes = ['storm-isra'];
+    t.players[0].seen.charted = 4;
+    unit(t, 0, 'storm-isra').dmg = 2;
+    play(t, 'storm-sextantcadet'); // charts the kite: the 5th charted card
+    expect(isAscended(t, 0, 'storm-isra')).toBe(true);
+    expect(face(t, 0, 'storm-isra').name).toBe('Isra, Reader of the Night Roads');
+    expect(inHand(t, 0)).toEqual(['storm-signalkite', 'zz-grunt', 'storm-tailwind']);
+    expect(t.players[0].seen.charted).toBe(7);
+    const i = unit(t, 0, 'storm-isra');
+    expect(st(t, i)).toMatchObject({ power: 3, health: 5, hp: 5 });
+    expect(st(t, i).keywords).toContain('aerial');
+  });
+
+  it('storm-isra ascended: Dawn Charts any unit, not only a kite', () => {
+    const s = board({ line: [['storm-isra'], []], deck: [['zz-filler', 'zz-grunt', 'zz-filler', ...OPEN], FOE] });
+    s.players[0].heroes = ['storm-isra'];
+    s.players[0].ascended = ['storm-isra'];
+    pass(s); pass(s);
+    expect(inHand(s, 0)).toEqual(['zz-filler', 'zz-grunt']);
+  });
+
+  it('storm-sextantcadet: Deploy Charts the first kite among the top 3; a kite 4th from the top is missed', () => {
+    const s = board({ hand: [['storm-sextantcadet'], []], deck: [['storm-signalkite', 'zz-grunt', 'zz-grunt', ...OPEN], FOE] });
+    play(s, 'storm-sextantcadet');
+    expect(inHand(s, 0)).toEqual(['storm-signalkite']);
+    expect(s.players[0].deck).toEqual(['zz-grunt', 'zz-grunt']);
+    const t = board({ hand: [['storm-sextantcadet'], []], deck: [['storm-signalkite', 'zz-grunt', 'zz-grunt', 'zz-grunt', ...OPEN], FOE] });
+    play(t, 'storm-sextantcadet');
+    expect(t.players[0].hand).toHaveLength(0);
+    expect(t.log.find((e) => e.k === 'chart')).toMatchObject({ n: 3, m: 0 });
+  });
+
+  it('storm-dawnrunner: Aerial; after dealing 4 damage it Unfolds into a repaired 3|3 Aerial, Vanguard kite', () => {
+    const s = board({ line: [['storm-dawnrunner'], ['zz-grunt']] });
+    const k = unit(s, 0, 'storm-dawnrunner');
+    k.seen.damageDealt = 2;
+    act(s, { type: 'declare', unit: k.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // Aerial: the grunt cannot block
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(18);
+    expect(k.unfolded).toBe(true);
+    expect(face(s, 0, 'storm-dawnrunner', true).name).toBe('Daybreak Kite');
+    expect(st(s, k)).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, k).keywords).toEqual(expect.arrayContaining(['aerial', 'vanguard']));
+  });
+
+  it('storm-meridianrider: Vanguard; Deploy gives +1|+2 only with Conjunction (a glyph cast first this round)', () => {
+    const s = board({ hand: [['storm-meridianrider'], []] });
+    play(s, 'storm-meridianrider');
+    const r = unit(s, 0, 'storm-meridianrider');
+    expect(st(s, r)).toMatchObject({ power: 3, health: 2 });
+    expect(st(s, r).keywords).toContain('vanguard');
+    const t = board({ hand: [['storm-tailwind', 'storm-meridianrider'], []], line: [['zz-grunt'], []] });
+    play(t, 'storm-tailwind', [unit(t, 0, 'zz-grunt').iid]);
+    play(t, 'storm-meridianrider');
+    const q = unit(t, 0, 'storm-meridianrider');
+    expect(st(t, q)).toMatchObject({ power: 4, health: 4 });
+    pass(t); pass(t); pass(t);
+    expect(t.round).toBe(2);
+    expect(st(t, q)).toMatchObject({ power: 4, health: 4 }); // the Deploy buff lasts
+  });
+
+  it('storm-wayfinder: its 2nd strike Unfolds it into a 4|4; once Unfolded, each strike Charts a glyph', () => {
+    const s = board({ line: [['storm-wayfinder'], ['zz-grunt']] });
+    const w = unit(s, 0, 'storm-wayfinder');
+    w.seen.strikes = 1;
+    act(s, { type: 'declare', unit: w.iid });
+    act(s, { type: 'attack' });
+    expect(s.phase).toBe('combat'); // Aerial
+    resolveCombat(s);
+    expect(w.unfolded).toBe(true);
+    expect(st(s, w)).toMatchObject({ power: 4, health: 4 });
+    const t = board({ line: [['storm-wayfinder'], []], deck: [['storm-tailwind', 'zz-grunt', ...OPEN], FOE] });
+    const v = unit(t, 0, 'storm-wayfinder');
+    v.unfolded = true;
+    attack(t, [v]);
+    resolveCombat(t);
+    expect(t.players[1].spire).toBe(16);
+    expect(inHand(t, 0)).toEqual(['storm-tailwind']);
+    expect(t.players[0].deck).toEqual(['zz-grunt']);
+  });
+
+  it('storm-zenithlookout: Spotter; Deploy Charts a glyph (4); Resonant also Charts a kite (4)', () => {
+    const deck = ['storm-signalkite', 'storm-tailwind', 'zz-grunt', ...OPEN];
+    const s = board({ hand: [['storm-zenithlookout'], []], deck: [[...deck], FOE] });
+    play(s, 'storm-zenithlookout');
+    expect(inHand(s, 0)).toEqual(['storm-tailwind']);
+    expect(st(s, unit(s, 0, 'storm-zenithlookout')).keywords).toContain('spotter');
+    const t = board({ hand: [['storm-zenithlookout'], []], line: [['storm-jax'], []], deck: [[...deck], FOE] });
+    resonant(t);
+    play(t, 'storm-zenithlookout');
+    expect(inHand(t, 0)).toEqual(['storm-tailwind', 'storm-signalkite']);
+    expect(t.players[0].seen.charted).toBe(2);
+  });
+
+  it('storm-cometexpress: Vanguard; reaching 6 damage dealt Unfolds it, and Unfold lets you attack again', () => {
+    const s = board({ line: [['storm-cometexpress'], []] });
+    const c = unit(s, 0, 'storm-cometexpress');
+    c.seen.damageDealt = 2;
+    attack(s, [c]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(16);
+    expect(c.unfolded).toBe(true);
+    expect(st(s, c)).toMatchObject({ power: 6, health: 5 });
+    expect(st(s, c).keywords).toEqual(expect.arrayContaining(['vanguard', 'aerial']));
+    expect(s.players[0].canAttack).toBe(true);
+    const t = board({ line: [['storm-cometexpress'], []] });
+    attack(t, [unit(t, 0, 'storm-cometexpress')]);
+    resolveCombat(t);
+    expect(unit(t, 0, 'storm-cometexpress').unfolded).toBeFalsy();
+    expect(t.players[0].canAttack).toBe(false);
+  });
+
+  it('storm-nightgalleon: Aerial; Deploy Charts a unit (5); Conjunction gives +2|+2, in either order, for the round', () => {
+    const s = board({ hand: [['storm-nightgalleon', 'storm-tailwind'], []], line: [['zz-grunt'], []], deck: [['zz-filler', 'zz-grunt', 'storm-tailwind', ...OPEN], FOE] });
+    play(s, 'storm-nightgalleon');
+    expect(inHand(s, 0)).toEqual(['storm-tailwind', 'zz-grunt']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'storm-tailwind']);
+    const g = unit(s, 0, 'storm-nightgalleon');
+    expect(st(s, g)).toMatchObject({ power: 4, health: 5 });
+    expect(st(s, g).keywords).toContain('aerial');
+    pass(s);
+    play(s, 'storm-tailwind', [unit(s, 0, 'zz-grunt').iid]); // a glyph after the unit: Conjunction
+    expect(st(s, g)).toMatchObject({ power: 6, health: 7 });
+    pass(s); pass(s);
+    expect(s.round).toBe(2);
+    expect(st(s, g)).toMatchObject({ power: 4, health: 5 });
+  });
+
+  it('storm-coursecorrection: an ally gets +1|+0 and Vanguard this round; Conjunction adds +0|+2 this round', () => {
+    const s = board({ hand: [['storm-coursecorrection'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'storm-coursecorrection', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 2 });
+    expect(st(s, g).keywords).toContain('vanguard');
+    const t = board({ hand: [['zz-grunt', 'storm-coursecorrection'], []] });
+    playUnit(t);
+    const h = unit(t, 0, 'zz-grunt');
+    play(t, 'storm-coursecorrection', [h.iid]);
+    expect(st(t, h)).toMatchObject({ power: 3, health: 4 });
+    pass(t); pass(t);
+    expect(st(t, h)).toMatchObject({ power: 2, health: 2 });
+    expect(st(t, h).keywords).not.toContain('vanguard');
+  });
+
+  it('storm-plotacourse: Charts a kite (4); Conjunction also Charts a glyph (4)', () => {
+    const deck = ['storm-tailwind', 'storm-signalkite', 'zz-grunt', ...OPEN];
+    const s = board({ hand: [['storm-plotacourse'], []], deck: [[...deck], FOE] });
+    play(s, 'storm-plotacourse');
+    pass(s);
+    expect(inHand(s, 0)).toEqual(['storm-signalkite']);
+    const t = board({ hand: [['zz-grunt', 'storm-plotacourse'], []], deck: [[...deck], FOE] });
+    playUnit(t);
+    play(t, 'storm-plotacourse');
+    pass(t);
+    expect(inHand(t, 0)).toEqual(['storm-signalkite', 'storm-tailwind']);
+    expect(t.players[0].seen.charted).toBe(2);
+  });
+
+  it('storm-homewardbearing: allies get +1|+0 this round; Conjunction also banks another attack', () => {
+    const s = board({ hand: [['storm-homewardbearing'], []], line: [['zz-grunt'], []] });
+    play(s, 'storm-homewardbearing');
+    pass(s);
+    expect(st(s, unit(s, 0, 'zz-grunt')).power).toBe(3);
+    expect(s.players[0].extraAttacks).toBe(0);
+    const t = board({ hand: [['zz-grunt', 'storm-homewardbearing'], []], line: [['zz-grunt'], []] });
+    playUnit(t);
+    play(t, 'storm-homewardbearing');
+    pass(t);
+    expect(st(t, unit(t, 0, 'zz-grunt', 1)).power).toBe(3);
+    expect(t.players[0].extraAttacks).toBe(1);
+  });
+
+  it('storm-starsurvey: Ritual Charts a kite, then a unit, then a glyph, each among the top 4', () => {
+    const s = board({ hand: [['storm-starsurvey'], []], deck: [['zz-filler', 'zz-grunt', 'storm-tailwind', 'storm-signalkite', 'zz-grunt', ...OPEN], FOE] });
+    play(s, 'storm-starsurvey');
+    pass(s);
+    expect(inHand(s, 0)).toEqual(['storm-signalkite', 'zz-grunt', 'storm-tailwind']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-grunt']);
+    expect(s.players[0].seen.charted).toBe(3);
+  });
+});

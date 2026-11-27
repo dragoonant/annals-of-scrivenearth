@@ -148,5 +148,55 @@ export const mirror: Subjects = {
   'mirror-hallofmirrors': s(
     'an endless corridor of rose and silver looking-glasses, each reflecting a different enemy warrior',
     'as the warriors step out of the frames one after another to stand behind a smiling rose-clad spy'),
+
+  // ---------- set x2: The Starward Rise ----------
+  'mirror-vesperine': s(
+    'a poised woman in her forties with copper-brown skin and a long silver plait, a high-necked rose gown stitched with small star-cut mirror chips, a pair of matching glass orbs in her hands',
+    'holding the orbs up at twilight on an observatory balcony as a soldier below steps forward and a pale rose double steps out beside him'),
+  'mirror-vesperine--ascended': s(
+    'a poised woman in her forties with copper-brown skin and a long silver plait unbound, a flowing gown of rose and starlit silver, a pair of glass orbs circling her like small twin suns',
+    'rising above an open observatory dome at night while every ally on the plaza below is joined by a shining rose double'),
+  'mirror-pairedwick': s(
+    'a slim lamplighter boy of about sixteen in a rose waistcoat, a long brass pole ending in a pair of joined candle flames',
+    'touching the pole to a lantern on a misty canal bridge as a second matching lantern flickers alight in the water below'),
+  'mirror-quicksilvershell': s(
+    'a squat round construct of rippling liquid silver held inside a cage of rose glass ribs, a pair of glowing pale eyes',
+    'rolling into the path of a falling stone block in a narrow alley, its silver surface denting and flowing back smooth'),
+  'mirror-quicksilvershell--ascended': s(
+    'a broad round construct of liquid silver ringed by a pair of orbiting crescent moons of rose glass',
+    'standing guard in a moonlit courtyard as a pair of pale rose duplicates of itself pour out of its gleaming surface'),
+  'mirror-twinlensaugur': s(
+    'a wiry woman in her fifties with short white hair and tan skin, a dark rose coat, a brass spyglass with a pair of side-by-side lenses',
+    'peering through the double spyglass from a crumbling bell tower toward a distant enemy camp at dusk'),
+  'mirror-backlitwarden': s(
+    'a tall slender construct of curved mirrored glass panels on a frame of dark iron, a bright lamp burning inside its chest',
+    'turning its glass chest toward a hurled bolt of enemy fire on a city rampart so the fire bends away toward a hulking brute'),
+  'mirror-backlitwarden--ascended': s(
+    'a towering construct of curved mirrored glass panels with a pair of blazing lamps like twin suns burning inside its chest',
+    'striding through a smoky breach in a fortress wall as a pair of white beams lance out from its chest toward an enemy champion'),
+  'mirror-twinstaroutrider': s(
+    'a lean young man with dark curls and brown skin in a smoked-glass riding coat, a pale rose double of him riding at his shoulder',
+    'galloping on a grey horse along a moonlit causeway beside his glass twin toward an enemy outpost'),
+  'mirror-twinsunsentinel': s(
+    'a heavy construct of thick rose glass plates over a frame of polished silver, a pair of dim amber suns set in its breastplate',
+    'kneeling motionless on a high terrace through the night as frost gathers on its plates and the sky begins to pale'),
+  'mirror-twinsunsentinel--ascended': s(
+    'a colossal construct of rose glass armour over polished silver, a pair of blazing amber suns flaring in its breastplate',
+    'rising from one knee at sunrise on a high terrace as a perfect glass copy of it begins to form in the light beside it'),
+  'mirror-pairedsuns': s(
+    'an enormous round looking-glass held in a frame of silver arms, a pair of rose suns glowing in its depths',
+    'tilting on a hilltop above a marching army so a shining double of each soldier walks out of the glass to join the ranks'),
+  'mirror-pairedglint': s(
+    'a pair of rose-white sparks of light spiralling around each other',
+    'settling on the shoulders of a young swordsman in a torchlit square as a glowing double of him flickers alight at his side'),
+  'mirror-starwardglance': s(
+    'a slender silver astrolabe with nested rings of rose glass',
+    'spinning open above an old desk in a dark tower room as a pale beam of starlight lights a single card at the top of a deck'),
+  'mirror-binaryflare': s(
+    'a pair of blinding rose-white stars circling each other in the sky',
+    'loosing a pair of searing beams down onto a muddy battlefield, each striking a different armoured raider'),
+  'mirror-twinephemeris': s(
+    'an open pair of folding star tables of silver leaf and rose glass, a quill of light resting between them',
+    'glowing on a rooftop observatory at midnight as a pair of cards of light lift from the tables into a waiting hand'),
 };
 void s;

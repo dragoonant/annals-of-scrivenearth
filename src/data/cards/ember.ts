@@ -434,4 +434,106 @@ export const ember: CardDef[] = [
     keywords: ['reprise'], text: 'Reprise. Deal 1 to every enemy unit and 1 to the enemy Spire.',
     ops: [{ op: 'damage', to: 'enemies', n: 1 }, { op: 'damage', to: 'enemySpire', n: 1 }],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // Meteor forging: smiths who Chart for their next burn glyph, star-iron constructs that Unfold after striking,
+  // surviving or waiting, and meteor-fall glyphs with Conjunction bonuses. Hero: the prospector, who levels on
+  // cards drawn by Chart (charted).
+  {
+    id: 'ember-imra', name: 'Imra Coldanvil, Star-Iron Prospector', faction: 'ember', type: 'hero', cost: 3, power: 2, health: 4,
+    tribe: 'smith', set: 'x2',
+    text: 'Strike: Chart a glyph (3).',
+    abilities: [{ on: 'strike', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] }],
+    level: { who: 'you', stat: 'charted', n: 4, text: "You've drawn 4+ cards by Chart" },
+    ascended: {
+      name: 'Imra, the Meteor-Wright', power: 4, health: 5,
+      text: 'Your glyphs cost 1 less. Strike: Chart a glyph (3). Ascend: deal 4 to the strongest enemy unit and 2 to the enemy Spire.',
+      costAuras: [{ type: 'glyph', n: -1 }],
+      abilities: [
+        { on: 'strike', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] },
+        { on: 'ascend', ops: [{ op: 'damage', to: 'strongestEnemy', n: 4 }, { op: 'damage', to: 'enemySpire', n: 2 }] },
+      ],
+    },
+  },
+  // units
+  {
+    id: 'ember-cratersifter', name: 'Crater Sifter', faction: 'ember', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'smith', set: 'x2',
+    text: 'Deploy: Chart a glyph (2).',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 2, find: { type: 'glyph' } }] }],
+  },
+  {
+    id: 'ember-starhound', name: 'Star-Iron Hound', faction: 'ember', type: 'unit', cost: 2, power: 1, health: 3, tribe: 'construct', set: 'x2',
+    text: 'Unfolds when it survives damage.',
+    level: { who: 'self', stat: 'survivals', n: 1, text: 'Survived damage once' },
+    ascended: { name: 'Quenched Star-Hound', power: 3, health: 3, keywords: ['vanguard'], text: 'Vanguard.' },
+  },
+  {
+    id: 'ember-nightassayer', name: 'Night-Shift Assayer', faction: 'ember', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'smith', set: 'x2',
+    text: 'Dawn: Chart a glyph (2).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 2, find: { type: 'glyph' } }] }],
+  },
+  {
+    id: 'ember-meteorram', name: 'Meteor-Iron Ram', faction: 'ember', type: 'unit', cost: 3, power: 3, health: 2, tribe: 'construct', set: 'x2',
+    keywords: ['vanguard'], text: 'Vanguard. Unfolds after striking twice.',
+    level: { who: 'self', stat: 'strikes', n: 2, text: 'Struck 2 times' },
+    ascended: {
+      name: 'Tempered Star-Ram', power: 5, health: 4, keywords: ['vanguard'],
+      text: 'Vanguard. Unfold: deal 2 to the enemy Spire.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'damage', to: 'enemySpire', n: 2 }] }],
+    },
+  },
+  {
+    id: 'ember-craterforeman', name: 'Crater Foreman', faction: 'ember', type: 'unit', cost: 4, power: 3, health: 3, tribe: 'smith', set: 'x2',
+    text: 'Deploy: deal 2 to an enemy unit. Conjunction: summon a Slagling.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }],
+      ops: [{ op: 'damage', to: 'target0', n: 2 }, { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'summon', card: 'ember-slagling' }] }],
+    }],
+  },
+  {
+    id: 'ember-fallenanvil', name: 'Fallen-Star Anvil', faction: 'ember', type: 'unit', cost: 5, power: 3, health: 6, tribe: 'construct', set: 'x2',
+    text: 'Unfolds after starting two rounds on the Line.',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Wakened Star-Anvil', power: 6, health: 6, keywords: ['pierce'],
+      text: 'Pierce. Unfold: deal 3 to the strongest enemy unit.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'damage', to: 'strongestEnemy', n: 3 }] }],
+    },
+  },
+  {
+    id: 'ember-bolidefurnace', name: 'Bolide Furnace', faction: 'ember', type: 'unit', cost: 6, power: 3, health: 6, tribe: 'construct', set: 'x2',
+    text: 'When you cast a glyph, deal 1 to every enemy unit. Resonant: also deal 1 to the enemy Spire.',
+    abilities: [{
+      on: 'glyphCast',
+      ops: [{ op: 'damage', to: 'enemies', n: 1 }, { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'damage', to: 'enemySpire', n: 1 }] }],
+    }],
+  },
+  // glyphs
+  {
+    id: 'ember-quenchhiss', name: 'Quench Hiss', faction: 'ember', type: 'glyph', cost: 1, speed: 'flash', set: 'x2',
+    text: 'Give an ally +1|+2 this round, then deal 1 to it.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', power: 1, health: 2, dur: 'round' }, { op: 'damage', to: 'target0', n: 1 }],
+  },
+  {
+    id: 'ember-bolideshard', name: 'Bolide Shard', faction: 'ember', type: 'glyph', cost: 3, speed: 'swift', set: 'x2',
+    text: 'Deal 2 to an enemy unit. Chart a glyph (3).',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'damage', to: 'target0', n: 2 }, { op: 'chart', n: 3, find: { type: 'glyph' } }],
+  },
+  {
+    id: 'ember-tektitevolley', name: 'Tektite Volley', faction: 'ember', type: 'glyph', cost: 2, speed: 'swift', set: 'x2',
+    text: "Deal 1 to an enemy unit or the enemy Spire for each glyph you've cast this round, this one included (at most 4).",
+    targets: [{ what: 'unitOrSpire', side: 'enemy' }],
+    ops: [{ op: 'damage', to: 'target0', n: { count: 'glyphsThisRound', mul: 1, max: 4 } }],
+  },
+  {
+    id: 'ember-fallingiron', name: 'Night of Falling Iron', faction: 'ember', type: 'glyph', cost: 4, speed: 'ritual', set: 'x2',
+    text: 'Deal 1 to every enemy unit, then 3 to the strongest enemy unit. Conjunction: deal 3 to the enemy Spire.',
+    ops: [
+      { op: 'damage', to: 'enemies', n: 1 },
+      { op: 'damage', to: 'strongestEnemy', n: 3 },
+      { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'damage', to: 'enemySpire', n: 3 }] },
+    ],
+  },
 ];

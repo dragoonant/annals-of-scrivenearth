@@ -444,4 +444,97 @@ export const tide: CardDef[] = [
     text: 'Draw 1. Put a Glimmer copy of each enemy unit in Stasis in your hand.',
     ops: [{ op: 'draw', n: 1 }, { op: 'copy', of: { from: 'enemies', filter: { stasis: true } }, glimmer: true }],
   },
+
+  // ---------- set x2: The Starward Rise ----------
+  // Tide tables and the moon: mages who Chart for the right glyph, Conjunction rewards for casting and playing in the
+  // same round, and lock-keepers that Unfold after holding the canal.
+  {
+    id: 'tide-orsa', name: 'Orsa Neapwater, Tide-Reckoner', faction: 'tide', type: 'hero', cost: 4, power: 2, health: 4,
+    tribe: 'mage', set: 'x2',
+    text: 'Dawn: Chart a glyph (3).',
+    abilities: [{ on: 'dawn', ops: [{ op: 'chart', n: 3, find: { type: 'glyph' } }] }],
+    level: { who: 'you', stat: 'charted', n: 5, text: "You've drawn 5+ cards by Chart" },
+    ascended: {
+      name: 'Orsa, Reckoner of the Spring Tide', power: 4, health: 6,
+      text: 'Dawn: Chart a glyph (4). Ascend: your other units get +1|+1 and gain Ward.',
+      abilities: [
+        { on: 'dawn', ops: [{ op: 'chart', n: 4, find: { type: 'glyph' } }] },
+        { on: 'ascend', ops: [{ op: 'buff', to: 'otherAllies', power: 1, health: 1 }, { op: 'grant', to: 'otherAllies', kw: ['ward'] }] },
+      ],
+    },
+  },
+  {
+    id: 'tide-almanacrunner', name: 'Almanac Runner', faction: 'tide', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'mage', set: 'x2',
+    text: 'Deploy: Chart a mage (4).',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 4, find: { tribe: 'mage' } }] }],
+  },
+  {
+    id: 'tide-neapgatekeeper', name: 'Neapgate Keeper', faction: 'tide', type: 'unit', cost: 2, power: 1, health: 3, tribe: 'construct', set: 'x2',
+    text: '',
+    level: { who: 'self', stat: 'dawns', n: 2, text: 'Started 2 rounds on the Line' },
+    ascended: {
+      name: 'Springgate Keeper', power: 3, health: 4,
+      text: 'Unfold: put the strongest enemy in Stasis.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'stasis', to: 'strongestEnemy' }] }],
+    },
+  },
+  {
+    id: 'tide-highwatercantor', name: 'Highwater Cantor', faction: 'tide', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'mage', set: 'x2',
+    text: 'When you cast a glyph, if Conjunction, I get +1|+1.',
+    abilities: [{ on: 'glyphCast', cond: { c: 'conjunction' }, ops: [{ op: 'buff', to: 'self', power: 1, health: 1 }] }],
+  },
+  {
+    id: 'tide-breakwatersentry', name: 'Breakwater Sentry', faction: 'tide', type: 'unit', cost: 3, power: 1, health: 4, tribe: 'construct', set: 'x2',
+    text: '',
+    level: { who: 'self', stat: 'survivals', n: 2, text: 'Took damage and survived 2 times' },
+    ascended: {
+      name: 'Breakwater Bastion', power: 3, health: 6, keywords: ['plated'],
+      text: 'Plated. Unfold: draw 1.',
+      abilities: [{ on: 'unfold', ops: [{ op: 'draw', n: 1 }] }],
+    },
+  },
+  {
+    id: 'tide-lunarephemerist', name: 'Lunar Ephemerist', faction: 'tide', type: 'unit', cost: 4, power: 2, health: 4, tribe: 'mage', set: 'x2',
+    text: 'Deploy: Chart a glyph (4). Resonant: I have +1|+2.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'chart', n: 4, find: { type: 'glyph' } }] }],
+    auras: [{ to: 'self', power: 1, health: 2, cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'tide-moonboundfloodwarden', name: 'Moonbound Floodwarden', faction: 'tide', type: 'unit', cost: 5, power: 3, health: 6, tribe: 'mage', set: 'x2',
+    text: 'Deploy: if Conjunction, put every enemy unit with 3 or less power in Stasis.',
+    abilities: [{ on: 'deploy', cond: { c: 'conjunction' }, ops: [{ op: 'stasis', to: { from: 'enemies', filter: { maxPower: 3 } } }] }],
+  },
+  {
+    id: 'tide-moonhaulleviathan', name: 'Moonhaul Leviathan', faction: 'tide', type: 'unit', cost: 6, power: 4, health: 6, tribe: 'beast', set: 'x2',
+    keywords: ['plated'],
+    text: 'Plated.',
+    level: { who: 'self', stat: 'dawns', n: 1, text: 'Started 1 round on the Line' },
+    ascended: {
+      name: 'Perigee Leviathan', power: 7, health: 8, keywords: ['plated'],
+      text: "Plated. Unfold: return the strongest enemy to its owner's hand.",
+      abilities: [{ on: 'unfold', ops: [{ op: 'recall', to: 'strongestEnemy' }] }],
+    },
+  },
+  {
+    id: 'tide-tidelockbrace', name: 'Tidelock Brace', faction: 'tide', type: 'glyph', cost: 1, speed: 'flash', set: 'x2',
+    text: 'An allied unit gets +0|+2 this round. Conjunction: it also gains Ward.',
+    targets: [{ what: 'unit', side: 'ally' }],
+    ops: [{ op: 'buff', to: 'target0', health: 2, dur: 'round' }, { op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'grant', to: 'target0', kw: ['ward'] }] }],
+  },
+  {
+    id: 'tide-moonpull', name: 'Moonpull', faction: 'tide', type: 'glyph', cost: 2, speed: 'swift', set: 'x2',
+    text: "Put an enemy unit in Stasis. Conjunction: return it to its owner's hand instead.",
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'if', cond: { c: 'conjunction' }, then: [{ op: 'recall', to: 'target0' }], else: [{ op: 'stasis', to: 'target0' }] }],
+  },
+  {
+    id: 'tide-tidetables', name: 'Tide Tables', faction: 'tide', type: 'glyph', cost: 3, speed: 'swift', set: 'x2',
+    text: 'Chart a unit (4) and Chart a glyph (4).',
+    ops: [{ op: 'chart', n: 4, find: { type: 'unit' } }, { op: 'chart', n: 4, find: { type: 'glyph' } }],
+  },
+  {
+    id: 'tide-slackwater', name: 'Slack Water', faction: 'tide', type: 'glyph', cost: 4, speed: 'ritual', set: 'x2',
+    text: 'Repair your units fully, then they get +0|+2. Resonant: draw 2.',
+    ops: [{ op: 'heal', to: 'allies', n: 99 }, { op: 'buff', to: 'allies', health: 2 }, { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'draw', n: 2 }] }],
+  },
 ];

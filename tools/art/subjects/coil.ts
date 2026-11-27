@@ -221,4 +221,53 @@ export const coil: Subjects = {
   'coil-season-of-cuttings': s(
     'rows of glass jars on wooden shelves, each holding a rooted glowing sprig with a tiny beast curled in its leaves',
     'in a warm candlelit propagation house with fogged windows and a brass watering can on the floor'),
+  // ---------- set x2: The Starward Rise ----------
+  'coil-maelin': s(
+    'a lean weathered man in his seventies with a long white braid, brass spectacles with stacked swing-down lenses, an oilcloth coat stitched with pressed leaves, holding a brass dial of nested seed-rings',
+    'kneeling at the edge of a rooftop seedbed at first light, squinting through his lenses at the eastern sky while a young boar noses at his boots'),
+  'coil-maelin--ascended': s(
+    'a lean weathered man in his seventies with a long white braid crowned with a wreath of green, gold and russet leaves, brass spectacles glowing amber, a long coat of living moss and bark, holding a blazing brass dial of nested seed-rings',
+    'standing on a rooftop terrace where one half of the garden is in spring blossom and the other half in autumn gold, a herd of great beasts gathering around him'),
+  'coil-wintering-seed': s(
+    'a fist-sized seed pod with a hard bark shell glazed with frost, a single pale green shoot curling out of a crack, faint green light inside',
+    'half-buried in snow-dusted soil in a cracked clay planter on a cold winter rooftop'),
+  'coil-wintering-seed--ascended': s(
+    'a young oak tree with a broad mossy trunk and spreading green-gold leaves, its roots wrapped around a split bark seed shell, green light glowing in the grain of the wood',
+    'standing in a melting snowbank on a rooftop as spring sunlight breaks through the clouds and meltwater runs into a gutter'),
+  'coil-skyglass-gardener': s(
+    'a young woman in her twenties with cropped red hair, a soil-stained canvas smock and a long brass spyglass on a leather strap, pruning shears at her belt',
+    'leaning on a greenhouse railing at dusk, peering through the spyglass across the rooftops toward a distant herd grazing on a garden tower'),
+  'coil-yearling-tusker': s(
+    'a stocky young wild boar with short fresh tusks, a thin new layer of bark plates on its shoulders and bright green moss along its spine',
+    'scrapping with a rusted pipe in a rooftop vegetable patch, soil kicked up around its hooves'),
+  'coil-yearling-tusker--ascended': s(
+    'a huge old grey-bristled boar with long curved tusks capped in green crystal, thick weathered bark plates on its shoulders and a mane of hanging moss',
+    'shouldering through a collapsed brick garden wall in a shower of mortar and leaves'),
+  'coil-leaffall-gardener': s(
+    'an elderly man with a grey beard in a russet wool coat and fingerless gloves, carrying a willow basket of dry seed pods',
+    'walking through a rooftop orchard in autumn as red and orange leaves drift down around him'),
+  'coil-trailfinder-elk': s(
+    'a tall lean elk with branching crystal-tipped antlers, a dappled bark-brown coat and a nose lowered to the ground',
+    'striding along an overgrown rooftop rail line at a gallop, following a trail of trampled ferns'),
+  'coil-stormbark-yew': s(
+    'a gnarled old yew tree with a thick twisted trunk of storm-scarred red bark, dark needled branches and green sap glowing in its cracks',
+    'bending against driving rain and wind on an exposed rooftop ledge, lightning flickering behind'),
+  'coil-stormbark-yew--ascended': s(
+    'an immense yew tree with a twisted trunk of red bark sheathed in pale crystal, a crown of dark needles glowing green-white and long spear-like branches',
+    'towering over a storm-battered rooftop garden as the clouds break apart above it into a clear starry sky'),
+  'coil-highsummer-colossus': s(
+    'a colossal bison with a hide of thick summer grass and wildflowers, horns of golden crystal and bark-plated shoulders as broad as a wagon',
+    'wading through a sea of tall golden wheat on a vast sun-baked garden terrace at high noon'),
+  'coil-spring-rush': s(
+    'a burst of new green shoots and white blossoms spiralling up the foreleg of a bark-plated stag',
+    'in a sunlit rooftop meadow as morning dew lifts into a glittering mist'),
+  'coil-foragers-almanac': s(
+    'a weathered leather satchel spilling acorns, mushrooms and dried berries beside a brass pocket compass',
+    'on a moss-covered stone bench at the edge of a misty rooftop woodland, hoofprints pressed into the soft earth nearby'),
+  'coil-rutting-season': s(
+    'a pair of massive bark-plated stags locking crystal antlers, breath steaming in the cold air',
+    'in a frosty clearing on a high garden terrace at autumn dawn, fallen leaves flying around them'),
+  'coil-midsummer-planting': s(
+    'a pair of soil-covered hands pressing a large glowing green seed into a freshly dug furrow',
+    'in a long rooftop field under a warm high-summer evening sky, rows of young sprouts glowing faintly behind'),
 };

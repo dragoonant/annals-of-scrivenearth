@@ -34,11 +34,22 @@ describe('card pool and decks', () => {
       expect(mine.length, f).toBe(f === 'mirror' ? 40 : 14);
       expect(mine.filter((c) => c.type === 'hero').length, f).toBe(f === 'mirror' ? 4 : 1);
     }
-    expect(collectible().filter((c) => c.faction === 'mirror' && c.set !== 'x1')).toEqual([]);
+    expect(collectible().filter((c) => c.faction === 'mirror' && c.set !== 'x1' && c.set !== 'x2')).toEqual([]); // Mirrorwatch arrives with x1
   });
-  it('R-G1 every faction pair builds a legal deck, and all 29 premade decks are legal', () => {
+  it('The Starward Rise (set x2): 124 cards, the Orrery Conclave 40 with 4 heroes, each older faction 12 with 1 hero', () => {
+    const x2 = collectible().filter((c) => c.set === 'x2');
+    expect(x2.length).toBe(124);
+    for (const f of FACTIONS) {
+      const mine = x2.filter((c) => c.faction === f);
+      expect(mine.length, f).toBe(f === 'orrery' ? 40 : 12);
+      expect(mine.filter((c) => c.type === 'hero').length, f).toBe(f === 'orrery' ? 4 : 1);
+    }
+    expect(collectible().filter((c) => c.faction === 'orrery' && c.set !== 'x2')).toEqual([]);
+    expect(collectible().length).toBe(548);
+  });
+  it('R-G1 every faction pair builds a legal deck, and all 35 premade decks are legal', () => {
     for (const [a, b] of pairs) expect(checkDeck(autoDeck(a, b)).errors, `${a}+${b}`).toEqual([]);
-    expect(premadeDecks().length).toBe(29);
+    expect(premadeDecks().length).toBe(35);
   });
 });
 

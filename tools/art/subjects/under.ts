@@ -215,4 +215,53 @@ export const under: Subjects = {
   'under-grandforgery': s(
     'a vast workshop wall hung with perfect replica suits of crystal armour and wax faces, a single master forger stepping back to admire the whole collection',
     'inside a hidden vault behind a false mirror, lit by rows of violet lamps'),
+  // ---------- set x2: The Starward Rise ----------
+  'under-hollis': s(
+    'a sharp-eyed woman in her fifties with grey-streaked black hair pinned under a violet silk scarf, a long patched velvet coat over black clothes, rings of brass wire on her fingers, a cracked crystal ball cupped in one hand',
+    'seated at a cramped round table behind a bead curtain in the back of an undercity pawnshop, a single violet lamp swinging above'),
+  'under-hollis--ascended': s(
+    'a sharp-eyed woman in her fifties with grey-streaked black hair, a long coat of violet velvet sewn with small glinting mirror chips like a night sky, a crystal ball blazing violet-white in her raised palm',
+    'standing on the roof of a collapsed tenement under a ceiling grate open to a sky of falling lights, syndicate thugs kneeling around her'),
+  'under-cutpurseclairvoyant': s(
+    'a quick-handed young woman in a frayed violet shawl and fingerless gloves, a brass monocle with a violet lens over one eye, a stolen purse half-hidden in her sleeve',
+    "reaching into a gentleman's coat pocket while she reads his palm on a crowded tunnel market bridge"),
+  'under-starsignheavy': s(
+    'a thick-necked bruiser in his thirties with a shaved head, a crude star tattooed over one eyebrow, a sleeveless leather vest and brass knuckles wrapped in fuse wire',
+    'cracking his knuckles at the door of a smoky fortune parlour in a sewer arcade'),
+  'under-starsignheavy--ascended': s(
+    'a thick-necked bruiser in his thirties with a shaved head, the tattooed star over his eyebrow glowing violet, a long black coat over his leather vest and a spiked iron cosh',
+    'stepping over a fallen rival in a rain-slick alley as onlookers back away into the shadows'),
+  'under-horoscopehawker': s(
+    'a wiry old man in a threadbare violet suit and a top hat pinned with tin stars and moons, a tray of small brass astrolabes and violet glass charms hung from his neck',
+    'calling out to passing workers at the foot of a rusted stair in a busy undercity tram tunnel'),
+  'under-enveloperunner': s(
+    'a lanky youth in a soot-black cap and a satchel stuffed with sealed wax-stamped packets, a violet ribbon tied around one wrist',
+    'vaulting a sewer rail as an iron door bursts open behind him'),
+  'under-luckbreaker': s(
+    'a broad scarred man in his forties in a battered bowler hat and a leather apron, a broken horseshoe hammered onto the head of his iron club',
+    "smashing a fortune parlour's crystal ball on its table while the owner cowers behind a curtain"),
+  'under-luckbreaker--ascended': s(
+    'a broad scarred man in his forties in a black greatcoat studded with nailed horseshoes, his iron club dripping green-violet acid, violet light in his eyes',
+    'standing alone in a wrecked gambling den of overturned tables and scattered dice'),
+  'under-ledgerastrologer': s(
+    'a stooped bespectacled accountant in his sixties in sleeve garters and a violet waistcoat, a brass telescope tucked under one arm and a quill behind his ear',
+    'peering up through a drain grate at the night sky from a cluttered counting room lined with brass instruments'),
+  'under-pawnedplanetarium': s(
+    'a huge stolen brass orrery machine of nested rings and glass globes, patched with cables and padlocks, its central globe a dim violet lamp',
+    'chained to the floor of a vast flooded pawn vault among stacked crates'),
+  'under-pawnedplanetarium--ascended': s(
+    'a huge brass orrery machine of nested rings and glass globes spinning at full speed, every globe blazing violet-white, arcs of current leaping between its rings',
+    'tearing loose its chains in a vaulted pawn cellar as the lamps across the ceiling burst'),
+  'under-coldreading': s(
+    "a pair of ringed hands spread over a stranger's open palm, a thin violet thread of light drawn from his wrist into her fingertips",
+    "across a cramped fortune-teller's table lit by a single guttering candle"),
+  'under-foretoldcollection': s(
+    "an iron cosh swinging down onto a crystal-armoured shoulder, a violet star mark glowing on the striker's gloved knuckles",
+    'in a narrow violet-lit alley at the instant of the blow'),
+  'under-paidinadvance': s(
+    'a stack of brass coins sliding across a scarred table toward a cloaked hired knife, an acid-green blade half drawn',
+    'in a booth at the back of a dim undercity tavern'),
+  'under-longreading': s(
+    'a long row of glowing violet crystal balls on a velvet cloth, each one flickering with a different glimpse of the future',
+    'on a candlelit table in a hidden cellar where a circle of syndicate bosses leans in'),
 };

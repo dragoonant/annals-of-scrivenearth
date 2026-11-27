@@ -1031,3 +1031,235 @@ describe('prism x1 cards', () => {
     expect(unit(r, 0, 'zz-wall').dmg).toBe(1);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+describe('prism x2 cards', () => {
+  const inHand = (s: GameState, seat: 0 | 1, card: string) => s.players[seat].hand.filter((h) => h.card === card);
+  // The opening hand and the round-1 draw come off the top before board() replaces the hand: five fillers on top.
+  const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+  const FOE = Array<string>(20).fill('zz-filler');
+  /** A deck listed from the top down (the engine keeps the top at the end of the array), under the five openers. */
+  const fromTop = (...cards: string[]): string[] => [...cards].reverse().concat(OPEN);
+
+  it('prism-quenna: Spotter 2|4; Dawn charts a warden among the top 3 (not another unit); 4 charted cards is not enough', () => {
+    // round 2 draws a filler first, then Dawn looks at grunt, grunt, Glass Warden
+    const s = board({ line: [['prism-quenna'], []], deck: [fromTop('zz-filler', 'zz-grunt', 'zz-grunt', 'prism-glasswarden', 'prism-lampkeeper'), FOE] });
+    s.players[0].heroes = ['prism-quenna'];
+    s.players[0].seen.charted = 3;
+    const q = unit(s, 0, 'prism-quenna');
+    expect(st(s, q)).toMatchObject({ power: 2, health: 4 });
+    expect(st(s, q).keywords).toEqual(['spotter']);
+    nextRound(s);
+    expect(inHand(s, 0, 'prism-glasswarden')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(0);
+    expect(inHand(s, 0, 'prism-lampkeeper')).toHaveLength(0); // the 4th card down is out of reach
+    expect(s.players[0].seen.charted).toBe(4);
+    expect(s.players[0].ascended).not.toContain('prism-quenna');
+    expect(s.players[1].hand).toHaveLength(1); // only the round draw
+  });
+
+  it('prism-quenna: the 5th charted card ascends her; Ascend charts a unit and a glyph (6); her Dawn then charts any unit (4)', () => {
+    const s = board({
+      line: [['prism-quenna'], ['zz-grunt']],
+      deck: [fromTop('zz-filler', 'prism-glasswarden', 'zz-bolt', 'zz-grunt', 'zz-filler', 'zz-rite', 'zz-ogre'), FOE],
+    });
+    s.players[0].heroes = ['prism-quenna'];
+    s.players[0].seen.charted = 4;
+    const q = unit(s, 0, 'prism-quenna');
+    q.dmg = 3;
+    nextRound(s); // Dawn charts Glass Warden (5th): she ascends; Ascend skips the bolt for the grunt, then finds the bolt
+    expect(s.players[0].ascended).toContain('prism-quenna');
+    expect(inHand(s, 0, 'prism-glasswarden')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-bolt')).toHaveLength(1);
+    expect(s.players[0].seen.charted).toBe(7);
+    expect(st(s, q)).toMatchObject({ power: 4, health: 6, hp: 6 });
+    expect(st(s, q).keywords).toEqual(expect.arrayContaining(['spotter', 'plated']));
+    nextRound(s); // round 3 draws a filler, then Dawn charts the first unit among rite, ogre (not a warden)
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-rite')).toHaveLength(0);
+    expect(s.players[0].seen.charted).toBe(8);
+  });
+
+  it('prism-dome-sweeper: Spotter 1|1; after starting 2 rounds on the Line it Unfolds into a 2|3 Spotter and charts a unit (3)', () => {
+    const s = board({ line: [['prism-dome-sweeper'], []], deck: [fromTop('zz-filler', 'zz-filler', 'zz-rite', 'zz-grunt', 'zz-ogre'), FOE] });
+    const d = unit(s, 0, 'prism-dome-sweeper');
+    expect(st(s, d)).toMatchObject({ power: 1, health: 1 });
+    expect(st(s, d).keywords).toContain('spotter');
+    nextRound(s);
+    expect(d.unfolded).toBeFalsy();
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(0);
+    nextRound(s);
+    expect(d.unfolded).toBe(true);
+    expect(st(s, d)).toMatchObject({ power: 2, health: 3 });
+    expect(st(s, d).keywords).toContain('spotter');
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(0);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('prism-starglass-shell: Plated 1|3; surviving damage twice Unfolds it into a repaired 3|5 with Plated and Ward', () => {
+    const s = board({ hand: [[], BOLTS[1]], line: [['prism-starglass-shell'], []], first: 1 });
+    const g = unit(s, 0, 'prism-starglass-shell');
+    bolt(s, g.iid);
+    expect(g.dmg).toBe(1); // Plated
+    expect(g.unfolded).toBeFalsy();
+    bolt(s, g.iid);
+    expect(g.unfolded).toBe(true);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 5, hp: 5 });
+    expect(g.ward).toBe(true);
+    bolt(s, g.iid);
+    expect(g.dmg).toBe(0); // the Ward took it
+    expect(g.ward).toBe(false);
+    expect(st(s, g).keywords).toContain('plated');
+  });
+
+  it('prism-zenith-spotter: Spotter; Deploy charts a unit (3); Conjunction (a glyph cast first) also gives it Ward', () => {
+    const s = board({ hand: [['prism-zenith-spotter'], []], deck: [fromTop('zz-rite', 'zz-grunt', 'zz-ogre'), FOE] });
+    play(s, 'prism-zenith-spotter');
+    const z = unit(s, 0, 'prism-zenith-spotter');
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(1);
+    expect(s.players[0].seen.charted).toBe(1);
+    expect(z.ward).toBe(false);
+    expect(st(s, z).keywords).toContain('spotter');
+    const t = board({ hand: [['zz-pump', 'prism-zenith-spotter'], []], line: [['zz-grunt'], []], deck: [fromTop('zz-ogre'), FOE] });
+    play(t, 'zz-pump', [unit(t, 0, 'zz-grunt').iid]);
+    play(t, 'prism-zenith-spotter');
+    expect(unit(t, 0, 'prism-zenith-spotter').ward).toBe(true);
+    expect(unit(t, 0, 'zz-grunt').ward).toBe(false);
+    expect(inHand(t, 0, 'zz-ogre')).toHaveLength(1);
+  });
+
+  it('prism-alignment-herald: Deploy gives every other ally a lasting +1|+1 only with Conjunction', () => {
+    const s = board({ hand: [['prism-alignment-herald', 'zz-pump', 'prism-alignment-herald'], []], line: [['zz-grunt', 'zz-wall'], ['zz-grunt']] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'prism-alignment-herald'); // a unit, but no glyph yet
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+    pass(s);
+    play(s, 'zz-pump', [unit(s, 0, 'zz-wall').iid]);
+    play(s, 'prism-alignment-herald');
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, unit(s, 0, 'prism-alignment-herald', 0))).toMatchObject({ power: 3, health: 4 });
+    expect(st(s, unit(s, 0, 'prism-alignment-herald', 1))).toMatchObject({ power: 2, health: 3 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+  });
+
+  it('prism-aperture-captain: a unit you play after casting a glyph this round gets Ward; before the glyph it does not', () => {
+    const s = board({ hand: [['prism-glasswarden', 'zz-pump', 'prism-lampkeeper'], []], line: [['prism-aperture-captain'], []] });
+    const c = unit(s, 0, 'prism-aperture-captain');
+    expect(st(s, c)).toMatchObject({ power: 3, health: 4 });
+    play(s, 'prism-glasswarden');
+    expect(unit(s, 0, 'prism-glasswarden').ward).toBe(false);
+    pass(s);
+    play(s, 'zz-pump', [c.iid]);
+    play(s, 'prism-lampkeeper');
+    expect(unit(s, 0, 'prism-lampkeeper').ward).toBe(true);
+    expect(unit(s, 0, 'prism-glasswarden').ward).toBe(false);
+    expect(c.ward).toBe(false);
+  });
+
+  it('prism-dawnwatch-engine: Plated 3|5; after 2 rounds on the Line it Unfolds into a 5|7 and gives every other ally +1|+1 once', () => {
+    const s = board({ hand: [BOLTS[0], []], line: [['prism-dawnwatch-engine', 'zz-grunt'], ['zz-grunt']] });
+    const e = unit(s, 0, 'prism-dawnwatch-engine'), g = unit(s, 0, 'zz-grunt');
+    play(s, 'zz-bolt', [e.iid]);
+    pass(s);
+    expect(e.dmg).toBe(1); // Plated
+    nextRound(s);
+    expect(e.unfolded).toBeFalsy();
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(e.unfolded).toBe(true);
+    expect(st(s, e)).toMatchObject({ power: 5, health: 7, hp: 7 });
+    expect(st(s, e).keywords).toContain('plated');
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 }); // once, not every round
+  });
+
+  it('prism-great-refractor: Plated, Spotter 3|6; Unfolds after 1 round; then each Dawn deals 2 to the enemy with the highest power', () => {
+    const s = board({ line: [['prism-great-refractor'], ['zz-grunt', 'zz-ogre']] });
+    const r = unit(s, 0, 'prism-great-refractor');
+    expect(st(s, r)).toMatchObject({ power: 3, health: 6 });
+    expect(st(s, r).keywords).toEqual(expect.arrayContaining(['plated', 'spotter']));
+    nextRound(s);
+    expect(r.unfolded).toBe(true);
+    expect(st(s, r)).toMatchObject({ power: 5, health: 8 });
+    expect(st(s, r).keywords).toEqual(expect.arrayContaining(['plated', 'spotter']));
+    const o = unit(s, 1, 'zz-ogre'), g = unit(s, 1, 'zz-grunt');
+    const before = o.dmg;
+    nextRound(s);
+    expect(o.dmg).toBe(before + 2);
+    expect(g.dmg).toBe(0);
+  });
+
+  it('prism-brace-by-starlight: +0|+2 this round; Conjunction (a unit played first) also charts a unit (3)', () => {
+    const s = board({
+      hand: [['prism-brace-by-starlight', 'prism-glasswarden', 'prism-brace-by-starlight'], []], line: [['zz-grunt'], []],
+      deck: [fromTop('zz-rite', 'zz-ogre'), FOE],
+    });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'prism-brace-by-starlight', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 4 });
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(0);
+    play(s, 'prism-glasswarden');
+    pass(s);
+    play(s, 'prism-brace-by-starlight', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 6 });
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(1);
+    expect(s.players[0].seen.charted).toBe(1);
+    nextRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('prism-rekindle-the-lens: repairs an ally fully; only a construct also gets Ward', () => {
+    const s = board({ hand: [['prism-rekindle-the-lens'], []], line: [['zz-wall', 'prism-crystal-bulwark'], []] });
+    const w = unit(s, 0, 'zz-wall');
+    w.dmg = 5;
+    play(s, 'prism-rekindle-the-lens', [w.iid]);
+    pass(s);
+    expect(w.dmg).toBe(0);
+    expect(w.ward).toBe(false);
+    const t = board({ hand: [['prism-rekindle-the-lens'], []], line: [['zz-wall', 'prism-crystal-bulwark'], []] });
+    const b = unit(t, 0, 'prism-crystal-bulwark');
+    b.dmg = 3;
+    play(t, 'prism-rekindle-the-lens', [b.iid]);
+    pass(t);
+    expect(b.dmg).toBe(0);
+    expect(b.ward).toBe(true);
+    expect(unit(t, 0, 'zz-wall').ward).toBe(false);
+  });
+
+  it('prism-hold-until-dawn: every ally gets +0|+2 this round and your Spire is repaired by 1 per ally', () => {
+    const s = board({ hand: [['prism-hold-until-dawn'], []], line: [['zz-grunt', 'zz-wall', 'zz-grunt'], ['zz-grunt']] });
+    s.players[0].spire = 10;
+    play(s, 'prism-hold-until-dawn');
+    pass(s);
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 4 });
+    expect(st(s, unit(s, 0, 'zz-wall'))).toMatchObject({ power: 0, health: 8 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(s.players[0].spire).toBe(13);
+    nextRound(s);
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('prism-long-exposure: charts a unit (4), then a glyph (4); Resonant also gives every ally Ward', () => {
+    const s = board({ hand: [['prism-long-exposure'], []], line: [['zz-grunt'], ['zz-grunt']], deck: [fromTop('zz-rite', 'zz-grunt', 'zz-ogre', 'zz-bolt'), FOE] });
+    play(s, 'prism-long-exposure');
+    pass(s);
+    expect(inHand(s, 0, 'zz-grunt')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-rite')).toHaveLength(1);
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(0);
+    expect(s.players[0].seen.charted).toBe(2);
+    expect(unit(s, 0, 'zz-grunt').ward).toBe(false);
+    const r = board({ hand: [['prism-long-exposure'], []], line: [['zz-grunt', 'prism-oren'], ['zz-grunt']], deck: [fromTop('zz-ogre', 'zz-rite'), FOE] });
+    resonant(r);
+    play(r, 'prism-long-exposure');
+    pass(r);
+    expect(unit(r, 0, 'zz-grunt').ward).toBe(true);
+    expect(unit(r, 0, 'prism-oren').ward).toBe(true);
+    expect(unit(r, 1, 'zz-grunt').ward).toBe(false);
+  });
+});

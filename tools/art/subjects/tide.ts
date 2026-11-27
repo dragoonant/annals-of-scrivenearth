@@ -212,4 +212,53 @@ export const tide: Subjects = {
   'tide-frozenreflections': s(
     'a sheet of clear canal ice holding the still images of enemy soldiers like insects in amber',
     'on a wide iced-over canal at dawn, a mage kneeling to lift one image out of the ice'),
+  // ---------- set x2: The Starward Rise ----------
+  'tide-orsa': s(
+    'a tall woman in her fifties with close-cropped grey hair and dark brown skin, a navy coat with brass buttons, a brass gauge rod in one hand and a small lens on a chain',
+    'standing on a canal lock wall at moonrise, reading the waterline against the rod as the full moon lifts over the water'),
+  'tide-orsa--ascended': s(
+    'a tall woman in her fifties with close-cropped grey hair and dark brown skin, a long navy coat lit with silver moonlight along its seams, a tall brass gauge rod crowned with a disc of pale light',
+    'standing atop a flood barrier as a great moonlit swell rises behind her and every canal boat floats up level with the quay'),
+  'tide-almanacrunner': s(
+    'a wiry young man in his late teens with a mop of black curls, a short blue jacket and a leather satchel stuffed with brass instruments',
+    'sprinting across a narrow footbridge over a canal at night, the moon reflected in the dark water below'),
+  'tide-neapgatekeeper': s(
+    'a squat construct of weathered oak beams and iron bands with a lantern set in its chest',
+    'standing waist-deep in a low canal beside a closed lock gate, barnacles on its legs and still water all around'),
+  'tide-neapgatekeeper--ascended': s(
+    'a tall construct of oak beams and iron bands grown thick with gleaming pearl shell, its chest lantern burning white',
+    'heaving a lock gate open as the high water pours through and an enemy boat stalls in a crust of ice'),
+  'tide-highwatercantor': s(
+    'a man in his twenties with a shaved head and dark skin, a pale blue robe and a silver tuning fork held high',
+    'singing on the steps of a flooded chapel as the water climbs the steps in time with his voice'),
+  'tide-breakwatersentry': s(
+    'a broad construct of stacked granite blocks bound with copper wire, a single round porthole for an eye',
+    'braced at the end of a stone pier while grey waves break over its shoulders'),
+  'tide-breakwatersentry--ascended': s(
+    'a massive construct of granite blocks plated in green copper sheets, its porthole eye blazing cyan',
+    'standing unmoved at the mouth of a harbor as a storm surge parts around it'),
+  'tide-lunarephemerist': s(
+    'a stooped older man with a white goatee and half-moon spectacles, a midnight blue robe and a brass astrolabe in both hands',
+    'on a rooftop observatory above the canals, sighting the moon while the high-water marks glow on a wall below'),
+  'tide-moonboundfloodwarden': s(
+    'a tall woman in her thirties with long black hair tied back, silver armor scaled like a fish and a crescent-bladed spear',
+    'driving the spear into a flooded square as a ring of moonlit water freezes the soldiers wading toward her'),
+  'tide-moonhaulleviathan': s(
+    'a huge whale with barnacle-crusted armor plates and pale blue eyes, a heavy iron chain slung around its body',
+    'hauling a moored barge up a wide canal under a thin crescent moon'),
+  'tide-moonhaulleviathan--ascended': s(
+    'a colossal whale with silver armor plates that shine like a full moon, a broken iron chain trailing from its body',
+    'breaching above a city harbor under an enormous full moon, a wave sweeping an enemy warship back out to sea'),
+  'tide-tidelockbrace': s(
+    'a pair of iron lock-gate beams wrapped in glowing blue rope, propping a stone canal wall against a swell',
+    'in a narrow canal at night as a wave crashes on the beams and a shimmer of pale light coats the wall'),
+  'tide-moonpull': s(
+    'a soldier in heavy armor lifted off his feet by a column of silver water reaching up toward the moon',
+    'over a moonlit canal bridge, his shield tumbling into the black water below'),
+  'tide-tidetables': s(
+    'a brass tide dial with silver needles spinning on the face of a stone column',
+    'beside a busy canal lock at dawn, the needles swinging toward the pale moon as the water level drops'),
+  'tide-slackwater': s(
+    'a mirror-flat stretch of canal water holding the reflection of the moon, a ring of mages kneeling on the banks',
+    'in the still hour between tides, wounded soldiers on a quay glowing softly as their wounds close'),
 };

@@ -1095,3 +1095,213 @@ describe('under x1 cards', () => {
     ]);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+// The opening hand and the round-1 draw come off the top before board() replaces the hand: five fillers sit on top.
+const X2_OPEN = Array<string>(5).fill('zz-filler');
+/** A test deck with these cards on top (the first one is the top card), fillers below. */
+const topDeck = (...fromTop: string[]): string[] => [...Array<string>(10).fill('zz-filler'), ...[...fromTop].reverse(), ...X2_OPEN];
+const FOE20 = Array<string>(20).fill('zz-filler');
+const handIds = (s: G, seat: 0 | 1): string[] => s.players[seat].hand.map((h) => h.card);
+
+describe('under x2 cards', () => {
+  it('under-hollis: Dawn Charts a glyph (3); 5 charted ascend her; Ascend destroys every enemy unit with 2 or less power; Ascended Dawn Charts a glyph (4) and a unit (4)', () => {
+    // round 2 draws the top card, then Dawn looks at the next 3
+    const s = board({ line: [['under-hollis'], []], deck: [topDeck('under-fuserunner', 'under-fuserunner', 'under-fuserunner', 'under-siphontap'), FOE20] });
+    s.players[0].heroes = ['under-hollis'];
+    expect(st(s, unit(s, 0, 'under-hollis'))).toMatchObject({ power: 2, health: 3 });
+    endRound(s);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner', 'under-siphontap']);
+    expect(s.players[0].seen.charted).toBe(1);
+    expect(isAscended(s, 0, 'under-hollis')).toBe(false);
+    // 4 charted already: the Dawn Chart is the 5th
+    const a = board({ line: [['under-hollis'], ['zz-grunt', 'zz-ogre', 'zz-filler']], deck: [topDeck('under-fuserunner', 'under-siphontap'), FOE20] });
+    a.players[0].heroes = ['under-hollis'];
+    a.players[0].seen.charted = 4;
+    const h = unit(a, 0, 'under-hollis');
+    h.dmg = 2;
+    endRound(a);
+    expect(isAscended(a, 0, 'under-hollis')).toBe(true);
+    expect(cards(a, 1)).toEqual(['zz-ogre']);
+    expect(h.dmg).toBe(0);
+    expect(st(a, h)).toMatchObject({ power: 4, health: 5 });
+    // Ascended: Dawn Charts a glyph (4), then a unit (4)
+    const b = board({ line: [['under-hollis'], []], deck: [topDeck('zz-filler', 'under-fuserunner', 'under-fuserunner', 'under-fuserunner', 'under-siphontap'), FOE20] });
+    b.players[0].heroes = ['under-hollis'];
+    b.players[0].ascended = ['under-hollis'];
+    endRound(b);
+    expect(handIds(b, 0)).toEqual(['zz-filler', 'under-siphontap', 'under-fuserunner']);
+    expect(b.players[0].seen.charted).toBe(2);
+  });
+
+  it('under-cutpurseclairvoyant: Deploy drains 2 from an enemy unit only with Conjunction', () => {
+    const s = board({ hand: [['under-cutpurseclairvoyant', 'zz-zap', 'under-cutpurseclairvoyant'], []], line: [[], ['zz-ogre']] });
+    s.players[0].spire = 10;
+    const o = unit(s, 1, 'zz-ogre');
+    play(s, 'under-cutpurseclairvoyant', [o.iid]); // a unit, but no glyph yet
+    expect(o.dmg).toBe(0);
+    expect(s.players[0].spire).toBe(10);
+    pass(s);
+    play(s, 'zz-zap', [o.iid]); // Flash: 1 damage
+    play(s, 'under-cutpurseclairvoyant', [o.iid]); // Conjunction: drain 2
+    expect(o.dmg).toBe(3);
+    expect(s.players[0].spire).toBe(12);
+  });
+
+  it('under-starsignheavy: Unfolds after its first kill: repaired, 3|4 Dread, Unfold drains 1 from the enemy Spire', () => {
+    const s = board({ line: [['under-starsignheavy'], ['zz-filler']] });
+    s.players[0].spire = 10;
+    const h = unit(s, 0, 'under-starsignheavy');
+    expect(st(s, h)).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, h).keywords).not.toContain('dread');
+    attack(s, [h], [[unit(s, 1, 'zz-filler'), h]]);
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual([]);
+    expect(h.unfolded).toBe(true);
+    expect(h.dmg).toBe(0);
+    expect(st(s, h)).toMatchObject({ power: 3, health: 4 });
+    expect(st(s, h).keywords).toContain('dread');
+    expect(s.players[1].spire).toBe(19);
+    expect(s.players[0].spire).toBe(11);
+  });
+
+  it('under-horoscopehawker: Deploy Charts a unit (3); Conjunction also drains 2 from an enemy unit', () => {
+    const s = board({
+      hand: [['under-horoscopehawker', 'zz-zap', 'under-horoscopehawker'], []], line: [[], ['zz-ogre']],
+      deck: [topDeck('under-siphontap', 'under-pullplug', 'under-fuserunner', 'under-fuserunner'), FOE20],
+    });
+    s.players[0].spire = 10;
+    const o = unit(s, 1, 'zz-ogre');
+    play(s, 'under-horoscopehawker', [o.iid]); // no glyph yet: Chart only
+    expect(handIds(s, 0)).toEqual(['zz-zap', 'under-horoscopehawker', 'under-fuserunner']);
+    expect(o.dmg).toBe(0);
+    pass(s);
+    play(s, 'zz-zap', [o.iid]);
+    play(s, 'under-horoscopehawker', [o.iid]); // Conjunction
+    expect(o.dmg).toBe(3);
+    expect(s.players[0].spire).toBe(12);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner', 'under-fuserunner']);
+    expect(s.players[0].seen.charted).toBe(2);
+  });
+
+  it('under-enveloperunner: Shatter Charts a unit (4)', () => {
+    const s = board({
+      hand: [['under-pullplug'], []], line: [['under-enveloperunner'], []],
+      deck: [topDeck('under-siphontap', 'under-siphontap', 'under-siphontap', 'under-fuserunner'), FOE20],
+    });
+    play(s, 'under-pullplug', [unit(s, 0, 'under-enveloperunner').iid]);
+    expect(cards(s, 0)).toEqual([]);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner']);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('under-luckbreaker: Dread; Unfolds after its first kill into a repaired 4|5 with Dread and Corrosive', () => {
+    const s = board({ line: [['under-luckbreaker'], ['zz-grunt', 'zz-vanguard']] });
+    const b = unit(s, 0, 'under-luckbreaker');
+    expect(st(s, b)).toMatchObject({ power: 3, health: 4 });
+    declare(s, b.iid);
+    expect(applyAction(s, { type: 'block', unit: unit(s, 1, 'zz-grunt').iid, att: b.iid }).ok).toBe(false);
+    act(s, { type: 'block', unit: unit(s, 1, 'zz-vanguard').iid, att: b.iid });
+    act(s, { type: 'blocks' });
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual(['zz-grunt']);
+    expect(b.unfolded).toBe(true);
+    expect(b.dmg).toBe(0);
+    expect(st(s, b)).toMatchObject({ power: 4, health: 5 });
+    expect(st(s, b).keywords).toEqual(expect.arrayContaining(['dread', 'corrosive']));
+  });
+
+  it('under-ledgerastrologer: Dusk Charts a glyph (3); Resonant gives it Dread', () => {
+    const s = board({ line: [['under-ledgerastrologer'], []], deck: [topDeck('under-fuserunner', 'under-fuserunner', 'under-siphontap', 'under-fuserunner'), FOE20] });
+    expect(st(s, unit(s, 0, 'under-ledgerastrologer')).keywords).not.toContain('dread');
+    endRound(s); // Dusk Charts the glyph, then round 2 draws the top card
+    expect(handIds(s, 0)).toEqual(['under-siphontap', 'under-fuserunner']);
+    expect(s.players[0].seen.charted).toBe(1);
+    const r = board({ line: [['under-ledgerastrologer', 'under-vex'], []] });
+    r.players[0].ascended = ['under-vex'];
+    expect(st(r, unit(r, 0, 'under-ledgerastrologer')).keywords).toContain('dread');
+  });
+
+  it('under-pawnedplanetarium: Siphon; Unfolds after 2 rounds on the Line: repaired 6|7, Unfold drains 2 from every enemy unit', () => {
+    const s = board({ line: [['under-pawnedplanetarium'], ['zz-grunt', 'zz-ogre']] });
+    s.players[0].spire = 10;
+    const p = unit(s, 0, 'under-pawnedplanetarium');
+    p.dmg = 3;
+    expect(st(s, p).keywords).toContain('siphon');
+    endRound(s); // round 2: one dawn
+    expect(p.unfolded).toBeFalsy();
+    expect(cards(s, 1)).toEqual(['zz-grunt', 'zz-ogre']);
+    endRound(s); // round 3: two dawns
+    expect(p.unfolded).toBe(true);
+    expect(p.dmg).toBe(0);
+    expect(st(s, p)).toMatchObject({ power: 6, health: 7 });
+    expect(cards(s, 1)).toEqual(['zz-ogre']);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(2);
+    expect(s.players[0].spire).toBe(14);
+  });
+
+  it('under-coldreading: Flash drains 1 from an enemy unit; Conjunction also Charts a glyph (3)', () => {
+    const s = board({
+      hand: [['under-coldreading', 'under-fuserunner', 'under-coldreading'], []], line: [[], ['zz-ogre']],
+      deck: [topDeck('under-fuserunner', 'under-fuserunner', 'under-siphontap'), FOE20],
+    });
+    s.players[0].spire = 10;
+    const o = unit(s, 1, 'zz-ogre');
+    play(s, 'under-coldreading', [o.iid]); // no unit played yet: no Chart
+    expect(o.dmg).toBe(1);
+    expect(s.players[0].spire).toBe(11);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner', 'under-coldreading']);
+    play(s, 'under-fuserunner');
+    pass(s);
+    play(s, 'under-coldreading', [o.iid]); // Conjunction
+    expect(o.dmg).toBe(2);
+    expect(s.players[0].spire).toBe(12);
+    expect(handIds(s, 0)).toEqual(['under-siphontap']);
+  });
+
+  it('under-foretoldcollection: Swift: an allied unit strikes an enemy unit one way; Conjunction gives it +2|+0 this round first', () => {
+    const s = board({ hand: [['under-foretoldcollection'], []], line: [['zz-grunt'], ['zz-ogre']] });
+    const g = unit(s, 0, 'zz-grunt');
+    const o = unit(s, 1, 'zz-ogre');
+    play(s, 'under-foretoldcollection', [g.iid, o.iid]);
+    pass(s);
+    expect(o.dmg).toBe(2);
+    expect(g.dmg).toBe(0);
+    const c = board({ hand: [['under-fuserunner', 'under-foretoldcollection'], []], line: [['zz-grunt'], ['zz-ogre']] });
+    const cg = unit(c, 0, 'zz-grunt');
+    const co = unit(c, 1, 'zz-ogre');
+    play(c, 'under-fuserunner');
+    pass(c);
+    play(c, 'under-foretoldcollection', [cg.iid, co.iid]);
+    pass(c);
+    expect(co.dmg).toBe(4);
+    expect(st(c, cg).power).toBe(4);
+  });
+
+  it('under-paidinadvance: Swift deals 2 to an enemy unit and Charts a unit (4)', () => {
+    const s = board({
+      hand: [['under-paidinadvance'], []], line: [[], ['zz-ogre']],
+      deck: [topDeck('under-siphontap', 'under-siphontap', 'under-siphontap', 'under-fuserunner'), FOE20],
+    });
+    play(s, 'under-paidinadvance', [unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(2);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner']);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('under-longreading: Ritual Charts a unit (5) and a glyph (5); Resonant Charts a unit (5) again', () => {
+    const deck = (): string[] => topDeck('under-siphontap', 'under-pullplug', 'under-siphontap', 'under-pullplug', 'under-fuserunner', 'under-fuserunner');
+    const s = board({ hand: [['under-longreading'], []], deck: [deck(), FOE20] });
+    play(s, 'under-longreading');
+    pass(s);
+    expect(handIds(s, 0)).toEqual(['under-fuserunner', 'under-siphontap']);
+    expect(s.players[0].seen.charted).toBe(2);
+    const r = board({ hand: [['under-longreading'], []], line: [['under-vex'], []], deck: [deck(), FOE20] });
+    r.players[0].ascended = ['under-vex'];
+    play(r, 'under-longreading');
+    pass(r);
+    expect(handIds(r, 0)).toEqual(['under-fuserunner', 'under-siphontap', 'under-fuserunner']);
+    expect(r.players[0].seen.charted).toBe(3);
+  });
+});

@@ -19,4 +19,6 @@ export const coil: Record<string, string[]> = {
   'coil-take-a-cutting': ['Choose your damaged unit to put a Glimmer copy of in your hand'],
   'coil-twice-grown-thorns': ['Choose an ally to get +2|+0 and Pierce this round'],
   'coil-strike-from-the-ferns': ['Choose your Veiled unit to get +2|+0 and strike', 'Choose the enemy unit it strikes'],
+  // ---------- set x2: The Starward Rise ----------
+  'coil-spring-rush': ['Choose an ally to get +2|+2 this round (and a lasting +1|+1 with Conjunction)'],
 };

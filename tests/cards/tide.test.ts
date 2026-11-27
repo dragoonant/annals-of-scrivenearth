@@ -979,3 +979,185 @@ describe('tide x1 cards', () => {
     expect(s.players[0].hand.length).toBe(3);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+describe('tide x2 cards', () => {
+  // The opening hand and the round-1 draw come off the top before board() replaces the hand (top = end of the list).
+  const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+  const FOE = Array<string>(20).fill('zz-filler');
+
+  it('tide-orsa: Dawn Charts a glyph (3); the 5th charted card ascends her and her other units get +1|+1 and Ward', () => {
+    // round 2: the round draw takes the filler on top, then Dawn looks at grunt, bolt, filler
+    const s = board({ line: [['tide-orsa', 'zz-grunt'], []], deck: [['zz-filler', 'zz-bolt', 'zz-grunt', 'zz-filler', ...OPEN], FOE] });
+    s.players[0].heroes = ['tide-orsa'];
+    s.players[0].seen.charted = 4;
+    expect(st(s, unit(s, 0, 'tide-orsa'))).toMatchObject({ power: 2, health: 4 });
+    endRound(s);
+    expect(ids(s, 0)).toEqual(['zz-filler', 'zz-bolt']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-grunt']);
+    expect(isAscended(s, 0, 'tide-orsa')).toBe(true);
+    const g = unit(s, 0, 'zz-grunt');
+    expect(st(s, g)).toMatchObject({ power: 3, health: 3 });
+    expect(g.ward).toBe(true);
+    const o = unit(s, 0, 'tide-orsa');
+    expect(st(s, o)).toMatchObject({ power: 4, health: 6 });
+    expect(o.ward).toBe(false); // "other units": she does not ward herself
+  });
+
+  it('tide-orsa: base Dawn looks at only 3 cards; ascended she looks at 4', () => {
+    const deck = ['zz-bolt', 'zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-filler', ...OPEN]; // the glyph is the 4th card under the round draw
+    const s = board({ line: [['tide-orsa'], []], deck: [[...deck], FOE] });
+    s.players[0].heroes = ['tide-orsa'];
+    endRound(s);
+    expect(ids(s, 0)).toEqual(['zz-filler']);
+    expect(s.players[0].seen.charted ?? 0).toBe(0);
+    const a = board({ line: [['tide-orsa'], []], deck: [[...deck], FOE] });
+    a.players[0].heroes = ['tide-orsa'];
+    a.players[0].ascended = ['tide-orsa'];
+    endRound(a);
+    expect(ids(a, 0)).toEqual(['zz-filler', 'zz-bolt']);
+    expect(a.players[0].seen.charted).toBe(1);
+  });
+
+  it('tide-almanacrunner: Deploy Charts the first mage among the top 4', () => {
+    const s = board({ hand: [['tide-almanacrunner'], []], deck: [['zz-filler', 'tide-sluicepage', 'zz-grunt', 'zz-bolt', ...OPEN], FOE] });
+    play(s, 'tide-almanacrunner');
+    expect(ids(s, 0)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-grunt', 'zz-bolt']);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('tide-neapgatekeeper: Unfolds after 2 rounds on the Line into a 3|4 that puts the strongest enemy in Stasis', () => {
+    const s = board({ line: [['tide-neapgatekeeper'], ['zz-grunt', 'zz-ogre']] });
+    const k = unit(s, 0, 'tide-neapgatekeeper');
+    endRound(s);
+    expect(k.unfolded).toBeFalsy();
+    expect(st(s, k)).toMatchObject({ power: 1, health: 3 });
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(false);
+    endRound(s);
+    expect(k.unfolded).toBe(true);
+    expect(st(s, k)).toMatchObject({ power: 3, health: 4 });
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-grunt').stasis).toBe(false);
+  });
+
+  it('tide-highwatercantor: a glyph grows it +1|+1 for good only with Conjunction', () => {
+    const s = board({ hand: [['zz-pump', 'tide-sluicepage', 'zz-pump'], []], line: [['tide-highwatercantor'], []] });
+    const c = unit(s, 0, 'tide-highwatercantor');
+    play(s, 'zz-pump', [c.iid]); // a glyph, but no unit played yet
+    expect(st(s, c)).toMatchObject({ power: 2, health: 6 });
+    play(s, 'tide-sluicepage');
+    pass(s);
+    play(s, 'zz-pump', [c.iid]); // unit played and glyph cast: Conjunction
+    expect(st(s, c)).toMatchObject({ power: 3, health: 10 });
+    endRound(s);
+    expect(st(s, c)).toMatchObject({ power: 3, health: 4 });
+  });
+
+  it('tide-breakwatersentry: after surviving damage twice it Unfolds, repaired, into a Plated 3|6 and draws 1', () => {
+    const s = board({ hand: [[], ['zz-zap', 'zz-zap']], line: [['tide-breakwatersentry'], []], first: 1 });
+    const b = unit(s, 0, 'tide-breakwatersentry');
+    play(s, 'zz-zap', [b.iid]);
+    expect(b.unfolded).toBeFalsy();
+    expect(st(s, b)).toMatchObject({ power: 1, health: 4, hp: 3 });
+    play(s, 'zz-zap', [b.iid]);
+    expect(b.unfolded).toBe(true);
+    expect(st(s, b)).toMatchObject({ power: 3, health: 6, hp: 6 });
+    expect(st(s, b).keywords).toContain('plated');
+    expect(ids(s, 0)).toEqual(['zz-filler']);
+  });
+
+  it('tide-lunarephemerist: Deploy Charts a glyph among the top 4; Resonant gives +1|+2', () => {
+    const s = board({ hand: [['tide-lunarephemerist'], []], line: [['tide-maren'], []], deck: [['zz-filler', 'zz-bolt', 'zz-grunt', 'zz-grunt', 'zz-grunt', ...OPEN], FOE] });
+    play(s, 'tide-lunarephemerist');
+    expect(ids(s, 0)).toEqual(['zz-bolt']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-grunt', 'zz-grunt', 'zz-grunt']);
+    const e = unit(s, 0, 'tide-lunarephemerist');
+    expect(st(s, e)).toMatchObject({ power: 2, health: 4 });
+    s.players[0].ascended = ['tide-maren'];
+    expect(st(s, e)).toMatchObject({ power: 3, health: 6 });
+  });
+
+  it('tide-moonboundfloodwarden: Deploy with Conjunction puts every enemy unit with 3 or less power in Stasis', () => {
+    const t = board({ hand: [['tide-moonboundfloodwarden'], []], line: [[], ['zz-grunt']] });
+    play(t, 'tide-moonboundfloodwarden'); // no glyph cast this round
+    expect(unit(t, 1, 'zz-grunt').stasis).toBe(false);
+    const s = board({ hand: [['zz-pump', 'tide-moonboundfloodwarden'], []], line: [['zz-grunt'], ['zz-grunt', 'zz-vanguard', 'zz-ogre']] });
+    play(s, 'zz-pump', [unit(s, 0, 'zz-grunt').iid]);
+    play(s, 'tide-moonboundfloodwarden');
+    expect(unit(s, 1, 'zz-grunt').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-vanguard').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(false);
+    expect(unit(s, 0, 'zz-grunt').stasis).toBe(false);
+  });
+
+  it('tide-moonhaulleviathan: Plated; after 1 round on the Line it Unfolds into a Plated 7|8 and returns the strongest enemy', () => {
+    const s = board({ line: [['tide-moonhaulleviathan'], ['zz-grunt', 'tide-stillwaterbailiff']] });
+    const l = unit(s, 0, 'tide-moonhaulleviathan');
+    expect(st(s, l)).toMatchObject({ power: 4, health: 6 });
+    expect(st(s, l).keywords).toContain('plated');
+    endRound(s);
+    expect(l.unfolded).toBe(true);
+    expect(st(s, l)).toMatchObject({ power: 7, health: 8 });
+    expect(st(s, l).keywords).toContain('plated');
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-grunt']);
+    expect(ids(s, 1)).toContain('tide-stillwaterbailiff');
+  });
+
+  it('tide-tidelockbrace: Flash +0|+2 this round; with Conjunction the unit also gains Ward', () => {
+    const s = board({ hand: [['tide-tidelockbrace', 'tide-sluicepage', 'tide-tidelockbrace'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'tide-tidelockbrace', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 4 });
+    expect(g.ward).toBe(false);
+    play(s, 'tide-sluicepage');
+    pass(s);
+    play(s, 'tide-tidelockbrace', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 6 });
+    expect(g.ward).toBe(true);
+    endRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('tide-moonpull: Swift Stasis on an enemy unit; with Conjunction it returns the unit to hand instead', () => {
+    const s = board({ hand: [['tide-moonpull', 'tide-sluicepage', 'tide-moonpull'], []], line: [[], ['tide-stillwaterbailiff', 'tide-pearlsentinel']] });
+    play(s, 'tide-moonpull', [unit(s, 1, 'tide-stillwaterbailiff').iid]);
+    pass(s);
+    expect(unit(s, 1, 'tide-stillwaterbailiff').stasis).toBe(true);
+    expect(s.players[1].line.length).toBe(2);
+    if (s.priority !== 0) pass(s);
+    play(s, 'tide-sluicepage');
+    pass(s);
+    play(s, 'tide-moonpull', [unit(s, 1, 'tide-pearlsentinel').iid]);
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['tide-stillwaterbailiff']);
+    expect(ids(s, 1)).toEqual(['tide-pearlsentinel']);
+  });
+
+  it('tide-tidetables: Swift Charts a unit (4), then a glyph (4)', () => {
+    const s = board({ hand: [['tide-tidetables'], []], deck: [['zz-filler', 'zz-bolt', 'zz-grunt', 'zz-zap', ...OPEN], FOE] });
+    play(s, 'tide-tidetables');
+    pass(s);
+    expect(ids(s, 0)).toEqual(['zz-grunt', 'zz-zap']);
+    expect(s.players[0].deck).toEqual(['zz-filler', 'zz-bolt']);
+    expect(s.players[0].seen.charted).toBe(2);
+  });
+
+  it('tide-slackwater: Ritual repairs your units fully and gives them +0|+2; Resonant draws 2', () => {
+    const s = board({ hand: [['tide-slackwater'], []], line: [['zz-wall', 'zz-grunt'], ['zz-ogre']] });
+    unit(s, 0, 'zz-wall').dmg = 3;
+    unit(s, 0, 'zz-grunt').dmg = 1;
+    unit(s, 1, 'zz-ogre').dmg = 2;
+    play(s, 'tide-slackwater');
+    pass(s);
+    expect(st(s, unit(s, 0, 'zz-wall'))).toMatchObject({ health: 8, hp: 8 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 4, hp: 4 });
+    expect(st(s, unit(s, 1, 'zz-ogre'))).toMatchObject({ health: 5, hp: 3 });
+    expect(s.players[0].hand.length).toBe(0);
+    const r = board({ hand: [['tide-slackwater'], []], line: [['tide-maren'], []] });
+    r.players[0].ascended = ['tide-maren'];
+    play(r, 'tide-slackwater');
+    pass(r);
+    expect(ids(r, 0)).toEqual(['zz-filler', 'zz-filler']);
+  });
+});

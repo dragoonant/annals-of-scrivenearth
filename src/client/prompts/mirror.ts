@@ -15,4 +15,7 @@ export const mirror: Record<string, string[]> = {
   'mirror-ricochetlight': ['Choose an enemy unit or the enemy Spire to deal 2 to'],
   'mirror-reversepane': ['Choose an enemy glyph on the stack to negate and copy into your hand'],
   'mirror-vanityglass': ['Choose an enemy unit to take damage equal to its own power'],
+  // ---------- set x2: The Starward Rise ----------
+  'mirror-pairedglint': ['Choose an allied unit to get +1|+1 this round (and, with Conjunction, a Glimmer copy of it)'],
+  'mirror-binaryflare': ['Choose an enemy unit to deal 2 to', 'Choose another enemy unit to deal 2 to if you have Conjunction'],
 };

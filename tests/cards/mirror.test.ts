@@ -400,3 +400,196 @@ describe('mirror cards', () => {
     expect(s.players[0].hand.every((h) => !h.glimmer)).toBe(true);
   });
 });
+
+// ---------- set x2: The Starward Rise ----------
+// Chart tests put five fillers on top of the deck: the opening hand and the round-1 draw come off the top first.
+const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+const FOE = Array<string>(20).fill('zz-filler');
+
+describe('mirror x2 cards', () => {
+  // ---------- hero ----------
+  it('mirror-vesperine: after a glyph, each ally with 2 or less power summoned gets a Glimmer twin; a 3-power ally does not', () => {
+    const s = board({ hand: [['mirror-vesperine', SMALL, 'zz-zap', SMALL, MID], []], line: [[], ['zz-wall']], charge: 12 });
+    s.players[0].heroes = ['mirror-vesperine'];
+    play(s, 'mirror-vesperine');
+    pass(s);
+    play(s, SMALL); // a unit, but no glyph yet: no copy
+    expect(inHand(s, 0, SMALL)).toHaveLength(1);
+    pass(s);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, SMALL); // Conjunction: the 1-power Sluice Page gets a Glimmer copy
+    expect(inHand(s, 0, SMALL)).toMatchObject([{ glimmer: true }]);
+    pass(s);
+    play(s, MID); // 3 power: no copy on her first face
+    expect(inHand(s, 0, MID)).toHaveLength(0);
+    expect(s.players[0].seen.unitsPlayed).toBe(4);
+  });
+
+  it('mirror-vesperine: the 10th unit played ascends her: two Reflections, Chart a unit (6), then every unit after a glyph is copied', () => {
+    const s = board({
+      hand: [['zz-grunt', 'zz-zap', MID], []], line: [['mirror-vesperine'], ['zz-wall']],
+      deck: [['zz-ogre', 'zz-zap', 'zz-zap', ...OPEN], FOE],
+    });
+    s.players[0].heroes = ['mirror-vesperine'];
+    s.players[0].seen.unitsPlayed = 9;
+    play(s, 'zz-grunt');
+    expect(isAscended(s, 0, 'mirror-vesperine')).toBe(true);
+    expect(st(s, unit(s, 0, 'mirror-vesperine'))).toMatchObject({ power: 4, health: 5 });
+    expect(s.players[0].line.filter((u) => u.card === 'mirror-reflection')).toHaveLength(2);
+    expect(inHand(s, 0, 'zz-ogre')).toHaveLength(1); // charted past two glyphs
+    pass(s);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, MID); // Ascended: no power limit
+    expect(inHand(s, 0, MID)).toMatchObject([{ glimmer: true }]);
+  });
+
+  // ---------- units ----------
+  it('mirror-pairedwick: Deploy makes a Glimmer copy of itself only after a glyph this round', () => {
+    const s = board({ hand: [['mirror-pairedwick', 'zz-zap', 'mirror-pairedwick'], []], line: [[], ['zz-wall']] });
+    play(s, 'mirror-pairedwick');
+    expect(inHand(s, 0, 'mirror-pairedwick')).toHaveLength(1);
+    pass(s);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, 'mirror-pairedwick');
+    expect(inHand(s, 0, 'mirror-pairedwick')).toMatchObject([{ glimmer: true }]);
+  });
+
+  it('mirror-quicksilvershell: survives damage twice, then Unfolds: repaired, 3|5, and summons two Reflections', () => {
+    const s = board({ hand: [[], ['zz-zap', 'zz-zap']], line: [['mirror-quicksilvershell'], []], first: 1 });
+    const q = unit(s, 0, 'mirror-quicksilvershell');
+    play(s, 'zz-zap', [q.iid]);
+    expect(q.unfolded).toBeFalsy();
+    expect(s.players[0].line).toHaveLength(1);
+    play(s, 'zz-zap', [q.iid]);
+    expect(q.unfolded).toBe(true);
+    expect(st(s, q)).toMatchObject({ power: 3, health: 5, hp: 5 });
+    expect(s.players[0].line.filter((u) => u.card === 'mirror-reflection')).toHaveLength(2);
+  });
+
+  it('mirror-twinlensaugur: Deploy charts a glyph; with Conjunction it also charts a unit', () => {
+    const deck: [string[], string[]] = [['zz-ogre', 'zz-zap', ...OPEN], FOE];
+    const s = board({ hand: [['mirror-twinlensaugur'], []], deck });
+    play(s, 'mirror-twinlensaugur');
+    expect(s.players[0].hand.map((h) => h.card)).toEqual(['zz-zap']);
+    expect(s.players[0].deck).toEqual(['zz-ogre']);
+    const t = board({ hand: [['zz-zap', 'mirror-twinlensaugur'], []], line: [[], ['zz-wall']], deck });
+    play(t, 'zz-zap', [unit(t, 1, 'zz-wall').iid]);
+    play(t, 'mirror-twinlensaugur');
+    expect(t.players[0].hand.map((h) => h.card).sort()).toEqual(['zz-ogre', 'zz-zap']);
+    expect(t.players[0].seen.charted).toBe(2);
+  });
+
+  it('mirror-backlitwarden: each enemy glyph deals 1 to the strongest enemy; at 4 damage dealt it Unfolds and deals 2', () => {
+    const s = board({ hand: [[], Array<string>(5).fill('zz-zap')], line: [['mirror-backlitwarden', 'zz-wall'], ['zz-ogre', 'zz-grunt']], first: 1 });
+    const w = unit(s, 0, 'mirror-backlitwarden');
+    const o = unit(s, 1, 'zz-ogre');
+    for (let i = 0; i < 3; i++) play(s, 'zz-zap', [unit(s, 0, 'zz-wall').iid]);
+    expect(o.dmg).toBe(3);
+    expect(w.unfolded).toBeFalsy();
+    play(s, 'zz-zap', [unit(s, 0, 'zz-wall').iid]);
+    expect(o.dmg).toBe(4);
+    expect(w.unfolded).toBe(true);
+    expect(st(s, w)).toMatchObject({ power: 4, health: 5 });
+    play(s, 'zz-zap', [unit(s, 0, 'zz-wall').iid]);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-grunt']); // 4 + 2 destroys the 5|5
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+  });
+
+  it('mirror-twinstaroutrider: Veiled; Assault copies it into your hand only with Conjunction, and the copy lasts', () => {
+    const s = board({ line: [['mirror-twinstaroutrider'], []] });
+    const r = unit(s, 0, 'mirror-twinstaroutrider');
+    expect(st(s, r).keywords).toContain('veiled');
+    attack(s, [r]);
+    resolveCombat(s);
+    expect(inHand(s, 0, 'mirror-twinstaroutrider')).toHaveLength(0);
+    const t = board({ hand: [['zz-grunt', 'zz-zap'], []], line: [['mirror-twinstaroutrider'], ['zz-wall']] });
+    play(t, 'zz-grunt');
+    pass(t);
+    play(t, 'zz-zap', [unit(t, 1, 'zz-wall').iid]);
+    attack(t, [unit(t, 0, 'mirror-twinstaroutrider')]);
+    resolveCombat(t);
+    const c = inHand(t, 0, 'mirror-twinstaroutrider');
+    expect(c).toHaveLength(1);
+    expect(c[0].glimmer).toBeUndefined();
+  });
+
+  it('mirror-twinsunsentinel: Plated; after starting two rounds on the Line it Unfolds to 6|7 and copies itself into your hand', () => {
+    const s = board({ line: [['mirror-twinsunsentinel'], []] });
+    const t = unit(s, 0, 'mirror-twinsunsentinel');
+    expect(st(s, t).keywords).toContain('plated');
+    endRound(s);
+    expect(t.unfolded).toBeFalsy();
+    endRound(s);
+    expect(t.unfolded).toBe(true);
+    expect(st(s, t)).toMatchObject({ power: 6, health: 7 });
+    expect(st(s, t).keywords).toContain('plated');
+    const c = inHand(s, 0, 'mirror-twinsunsentinel');
+    expect(c).toHaveLength(1);
+    expect(c[0].glimmer).toBeUndefined();
+  });
+
+  it('mirror-pairedsuns: Deploy copies each other ally with 3 or less power as Glimmer; with Conjunction the copies last', () => {
+    const s = board({ hand: [['mirror-pairedsuns'], []], line: [[SMALL, MID, BIG], []] });
+    play(s, 'mirror-pairedsuns');
+    expect(inHand(s, 0, SMALL)).toMatchObject([{ glimmer: true }]);
+    expect(inHand(s, 0, MID)).toMatchObject([{ glimmer: true }]);
+    expect(inHand(s, 0, BIG)).toHaveLength(0);
+    const t = board({ hand: [['zz-zap', 'mirror-pairedsuns'], []], line: [[SMALL], ['zz-wall']] });
+    play(t, 'zz-zap', [unit(t, 1, 'zz-wall').iid]);
+    play(t, 'mirror-pairedsuns');
+    const c = inHand(t, 0, SMALL);
+    expect(c).toHaveLength(1);
+    expect(c[0].glimmer).toBeUndefined();
+  });
+
+  // ---------- glyphs ----------
+  it('mirror-pairedglint: +1|+1 this round; after a unit this round it also puts a Glimmer copy of the ally in hand', () => {
+    const s = board({ hand: [['mirror-pairedglint', 'zz-grunt', 'mirror-pairedglint'], []], line: [[MID], []] });
+    const m = unit(s, 0, MID);
+    play(s, 'mirror-pairedglint', [m.iid]);
+    expect(st(s, m)).toMatchObject({ power: 4, health: 6 });
+    expect(inHand(s, 0, MID)).toHaveLength(0);
+    play(s, 'zz-grunt');
+    pass(s);
+    play(s, 'mirror-pairedglint', [m.iid]);
+    expect(st(s, m)).toMatchObject({ power: 5, health: 7 });
+    expect(inHand(s, 0, MID)).toMatchObject([{ glimmer: true }]);
+  });
+
+  it('mirror-starwardglance: charts a glyph; Resonant also charts a unit', () => {
+    const deck: [string[], string[]] = [['zz-ogre', 'zz-zap', ...OPEN], FOE];
+    const s = board({ hand: [['mirror-starwardglance'], []], deck });
+    play(s, 'mirror-starwardglance');
+    pass(s);
+    expect(s.players[0].hand.map((h) => h.card)).toEqual(['zz-zap']);
+    const t = board({ hand: [['mirror-starwardglance'], []], line: [['mirror-wystan'], []], deck });
+    t.players[0].ascended = ['mirror-wystan'];
+    play(t, 'mirror-starwardglance');
+    pass(t);
+    expect(t.players[0].hand.map((h) => h.card).sort()).toEqual(['zz-ogre', 'zz-zap']);
+  });
+
+  it('mirror-binaryflare: deals 2 to one enemy; with Conjunction 2 to the second as well', () => {
+    const s = board({ hand: [['mirror-binaryflare'], []], line: [[], ['zz-wall', 'zz-ogre']] });
+    play(s, 'mirror-binaryflare', [unit(s, 1, 'zz-wall').iid, unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    const t = board({ hand: [['zz-grunt', 'mirror-binaryflare'], []], line: [[], ['zz-wall', 'zz-ogre']] });
+    play(t, 'zz-grunt');
+    pass(t);
+    play(t, 'mirror-binaryflare', [unit(t, 1, 'zz-wall').iid, unit(t, 1, 'zz-ogre').iid]);
+    pass(t);
+    expect(unit(t, 1, 'zz-wall').dmg).toBe(2);
+    expect(unit(t, 1, 'zz-ogre').dmg).toBe(2);
+  });
+
+  it('mirror-twinephemeris: charts a unit and a glyph from the top of the deck', () => {
+    const s = board({ hand: [['mirror-twinephemeris'], []], deck: [['zz-ogre', 'zz-zap', 'zz-zap', ...OPEN], FOE] });
+    play(s, 'mirror-twinephemeris');
+    pass(s);
+    expect(s.players[0].hand.map((h) => h.card).sort()).toEqual(['zz-ogre', 'zz-zap']);
+    expect(s.players[0].deck).toEqual(['zz-zap']);
+    expect(s.players[0].seen.charted).toBe(2);
+  });
+});

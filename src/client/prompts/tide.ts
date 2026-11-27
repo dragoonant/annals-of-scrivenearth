@@ -32,4 +32,7 @@ export const tide: Record<string, string[]> = {
   'tide-twinmoorings': ['Choose an enemy unit in combat to put in Stasis'],
   'tide-caughtreflection': ['Choose an enemy glyph on the stack to copy into your hand as a Glimmer card'],
   'tide-ebbandecho': ["Choose an enemy unit with 3 or less power to return to its owner's hand"],
+  // ---------- set x2: The Starward Rise ----------
+  'tide-tidelockbrace': ['Choose an allied unit to get +0|+2 this round (with Conjunction it also gains Ward)'],
+  'tide-moonpull': ["Choose an enemy unit to put in Stasis (with Conjunction, to return to its owner's hand instead)"],
 };

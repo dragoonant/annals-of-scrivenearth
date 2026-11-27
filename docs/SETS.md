@@ -74,6 +74,10 @@ New rules:
   copy.
 - **Conjunction** (condition word, like Resonant): this round you have played a unit and cast a glyph.
 
+## Status
+All three sets are written (2026-11-26): balance in BALANCE.md B-5 (First Light), B-6 (The Mirror Quarter) and
+B-7 (The Starward Rise).
+
 ## Order of work
 1. Base set: engine counters, then the 150 new cards with a behaviour test and an art subject each, then a sim and
    balance pass (`BALANCE.md`). Merged to `main` on its own.

@@ -218,4 +218,53 @@ export const ember: Subjects = {
   'ember-shardshower': s(
     'a rain of red-hot glass slivers pouring from a cracked furnace roof',
     'over a crowded enemy camp in a cobbled square, sparks bouncing off helmets'),
+  // ---------- set x2: The Starward Rise ----------
+  'ember-imra': s(
+    'a broad-shouldered woman in her forties with close-cropped silver hair, a heavy oilskin coat studded with dark iron rivets, a brass sighting scope strapped to her forearm and a short pick-hammer of black meteoric iron',
+    'kneeling at the rim of a smoking impact pit outside the foundry walls under a starry sky, prying a glowing lump of star-iron from the scorched earth'),
+  'ember-imra--ascended': s(
+    'a broad-shouldered woman in her forties with close-cropped silver hair, her oilskin coat now plated with black star-iron veined in white fire, a long two-handed hammer whose head is a raw meteorite glowing from within',
+    'swinging the hammer skyward on a foundry rooftop as a blazing streak of falling iron tears down through the clouds toward an enemy siege tower'),
+  'ember-cratersifter': s(
+    'a wiry old man with a soot-grey beard, a wide-brimmed leather hat and a brass-framed sieve full of glittering black grit',
+    'shaking the sieve over a smouldering pit of scorched rubble at sunrise, a single bright fleck of star-iron catching the light'),
+  'ember-starhound': s(
+    'a lean wolf-sized construct of pitted black iron with a rough unpolished hide, orange heat glowing through cracks along its ribs and a jaw of riveted brass',
+    'prowling across a cooling slag heap behind the foundry, steam curling from its back'),
+  'ember-starhound--ascended': s(
+    'a lean wolf-sized construct of black iron quenched to a dark blue sheen, smooth tempered plates along its flanks and glowing amber eyes',
+    'lunging out of a hissing water trough in a cloud of white steam, its iron jaws open'),
+  'ember-nightassayer': s(
+    "a stout woman in her sixties with braided white hair, a leather apron hung with brass weighing pans and a jeweller's loupe over one eye",
+    'weighing a glowing sliver of star-iron on a balance at a cluttered workbench under a hanging oil lamp, stars showing through an open roof hatch'),
+  'ember-meteorram': s(
+    'a heavy battering construct of rough meteoric iron with a blunt pitted ram-head, thick riveted legs and orange heat seeping from its seams',
+    'charging headlong down a cobbled foundry lane toward a barricade of iron shields'),
+  'ember-meteorram--ascended': s(
+    'a heavy battering construct of tempered star-iron, its ram-head polished to a dark mirror-blue with a ridge of white-hot edges and plated legs',
+    'smashing through a fortified gatehouse in a burst of sparks and splintered timber'),
+  'ember-craterforeman': s(
+    'a burly bald man in his fifties with a thick grey moustache, a dented brass helmet pushed back and a long iron prod tipped with a glowing coal',
+    'directing a work crew that hauls a smoking meteorite on chains out of a deep quarry pit'),
+  'ember-fallenanvil': s(
+    'a massive dormant construct like a squat slab of black meteoric iron, its surface pitted and scorched, a faint white light pulsing deep in its core',
+    'resting half-buried in a scorched field outside the city walls while frost gathers on its pitted surface'),
+  'ember-fallenanvil--ascended': s(
+    'a massive construct risen from a slab of black meteoric iron, broad shoulders and long arms of riveted star-iron, white fire blazing from a split in its chest',
+    'standing up out of a scorched furrow and hurling a bolt of white fire at an enemy war machine'),
+  'ember-bolidefurnace': s(
+    'a towering round-bellied smelter of riveted copper and black iron with a roaring white-hot mouth and a crown of tall chimneys',
+    'belching a spray of burning meteor fragments over an enemy encampment at dusk'),
+  'ember-quenchhiss': s(
+    'a glowing orange sword blade plunged into a trough of dark oil',
+    'erupting in a column of hissing white steam inside a dim forge shed'),
+  'ember-bolideshard': s(
+    'a jagged splinter of black star-iron trailing a long tail of white fire',
+    "streaking down out of a deep blue sky into an enemy soldier's raised shield"),
+  'ember-tektitevolley': s(
+    'a scatter of glossy black glass beads glowing red-hot as they fall',
+    'pelting a line of enemy pikemen on a stone bridge, every bead bursting into sparks'),
+  'ember-fallingiron': s(
+    'a dark sky streaked with burning chunks of iron plunging downward',
+    'raining onto an enemy fortress on a dark hillside, fresh pits blooming with fire'),
 };

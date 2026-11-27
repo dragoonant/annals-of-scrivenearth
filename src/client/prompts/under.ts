@@ -26,4 +26,10 @@ export const under: Record<string, string[]> = {
   'under-velvetknife': ['Choose an allied unit with Veiled to get +2|+0 and Corrosive this round'],
   'under-counterfeitseal': ['Choose an enemy glyph to copy into your hand (then deal 1 to the enemy Spire)'],
   'under-deadmansecho': ['Choose a damaged enemy unit to destroy'],
+  // ---------- set x2: The Starward Rise ----------
+  'under-cutpurseclairvoyant': ['Choose an enemy unit to drain 2 from (only with Conjunction)'],
+  'under-horoscopehawker': ['Choose an enemy unit to drain 2 from (only with Conjunction; the Chart happens either way)'],
+  'under-coldreading': ['Choose an enemy unit to drain 1 from (with Conjunction you also Chart a glyph)'],
+  'under-foretoldcollection': ['Choose an allied unit to strike (with Conjunction it gets +2|+0 this round first)', 'Choose an enemy unit for it to strike (it does not strike back)'],
+  'under-paidinadvance': ['Choose an enemy unit to deal 2 damage to (then Chart a unit)'],
 };

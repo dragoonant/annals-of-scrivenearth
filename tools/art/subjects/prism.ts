@@ -213,4 +213,56 @@ export const prism: Subjects = {
   'prism-mirror-vigil': s(
     'a ring of tall silvered panes standing around a sleeping camp of soldiers, each pane glowing with a soft protective shimmer',
     'on a high terrace under the night stars, a lone sentry walking the ring with a lantern'),
+  // ---------- set x2: The Starward Rise ----------
+  'prism-quenna': s(
+    'a lean woman of about fifty with cropped silver hair and deep laugh lines, in a long midnight-blue coat over light white-gold plate, a brass spotting lens strapped over one eye and a slim telescope slung across her back',
+    'leaning out over the parapet of an open observatory dome before sunrise, one gloved hand raised to point a squad of guards toward a gap in the clouds'),
+  'prism-quenna--ascended': s(
+    'a lean woman of about fifty with cropped silver hair, pale starlight shining from the lens over her eye, a cloak of deep indigo glass flecked with tiny points of white light, her white-gold plate now edged with cut crystal',
+    'standing on the rim of a vast opened telescope dome at midnight, a column of cold starlight pouring down through the aperture onto her raised palm'),
+  'prism-dome-sweeper': s(
+    'a gangly teenage boy in an oversized white smock with gold cuffs, a soft broom of white bristles in his hands and a small brass spyglass tucked behind one ear',
+    'brushing frost off the curved brass floor rails of an observatory at dawn, glancing up through the open roof slit at a fading star'),
+  'prism-dome-sweeper--ascended': s(
+    'a gangly young man in a fitted white coat with gold cuffs and a polished brass spyglass raised to one eye, the old broom now leaning against his hip like a staff',
+    'perched on the catwalk ringing an observatory roof, calling a sighting down to the guards on the terrace below'),
+  'prism-starglass-shell': s(
+    'a low domed construct the size of a crouching hound, its carapace built of thick overlapping plates of smoky blue glass on squat brass legs, a faint point of light pulsing under the carapace',
+    'hunkered on a cracked terrace walkway as a stone bounces off its glassy back, scuff marks glowing where it was hit'),
+  'prism-starglass-shell--ascended': s(
+    'a tall domed construct of interlocking pale blue glass plates, every plate lit from within by tiny star points, a shimmering skin of gold light wrapped around its whole body',
+    'risen to full height across a narrow bridge between towers, a spear snapping against the shimmering skin'),
+  'prism-zenith-spotter': s(
+    'a wiry man in his thirties with a close black beard, in light white plate with a high gold collar, a long brass sighting tube braced on a tripod at his side',
+    'kneeling at the very top of a slender lookout spire at noon, sighting straight upward along the tube while a runner waits behind him'),
+  'prism-alignment-herald': s(
+    'a tall young woman with a long dark plait, in a white tabard over gold mail, holding up a polished brass armillary ring that throws thin lines of light',
+    'on a parade ground at dusk, the lines of light from her ring falling across a formation of shield bearers and lighting each shield in turn'),
+  'prism-aperture-captain': s(
+    'a stern grey-haired man in his sixties in heavy white plate with a gold gorget, a round shield whose centre opens and closes like the iris of a lens',
+    'at the gate of an observatory courtyard, his shield iris wide open and spilling a bright disc of light over a recruit stepping through'),
+  'prism-dawnwatch-engine': s(
+    'a huge seated construct of white stone and brass, its broad chest a ring of dim lenses and its head a closed telescope housing, heavy plated arms resting on its knees',
+    'waiting at the edge of an eastern rampart in grey pre-dawn light, frost on its shoulders'),
+  'prism-dawnwatch-engine--ascended': s(
+    'a huge standing construct of white stone and brass, every lens in its chest ring blazing gold, its telescope head opened out into a fan of bright mirrors',
+    'rising against the first sunrise on an eastern rampart, sunlight splitting from its mirrors onto the soldiers around its feet'),
+  'prism-great-refractor': s(
+    'an immense walking telescope of brass and white crystal on stout tripod legs, its long barrel capped by a cold, dark lens wider than a doorway, crews of small brass gears along its flanks',
+    'lumbering into a moonlit plaza between crystal towers as engineers on its back crank the barrel skyward'),
+  'prism-great-refractor--ascended': s(
+    'an immense walking telescope of brass and white crystal, its wide front lens burning with white-gold light, glowing seams of heat running down its barrel',
+    'planted in a ruined plaza at daybreak, a lance of focused light leaping from its lens across the square into the largest of the attackers'),
+  'prism-brace-by-starlight': s(
+    'a soldier\'s round glass shield catching a single bright beam of pale light from the night sky that spreads across its face in a thin silver film',
+    'on a dark rooftop during a night skirmish, the shield bearer setting her feet as a blade swings in'),
+  'prism-rekindle-the-lens': s(
+    'a pair of gloved hands pressing a glowing gold cloth to a cracked crystal lens set in a construct\'s chest, the cracks sealing shut in lines of light',
+    'in a lamp-lit repair bay of an observatory workshop, sparks drifting from a brass armature overhead'),
+  'prism-hold-until-dawn': s(
+    'a row of tired guards in white and gold plate leaning on their tall shields, a pale blue glow spreading from shield to shield along the row',
+    'on a battered outer wall in the last hour of the night, the eastern sky just turning grey behind the spires'),
+  'prism-long-exposure': s(
+    'a heavy brass box camera on a tall tripod with its shutter held open, long curved trails of starlight streaking across the glass plate inside',
+    'on a silent observatory balcony at midnight, an astronomer seated beside it with a cup of tea, waiting'),
 };

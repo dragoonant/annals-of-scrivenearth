@@ -155,3 +155,5 @@ Rules that arrive with an expansion (docs/SETS.md). Cards that do not use them a
 - RULING: R-K6 | Siphon counts strike damage only | Siphon plus a drain ability double-counted (Vex test). Status: settled.
 - RULING: R-B8/R-P3 | If a Flash glyph removes the last attacker, the attack is over and the defender has priority, although a Flash normally keeps priority | the attack was the attacker's action for that turn (R-P1). Status: settled.
 - RULING: R-B4 | The attacker, not the defender, acts first after blocks | one combat window is easier to read. Status: open.
+- RULING: R-E6 | A glyph counts itself toward Conjunction (it is cast before it resolves), so on a glyph "Conjunction" means you played a unit this round | one counter, read the same way everywhere; card text is written for it. Status: settled.
+- RULING: R-K13 | A unit that has struck loses Veiled for every reader of its stats, including filters that read stats before auras | a Veiled condition stayed true after a strike (found by two card authors). Status: settled.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { act, applyAction, attack, board, kinds, pass, play, resolveCombat, st, unit } from '../helpers';
 import type { GameState } from '../../src/engine/types';
-import { face, isAscended } from '../../src/engine/query';
+import { costOf, face, isAscended } from '../../src/engine/query';
 
 const names = (s: GameState, seat: 0 | 1): string[] => s.players[seat].line.map((u) => u.card);
 const resonant = (s: GameState): void => { s.players[0].ascended = ['ember-kessa']; };
@@ -713,5 +713,177 @@ describe('ember x1 cards', () => {
     expect(unit(s, 1, 'zz-grunt').dmg).toBe(1);
     expect(s.players[1].spire).toBe(19);
     expect(inHand(s, 0, 'ember-shardshower')).toMatchObject([{ glimmer: true, plain: true }]);
+  });
+});
+
+// ---------- set x2: The Starward Rise ----------
+describe('ember x2 cards', () => {
+  const inHand = (s: GameState, seat: 0 | 1, card: string) => s.players[seat].hand.filter((h) => h.card === card);
+  const nextRound = (s: GameState): void => { const r = s.round; let g = 0; while (s.round === r && g++ < 6) pass(s); };
+  // The opening hand and the round-1 draw come off the top before board() replaces the hand (top = end of list).
+  const OPEN = ['zz-filler', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'];
+  const FOE = Array<string>(20).fill('zz-filler');
+
+  it('ember-imra: Strike Charts a glyph (3); ascends at 4 charted, hits the strongest enemy for 4 and the Spire for 2; glyphs cost 1 less', () => {
+    const s = board({ line: [['ember-imra'], ['zz-wall', 'zz-ogre']], deck: [['ember-slagbolt', 'zz-filler', 'zz-filler', ...OPEN], FOE] });
+    s.players[0].heroes = ['ember-imra'];
+    const m = unit(s, 0, 'ember-imra');
+    expect(st(s, m)).toMatchObject({ power: 2, health: 4 });
+    s.players[0].seen.charted = 3;
+    attack(s, [m], [[unit(s, 1, 'zz-wall'), m]]);
+    resolveCombat(s);
+    expect(inHand(s, 0, 'ember-slagbolt')).toHaveLength(1); // the third card from the top
+    expect(s.players[0].seen.charted).toBe(4);
+    expect(isAscended(s, 0, 'ember-imra')).toBe(true);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(4);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(s.players[1].spire).toBe(18);
+    expect(st(s, m)).toMatchObject({ power: 4, health: 5 });
+    expect(costOf(s, 0, 'ember-slagbolt')).toBe(1);
+  });
+
+  it('ember-cratersifter: Deploy Charts a glyph among the top 2', () => {
+    const s = board({ hand: [['ember-cratersifter'], []], deck: [['ember-slagbolt', 'zz-filler', ...OPEN], FOE] });
+    play(s, 'ember-cratersifter');
+    expect(inHand(s, 0, 'ember-slagbolt')).toHaveLength(1);
+    expect(s.players[0].deck).toEqual(['zz-filler']);
+    expect(s.players[0].seen.charted).toBe(1);
+    const t = board({ hand: [['ember-cratersifter'], []], deck: [['ember-slagbolt', 'zz-filler', 'zz-filler', ...OPEN], FOE] });
+    play(t, 'ember-cratersifter');
+    expect(t.players[0].hand).toHaveLength(0); // the glyph is third from the top: out of reach
+  });
+
+  it('ember-starhound: Unfolds when it survives damage, repaired, 3|3 with Vanguard', () => {
+    const s = board({ hand: [['zz-bolt'], []], line: [['ember-starhound'], []] });
+    const h = unit(s, 0, 'ember-starhound');
+    expect(st(s, h)).toMatchObject({ power: 1, health: 3 });
+    expect(st(s, h).keywords).not.toContain('vanguard');
+    play(s, 'zz-bolt', [h.iid]);
+    pass(s);
+    expect(h.unfolded).toBe(true);
+    expect(st(s, h)).toMatchObject({ power: 3, health: 3, hp: 3 });
+    expect(st(s, h).keywords).toContain('vanguard');
+    expect(face(s, 0, 'ember-starhound', true).name).toBe('Quenched Star-Hound');
+  });
+
+  it('ember-nightassayer: Dawn Charts a glyph among the top 2', () => {
+    const s = board({ line: [['ember-nightassayer'], []], deck: [['ember-slagbolt', 'zz-filler', 'zz-filler', ...OPEN], FOE] });
+    nextRound(s); // the round-2 draw takes a filler, then Dawn looks at a filler and the Slag Bolt
+    expect(inHand(s, 0, 'ember-slagbolt')).toHaveLength(1);
+    expect(s.players[0].deck).toEqual(['zz-filler']);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('ember-meteorram: Vanguard; Unfolds after striking twice and deals 2 to the enemy Spire', () => {
+    const t = board({ line: [['ember-meteorram'], ['zz-grunt']] });
+    const r0 = unit(t, 0, 'ember-meteorram');
+    attack(t, [r0], [[unit(t, 1, 'zz-grunt'), r0]]);
+    resolveCombat(t);
+    expect(r0.dmg).toBe(0); // Vanguard: the blocker died first
+    expect(r0.unfolded).toBeFalsy();
+    const s = board({ line: [['ember-meteorram'], ['zz-wall']] });
+    const r = unit(s, 0, 'ember-meteorram');
+    r.seen.strikes = 1;
+    attack(s, [r], [[unit(s, 1, 'zz-wall'), r]]);
+    resolveCombat(s);
+    expect(r.unfolded).toBe(true);
+    expect(st(s, r)).toMatchObject({ power: 5, health: 4 });
+    expect(st(s, r).keywords).toContain('vanguard');
+    expect(s.players[1].spire).toBe(18);
+  });
+
+  it('ember-craterforeman: Deploy deals 2 to an enemy unit; Conjunction also summons a Slagling', () => {
+    const s = board({ hand: [['ember-craterforeman'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-craterforeman', [unit(s, 1, 'zz-wall').iid]);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(names(s, 0)).toEqual(['ember-craterforeman']);
+    const t = board({ hand: [['zz-zap', 'ember-craterforeman'], []], line: [[], ['zz-wall']] });
+    const w = unit(t, 1, 'zz-wall');
+    play(t, 'zz-zap', [w.iid]); // a glyph cast this round
+    play(t, 'ember-craterforeman', [w.iid]);
+    expect(w.dmg).toBe(3);
+    expect(names(t, 0)).toEqual(['ember-craterforeman', 'ember-slagling']);
+  });
+
+  it('ember-fallenanvil: Unfolds after starting 2 rounds on the Line: 6|6 Pierce, 3 to the strongest enemy unit', () => {
+    const s = board({ line: [['ember-fallenanvil'], ['zz-ogre', 'zz-grunt']] });
+    const a = unit(s, 0, 'ember-fallenanvil');
+    a.dmg = 2;
+    nextRound(s);
+    expect(a.unfolded).toBeFalsy();
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    nextRound(s);
+    expect(a.unfolded).toBe(true);
+    expect(st(s, a)).toMatchObject({ power: 6, health: 6, hp: 6 });
+    expect(st(s, a).keywords).toContain('pierce');
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(3);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+  });
+
+  it('ember-bolidefurnace: each glyph you cast deals 1 to every enemy unit; Resonant also 1 to the enemy Spire', () => {
+    const s = board({ hand: [['zz-pump', 'zz-pump'], []], line: [['ember-bolidefurnace', 'ember-torva'], ['zz-wall', 'zz-grunt']] });
+    const f = unit(s, 0, 'ember-bolidefurnace');
+    play(s, 'zz-pump', [f.iid]);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(1);
+    expect(s.players[1].spire).toBe(20);
+    s.players[0].ascended = ['ember-torva']; // Resonant
+    play(s, 'zz-pump', [f.iid]);
+    expect(names(s, 1)).toEqual(['zz-wall']);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(s.players[1].spire).toBe(19);
+  });
+
+  it('ember-quenchhiss: an ally gets +1|+2 this round, then takes 1 and survives (a Star-Iron Hound Unfolds)', () => {
+    const s = board({ hand: [['ember-quenchhiss'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'ember-quenchhiss', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 3, health: 4, hp: 3 });
+    expect(g.seen.survivals).toBe(1);
+    const t = board({ hand: [['ember-quenchhiss'], []], line: [['ember-starhound'], []] });
+    const h = unit(t, 0, 'ember-starhound');
+    play(t, 'ember-quenchhiss', [h.iid]);
+    expect(h.unfolded).toBe(true);
+    expect(st(t, h)).toMatchObject({ power: 4, health: 5, hp: 5 });
+  });
+
+  it('ember-bolideshard: deals 2 to an enemy unit, then Charts a glyph among the top 3', () => {
+    const s = board({ hand: [['ember-bolideshard'], []], line: [[], ['zz-wall']], deck: [['ember-slagbolt', 'zz-filler', 'zz-filler', ...OPEN], FOE] });
+    play(s, 'ember-bolideshard', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(inHand(s, 0, 'ember-slagbolt')).toHaveLength(1);
+    expect(s.players[0].seen.charted).toBe(1);
+  });
+
+  it('ember-tektitevolley: deals 1 per glyph cast this round, itself included, at most 4', () => {
+    const s = board({ hand: [['zz-zap', 'zz-zap', 'ember-tektitevolley'], []], line: [[], ['zz-wall']] });
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'zz-zap', [w.iid]);
+    play(s, 'zz-zap', [w.iid]);
+    play(s, 'ember-tektitevolley', ['spire1']);
+    pass(s);
+    expect(s.players[1].spire).toBe(17);
+    const t = board({ hand: [['zz-zap', 'zz-zap', 'zz-zap', 'zz-zap', 'ember-tektitevolley'], []], line: [[], ['zz-wall']] });
+    const w2 = unit(t, 1, 'zz-wall');
+    for (let i = 0; i < 4; i++) play(t, 'zz-zap', [w2.iid]);
+    play(t, 'ember-tektitevolley', ['spire1']);
+    pass(t);
+    expect(t.players[1].spire).toBe(16); // five glyphs, capped at 4
+  });
+
+  it('ember-fallingiron: 1 to every enemy unit, then 3 to the strongest; Conjunction adds 3 to the enemy Spire', () => {
+    const s = board({ hand: [['ember-fallingiron'], []], line: [[], ['zz-wall', 'zz-ogre']] });
+    play(s, 'ember-fallingiron');
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(4);
+    expect(s.players[1].spire).toBe(20);
+    const t = board({ hand: [['zz-grunt', 'ember-fallingiron'], []], line: [[], ['zz-wall', 'zz-ogre']] });
+    play(t, 'zz-grunt'); // a unit played this round
+    pass(t); // the opponent hands priority back
+    play(t, 'ember-fallingiron');
+    pass(t);
+    expect(t.players[1].spire).toBe(17);
   });
 });

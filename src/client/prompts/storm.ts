@@ -15,4 +15,6 @@ export const storm: Record<string, string[]> = {
   'storm-quartermaster': ['Choose an ally to get +1|+1 and gain Veiled (an ally that has already struck stays unveiled)'],
   'storm-turnedcollar': ['Choose an ally to get +1|+0 and Veiled this round'],
   'storm-smokelantern': ['Choose an enemy unit with 3 or less power to put in Stasis'],
+  // ---------- set x2: The Starward Rise ----------
+  'storm-coursecorrection': ['Choose an ally to get +1|+0 and Vanguard this round (+0|+2 more with Conjunction)'],
 };
