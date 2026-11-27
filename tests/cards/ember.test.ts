@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, attack, board, pass, play, resolveCombat, st, unit } from '../helpers';
+import { act, applyAction, attack, board, kinds, pass, play, resolveCombat, st, unit } from '../helpers';
 import type { GameState } from '../../src/engine/types';
+import { face, isAscended } from '../../src/engine/query';
 
 const names = (s: GameState, seat: 0 | 1): string[] => s.players[seat].line.map((u) => u.card);
 const resonant = (s: GameState): void => { s.players[0].ascended = ['ember-kessa']; };
@@ -238,5 +239,299 @@ describe('ember cards', () => {
     expect(names(s, 1)).toEqual(['zz-ogre']);
     expect(unit(s, 1, 'zz-ogre').dmg).toBe(3);
     expect(s.players[1].spire).toBe(18);
+  });
+
+  // ---------- base set, second wave ----------
+  it('ember-torva: Vanguard Dueler; each strike gives +0|+1', () => {
+    const s = board({ line: [['ember-torva'], ['zz-grunt', 'zz-wall']] });
+    s.players[0].heroes = ['ember-torva'];
+    const t = unit(s, 0, 'ember-torva');
+    act(s, { type: 'declare', unit: t.iid, duel: unit(s, 1, 'zz-grunt').iid }); // Dueler forces the grunt to block
+    act(s, { type: 'attack' });
+    if (s.phase === 'block') act(s, { type: 'blocks' });
+    resolveCombat(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-wall']); // Vanguard: the grunt died before striking back
+    expect(t.dmg).toBe(0);
+    expect(st(s, t)).toMatchObject({ power: 2, health: 4 });
+    expect(t.seen.strikes).toBe(1);
+    expect(isAscended(s, 0, 'ember-torva')).toBe(false);
+  });
+
+  it('ember-torva: ascends on its 5th strike, strikes every enemy unit, and each strike then burns the Spire', () => {
+    const s = board({ line: [['ember-torva'], ['zz-grunt', 'zz-wall']] });
+    s.players[0].heroes = ['ember-torva'];
+    const t = unit(s, 0, 'ember-torva');
+    t.seen.strikes = 4;
+    t.dmg = 2;
+    attack(s, [t]); // unblocked: strikes the Spire for 2 (5th strike)
+    resolveCombat(s);
+    expect(isAscended(s, 0, 'ember-torva')).toBe(true);
+    expect(face(s, 0, 'ember-torva').name).toBe('Torva, Pit Sovereign');
+    expect(t.dmg).toBe(0); // R-H5 repaired
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-wall']); // Ascend: 4 to the grunt and the wall
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(4);
+    expect(s.players[1].spire).toBe(20 - 2 - 2); // one Spire point per Ascend strike
+    expect(st(s, t)).toMatchObject({ power: 4, health: 6 }); // 4|5 plus the +0|+1 from the 5th strike
+    expect(kinds(s)).toContain('ascend');
+  });
+
+  it('ember-yarrow: Dawn gains 1 Reserve; ascends at 30 Charge spent and gains 4 Charge', () => {
+    const s = board({ charge: 0, line: [['ember-yarrow'], []] });
+    s.players[0].heroes = ['ember-yarrow'];
+    pass(s); pass(s); // round 2: 1 Charge, no Reserve banked, then Dawn
+    expect(s.players[0].reserve).toBe(1);
+    expect(s.players[0].charge).toBe(1);
+    const t = board({ hand: [['zz-pump'], []], line: [['ember-yarrow'], []] });
+    t.players[0].heroes = ['ember-yarrow'];
+    t.players[0].seen.chargeSpent = 29;
+    play(t, 'zz-pump', [unit(t, 0, 'ember-yarrow').iid]);
+    expect(isAscended(t, 0, 'ember-yarrow')).toBe(true);
+    expect(t.players[0].charge).toBe(10 - 1 + 4);
+  });
+
+  it('ember-yarrow ascended: Dawn gains 1 Reserve, then Charge equal to the Reserve', () => {
+    const s = board({ charge: 0, line: [['ember-yarrow'], []] });
+    s.players[0].heroes = ['ember-yarrow'];
+    s.players[0].ascended = ['ember-yarrow'];
+    s.players[0].reserve = 1;
+    pass(s); pass(s); // round 2: 1 Charge; Reserve 1 + 1 = 2; Charge 1 + 2
+    expect(s.players[0].reserve).toBe(2);
+    expect(s.players[0].charge).toBe(3);
+  });
+
+  it('ember-valvetapper: Deploy gains 1 Reserve', () => {
+    const s = board({ hand: [['ember-valvetapper'], []] });
+    play(s, 'ember-valvetapper');
+    expect(s.players[0].reserve).toBe(1);
+    expect(s.players[0].charge).toBe(9);
+  });
+
+  it('ember-ringcrier: Deploy gives an ally Vanguard for good', () => {
+    const s = board({ hand: [['ember-ringcrier'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    expect(st(s, g).keywords).not.toContain('vanguard');
+    play(s, 'ember-ringcrier', [g.iid]);
+    expect(st(s, g).keywords).toContain('vanguard');
+    pass(s); pass(s);
+    expect(st(s, g).keywords).toContain('vanguard');
+  });
+
+  it('ember-flarebot: Shatter gains 1 Reserve; Unstable destroys it at the end of the round', () => {
+    const s = board({ first: 1, hand: [[], ['zz-bolt']], line: [['ember-flarebot'], []] });
+    play(s, 'zz-bolt', [unit(s, 0, 'ember-flarebot').iid]);
+    pass(s);
+    expect(names(s, 0)).toEqual([]);
+    expect(s.players[0].reserve).toBe(1);
+    const t = board({ line: [['ember-flarebot'], []] });
+    pass(t); pass(t);
+    expect(names(t, 0)).toEqual([]);
+  });
+
+  it('ember-pitbrawler: Dueler forces a chosen enemy to block it', () => {
+    const s = board({ line: [['ember-pitbrawler'], ['zz-wall', 'zz-grunt']] });
+    const b = unit(s, 0, 'ember-pitbrawler');
+    act(s, { type: 'declare', unit: b.iid, duel: unit(s, 1, 'zz-wall').iid });
+    act(s, { type: 'attack' });
+    if (s.phase === 'block') act(s, { type: 'blocks' }); // the grunt stays home
+    resolveCombat(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(3);
+    expect(s.players[1].spire).toBe(20);
+  });
+
+  it('ember-gaugewatcher: Dawn deals 1 to the enemy Spire only with 2+ Reserve', () => {
+    const s = board({ line: [['ember-gaugewatcher'], []] });
+    pass(s); pass(s); // 10 unspent Charge banks as 3 Reserve
+    expect(s.players[0].reserve).toBe(3);
+    expect(s.players[1].spire).toBe(19);
+    const t = board({ charge: 0, reserve: 1, line: [['ember-gaugewatcher'], []] });
+    pass(t); pass(t);
+    expect(t.players[0].reserve).toBe(1);
+    expect(t.players[1].spire).toBe(20);
+  });
+
+  it('ember-scrapreclaimer: another ally being destroyed gains 1 Charge', () => {
+    const s = board({ hand: [['ember-scrapburst'], []], line: [['ember-scrapreclaimer', 'zz-grunt'], []] });
+    play(s, 'ember-scrapburst', [unit(s, 0, 'zz-grunt').iid]);
+    pass(s);
+    expect(names(s, 0)).toEqual(['ember-scrapreclaimer']);
+    expect(s.players[0].charge).toBe(10 - 2 + 1);
+  });
+
+  it('ember-pitpromoter: Deploy makes an ally and an enemy unit strike each other', () => {
+    const s = board({ hand: [['ember-pitpromoter'], []], line: [['zz-ogre'], ['zz-grunt']] });
+    const o = unit(s, 0, 'zz-ogre');
+    play(s, 'ember-pitpromoter', [o.iid, unit(s, 1, 'zz-grunt').iid]);
+    expect(names(s, 1)).toEqual([]);
+    expect(o.dmg).toBe(2);
+    expect(o.seen.strikes).toBe(1);
+  });
+
+  it('ember-rivethurler: Deploy deals 1 per other ally, at most 4', () => {
+    const s = board({ hand: [['ember-rivethurler'], []], line: [['zz-grunt', 'zz-grunt'], ['zz-wall']] });
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-rivethurler', [w.iid]);
+    expect(w.dmg).toBe(2);
+    const t = board({ hand: [['ember-rivethurler'], []], line: [['zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt'], ['zz-wall']] });
+    const x = unit(t, 1, 'zz-wall');
+    play(t, 'ember-rivethurler', [x.iid]);
+    expect(x.dmg).toBe(4);
+  });
+
+  it('ember-meltdowngolem: Deploy deals 2 to an enemy unit; Unstable destroys it at the end of the round', () => {
+    const s = board({ hand: [['ember-meltdowngolem'], []], line: [[], ['zz-wall']] });
+    const w = unit(s, 1, 'zz-wall');
+    play(s, 'ember-meltdowngolem', [w.iid]);
+    expect(w.dmg).toBe(2);
+    pass(s); pass(s);
+    expect(names(s, 0)).toEqual([]);
+  });
+
+  it('ember-slaggladiator: Vanguard, +1|+0 per strike; Resonant gives Dueler', () => {
+    const s = board({ line: [['ember-slaggladiator'], ['zz-grunt']] });
+    const g = unit(s, 0, 'ember-slaggladiator');
+    attack(s, [g], [[unit(s, 1, 'zz-grunt'), g]]);
+    resolveCombat(s);
+    expect(names(s, 1)).toEqual([]);
+    expect(g.dmg).toBe(0);
+    expect(st(s, g).power).toBe(4);
+    expect(st(s, g).keywords).not.toContain('dueler');
+    const t = board({ line: [['ember-slaggladiator', 'ember-kessa'], []] });
+    resonant(t);
+    expect(st(t, unit(t, 0, 'ember-slaggladiator')).keywords).toContain('dueler');
+  });
+
+  it('ember-steamcondenser: casting a glyph gains 1 Reserve', () => {
+    const s = board({ hand: [['zz-pump'], []], line: [['ember-steamcondenser'], []] });
+    play(s, 'zz-pump', [unit(s, 0, 'ember-steamcondenser').iid]);
+    expect(s.players[0].reserve).toBe(1);
+  });
+
+  it('ember-pitboss: Deploy gives a Vanguard ally +2|+1 and it strikes an enemy unit', () => {
+    const s = board({ hand: [['ember-pitboss'], []], line: [['zz-vanguard', 'zz-grunt'], ['zz-wall']] });
+    const v = unit(s, 0, 'zz-vanguard');
+    const bad = applyAction(s, { type: 'play', iid: s.players[0].hand[0].iid, targets: [unit(s, 0, 'zz-grunt').iid, unit(s, 1, 'zz-wall').iid] });
+    expect(bad.ok).toBe(false); // only an ally with Vanguard
+    play(s, 'ember-pitboss', [v.iid, unit(s, 1, 'zz-wall').iid]);
+    expect(st(s, v)).toMatchObject({ power: 5, health: 4 });
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(5);
+    expect(v.dmg).toBe(0); // one-way strike
+  });
+
+  it('ember-forgemarshal: allies with Vanguard have +1|+1; Resonant gives them Pierce', () => {
+    const s = board({ line: [['ember-forgemarshal', 'zz-vanguard', 'zz-grunt', 'ember-kessa'], []] });
+    const v = unit(s, 0, 'zz-vanguard');
+    expect(st(s, v)).toMatchObject({ power: 4, health: 4 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, v).keywords).not.toContain('pierce');
+    resonant(s);
+    expect(st(s, v).keywords).toContain('pierce');
+    expect(st(s, unit(s, 0, 'zz-grunt')).keywords).not.toContain('pierce');
+  });
+
+  it('ember-boilercolossus: Deploy gains 3 Charge; Pierce', () => {
+    const s = board({ hand: [['ember-boilercolossus'], []] });
+    play(s, 'ember-boilercolossus');
+    expect(s.players[0].charge).toBe(10 - 8 + 3);
+    expect(st(s, unit(s, 0, 'ember-boilercolossus')).keywords).toContain('pierce');
+  });
+
+  it('ember-stoketheboiler: destroys an ally with Unstable and gains 2 Charge', () => {
+    const s = board({ hand: [['ember-stoketheboiler'], []], line: [['zz-unstable', 'zz-grunt'], []] });
+    const bad = applyAction(s, { type: 'play', iid: s.players[0].hand[0].iid, targets: [unit(s, 0, 'zz-grunt').iid] });
+    expect(bad.ok).toBe(false);
+    play(s, 'ember-stoketheboiler', [unit(s, 0, 'zz-unstable').iid]);
+    expect(names(s, 0)).toEqual(['zz-grunt']);
+    expect(s.players[0].charge).toBe(10 - 1 + 2);
+  });
+
+  it('ember-hotrivets: a Vanguard ally gets +2|+2 this round; Resonant adds Pierce this round', () => {
+    const s = board({ hand: [['ember-hotrivets'], []], line: [['zz-vanguard', 'ember-kessa'], []] });
+    const v = unit(s, 0, 'zz-vanguard');
+    play(s, 'ember-hotrivets', [v.iid]);
+    expect(st(s, v)).toMatchObject({ power: 5, health: 5 });
+    expect(st(s, v).keywords).not.toContain('pierce');
+    pass(s); pass(s);
+    expect(st(s, v)).toMatchObject({ power: 3, health: 3 });
+    const t = board({ hand: [['ember-hotrivets'], []], line: [['zz-vanguard', 'ember-kessa'], []] });
+    resonant(t);
+    const w = unit(t, 0, 'zz-vanguard');
+    play(t, 'ember-hotrivets', [w.iid]);
+    expect(st(t, w).keywords).toContain('pierce');
+  });
+
+  it('ember-cheapshot: an ally in combat strikes an enemy in combat before the strikes', () => {
+    const s = board({ hand: [['ember-cheapshot'], []], line: [['zz-ogre'], ['zz-grunt']] });
+    const o = unit(s, 0, 'zz-ogre');
+    attack(s, [o], [[unit(s, 1, 'zz-grunt'), o]]);
+    play(s, 'ember-cheapshot', [o.iid, unit(s, 1, 'zz-grunt').iid]);
+    expect(names(s, 1)).toEqual([]); // flash: the blocker is gone at once
+    resolveCombat(s);
+    expect(o.dmg).toBe(0); // it never struck back
+    expect(o.seen.strikes).toBe(1);
+  });
+
+  it('ember-shrapneltoss: deals an Unstable ally\'s power to an enemy unit, then destroys the ally', () => {
+    const s = board({ hand: [['ember-shrapneltoss'], []], line: [['zz-unstable'], ['zz-wall']] });
+    play(s, 'ember-shrapneltoss', [unit(s, 0, 'zz-unstable').iid, unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(names(s, 0)).toEqual([]);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(3);
+  });
+
+  it('ember-sparkgap: deals 2 to an enemy unit and summons a Sparkbot', () => {
+    const s = board({ hand: [['ember-sparkgap'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-sparkgap', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(2);
+    expect(names(s, 0)).toEqual(['ember-sparkbot']);
+  });
+
+  it('ember-clearthering: a Vanguard ally strikes each enemy unit with 2 or less power', () => {
+    const s = board({ hand: [['ember-clearthering'], []], line: [['zz-vanguard'], ['zz-grunt', 'zz-wall', 'zz-ogre']] });
+    const v = unit(s, 0, 'zz-vanguard');
+    play(s, 'ember-clearthering', [v.iid]);
+    pass(s);
+    expect(names(s, 1)).toEqual(['zz-wall', 'zz-ogre']);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(3);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    expect(v.dmg).toBe(0);
+    expect(v.seen.strikes).toBe(2);
+  });
+
+  it('ember-overpressure: deals 4 to an enemy unit or the enemy Spire and gains 3 Charge', () => {
+    const s = board({ hand: [['ember-overpressure'], []], line: [[], ['zz-wall']] });
+    play(s, 'ember-overpressure', ['spire1']);
+    pass(s);
+    expect(s.players[1].spire).toBe(16);
+    expect(s.players[0].charge).toBe(10 - 6 + 3);
+    const t = board({ hand: [['ember-overpressure'], []], line: [[], ['zz-wall']] });
+    play(t, 'ember-overpressure', [unit(t, 1, 'zz-wall').iid]);
+    pass(t);
+    expect(unit(t, 1, 'zz-wall').dmg).toBe(4);
+  });
+
+  it('ember-titlebout: a Vanguard ally gets +1|+1 and you may attack again this round', () => {
+    const s = board({ hand: [['ember-titlebout'], []], line: [['zz-vanguard'], []] });
+    const v = unit(s, 0, 'zz-vanguard');
+    play(s, 'ember-titlebout', [v.iid]);
+    pass(s); // resolves; seat 1 has priority
+    pass(s);
+    expect(st(s, v)).toMatchObject({ power: 4, health: 4 });
+    attack(s, [v]);
+    resolveCombat(s);
+    pass(s); // defender
+    expect(s.players[0].canAttack).toBe(true);
+    attack(s, [v]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(20 - 4 - 4);
+  });
+
+  it('ember-moltentorrent: deals 2 to every enemy unit, then 3 more to the chosen one', () => {
+    const s = board({ hand: [['ember-moltentorrent'], []], line: [[], ['zz-grunt', 'zz-wall', 'zz-ogre']] });
+    play(s, 'ember-moltentorrent', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(names(s, 1)).toEqual(['zz-wall', 'zz-ogre']);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(5);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(2);
   });
 });

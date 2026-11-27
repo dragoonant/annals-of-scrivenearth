@@ -164,4 +164,171 @@ export const under: CardDef[] = [
     text: 'Drain 2 from the enemy Spire for each of your units destroyed this round.',
     ops: [{ op: 'drain', to: 'enemySpire', n: { count: 'alliesDiedThisRound', mul: 2 } }],
   },
+
+  // ---------- First Light additions (docs/SETS.md): the enforcer (Marrow) and the racketeer (Penn) ----------
+  {
+    id: 'under-marrow', name: 'Hask Marrow, Strongarm', faction: 'under', type: 'hero', cost: 3, power: 2, health: 3,
+    keywords: ['dread'], tribe: 'syndicate',
+    text: 'Dread. Assault: deal 1 damage to the weakest enemy.',
+    abilities: [{ on: 'assault', ops: [{ op: 'damage', to: 'weakestEnemy', n: 1 }] }],
+    level: { who: 'self', stat: 'kills', n: 3, text: "I've destroyed 3+ units" },
+    ascended: {
+      name: 'Marrow, Who Collects in Full', power: 4, health: 5, keywords: ['dread'],
+      text: 'Dread. Assault: deal 2 damage to the weakest enemy. Ascend: destroy every damaged enemy unit.',
+      abilities: [
+        { on: 'assault', ops: [{ op: 'damage', to: 'weakestEnemy', n: 2 }] },
+        { on: 'ascend', ops: [{ op: 'destroy', to: { from: 'enemies', filter: { damaged: true } } }] },
+      ],
+    },
+  },
+  {
+    id: 'under-penn', name: 'Merrit Penn, Racketeer', faction: 'under', type: 'hero', cost: 3, power: 2, health: 4,
+    tribe: 'syndicate',
+    text: 'Dusk: drain 1 from the enemy Spire for each glyph you cast this round (at most 2).',
+    abilities: [{ on: 'dusk', ops: [{ op: 'drain', to: 'enemySpire', n: { count: 'glyphsThisRound', mul: 1, max: 2 } }] }],
+    level: { who: 'you', stat: 'glyphDamage', n: 10, text: 'Your glyphs and abilities have dealt 10+ damage' },
+    ascended: {
+      name: 'Penn, Owner of Every Street', power: 4, health: 6,
+      text: 'Dusk: drain 1 from the enemy Spire for each glyph you cast this round (at most 4). Ascend: drain 1 from the enemy Spire for each card in your hand (at most 4).',
+      abilities: [
+        { on: 'dusk', ops: [{ op: 'drain', to: 'enemySpire', n: { count: 'glyphsThisRound', mul: 1, max: 4 } }] },
+        { on: 'ascend', ops: [{ op: 'drain', to: 'enemySpire', n: { count: 'hand', mul: 1, max: 4 } }] },
+      ],
+    },
+  },
+  {
+    id: 'under-skimclerk', name: 'Skim Clerk', faction: 'under', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'syndicate',
+    text: 'Dusk: if you cast 2+ glyphs this round, deal 1 damage to the enemy Spire.',
+    abilities: [{ on: 'dusk', cond: { c: 'seenRound', stat: 'glyphsCast', gte: 2 }, ops: [{ op: 'damage', to: 'enemySpire', n: 1 }] }],
+  },
+  {
+    id: 'under-blisterrat', name: 'Blister Rat', faction: 'under', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'vermin',
+    keywords: ['corrosive', 'unstable'],
+    text: 'Corrosive, Unstable.',
+  },
+  {
+    id: 'under-tollrat', name: 'Toll Rat', faction: 'under', type: 'unit', cost: 1, power: 1, health: 1, tribe: 'vermin',
+    text: 'Strike: deal 1 damage to the enemy Spire.',
+    abilities: [{ on: 'strike', ops: [{ op: 'damage', to: 'enemySpire', n: 1 }] }],
+  },
+  {
+    id: 'under-kneecapper', name: 'Kneecapper', faction: 'under', type: 'unit', cost: 2, power: 2, health: 1, tribe: 'syndicate',
+    keywords: ['dread'],
+    text: 'Dread. Deploy: deal 1 damage to an enemy unit.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }], ops: [{ op: 'damage', to: 'target0', n: 1 }] }],
+  },
+  {
+    id: 'under-bagman', name: 'Bagman', faction: 'under', type: 'unit', cost: 2, power: 2, health: 2, tribe: 'syndicate',
+    text: 'Deploy: deal 1 damage to the enemy Spire for each glyph you cast this round.',
+    abilities: [{ on: 'deploy', ops: [{ op: 'damage', to: 'enemySpire', n: { count: 'glyphsThisRound', mul: 1 } }] }],
+  },
+  {
+    id: 'under-wireboundthug', name: 'Wirebound Thug', faction: 'under', type: 'unit', cost: 2, power: 2, health: 2, tribe: 'syndicate',
+    keywords: ['dread'],
+    text: 'Dread. Resonant: I have Corrosive.',
+    auras: [{ to: 'self', kw: ['corrosive'], cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'under-vattailor', name: 'Vat Tailor', faction: 'under', type: 'unit', cost: 3, power: 3, health: 3, tribe: 'syndicate',
+    text: 'Deploy: an allied hero gains Corrosive.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'ally', filter: { hero: true } }], ops: [{ op: 'grant', to: 'target0', kw: ['corrosive'] }] }],
+  },
+  {
+    id: 'under-interestcollector', name: 'Interest Collector', faction: 'under', type: 'unit', cost: 3, power: 2, health: 3, tribe: 'syndicate',
+    text: 'Dusk: deal 1 damage to every damaged enemy unit.',
+    abilities: [{ on: 'dusk', ops: [{ op: 'damage', to: { from: 'enemies', filter: { damaged: true } }, n: 1 }] }],
+  },
+  {
+    id: 'under-grudgekeeper', name: 'Grudge Keeper', faction: 'under', type: 'unit', cost: 3, power: 2, health: 4, tribe: 'syndicate',
+    text: 'When an enemy unit is destroyed, I get +1|+0.',
+    abilities: [{ on: 'enemyDied', ops: [{ op: 'buff', to: 'self', power: 1 }] }],
+  },
+  {
+    id: 'under-persuasionengine', name: 'Persuasion Engine', faction: 'under', type: 'unit', cost: 4, power: 3, health: 4, tribe: 'construct',
+    text: 'Deploy: an allied unit with Dread and an enemy unit strike each other.',
+    abilities: [{
+      on: 'deploy', targets: [{ what: 'unit', side: 'ally', filter: { kw: 'dread' } }, { what: 'unit', side: 'enemy' }],
+      ops: [{ op: 'duel', a: 'target0', b: 'target1' }],
+    }],
+  },
+  {
+    id: 'under-debtassessor', name: 'Debt Assessor', faction: 'under', type: 'unit', cost: 4, power: 3, health: 3, tribe: 'syndicate',
+    text: 'Deploy: deal 1 damage to an enemy unit for each card in your hand (at most 3).',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'enemy' }], ops: [{ op: 'damage', to: 'target0', n: { count: 'hand', mul: 1, max: 3 } }] }],
+  },
+  {
+    id: 'under-noticeserver', name: 'Notice Server', faction: 'under', type: 'unit', cost: 5, power: 4, health: 4, tribe: 'syndicate',
+    text: 'Deploy: destroy a damaged enemy unit. Resonant: I have Dread.',
+    abilities: [{ on: 'deploy', targets: [{ what: 'unit', side: 'enemy', filter: { damaged: true } }], ops: [{ op: 'destroy', to: 'target0' }] }],
+    auras: [{ to: 'self', kw: ['dread'], cond: { c: 'resonant' } }],
+  },
+  {
+    id: 'under-taplinecolossus', name: 'Tap-Line Colossus', faction: 'under', type: 'unit', cost: 6, power: 4, health: 6, tribe: 'construct',
+    keywords: ['siphon'],
+    text: 'Siphon. When you cast a glyph, deal 1 damage to the enemy Spire.',
+    abilities: [{ on: 'glyphCast', ops: [{ op: 'damage', to: 'enemySpire', n: 1 }] }],
+  },
+  {
+    id: 'under-blackgatejuggernaut', name: 'Blackgate Juggernaut', faction: 'under', type: 'unit', cost: 7, power: 5, health: 6, tribe: 'construct',
+    keywords: ['dread'],
+    text: 'Dread. Allied units with Dread have Corrosive.',
+    auras: [{ to: 'allies', filter: { kw: 'dread' }, kw: ['corrosive'] }],
+  },
+  {
+    id: 'under-skimtop', name: 'Skim off the Top', faction: 'under', type: 'glyph', cost: 1, speed: 'flash',
+    text: "Drain 1 from an enemy unit or the enemy Spire. If you've cast 2+ glyphs this round, drain 2 instead.",
+    targets: [{ what: 'unitOrSpire', side: 'enemy' }],
+    ops: [{
+      op: 'if', cond: { c: 'seenRound', stat: 'glyphsCast', gte: 2 },
+      then: [{ op: 'drain', to: 'target0', n: 2 }],
+      else: [{ op: 'drain', to: 'target0', n: 1 }],
+    }],
+  },
+  {
+    id: 'under-calledtoaccount', name: 'Called to Account', faction: 'under', type: 'glyph', cost: 2, speed: 'flash',
+    text: 'An allied hero gains Dueler and Corrosive this round.',
+    targets: [{ what: 'unit', side: 'ally', filter: { hero: true } }],
+    ops: [{ op: 'grant', to: 'target0', kw: ['dueler', 'corrosive'], dur: 'round' }],
+  },
+  {
+    id: 'under-protectionfee', name: 'Protection Fee', faction: 'under', type: 'glyph', cost: 3, speed: 'flash',
+    text: 'Drain 1 from every enemy unit and from the enemy Spire.',
+    ops: [{ op: 'drain', to: 'enemies', n: 1 }, { op: 'drain', to: 'enemySpire', n: 1 }],
+  },
+  {
+    id: 'under-makeexample', name: 'Make an Example', faction: 'under', type: 'glyph', cost: 2, speed: 'swift',
+    text: 'Destroy an allied unit and deal damage equal to its power to an enemy unit.',
+    targets: [{ what: 'unit', side: 'ally' }, { what: 'unit', side: 'enemy' }], needsAllTargets: true,
+    ops: [{ op: 'destroy', to: 'target0' }, { op: 'damage', to: 'target1', n: { count: 'target0Power' } }],
+  },
+  {
+    id: 'under-streettax', name: 'Street Tax', faction: 'under', type: 'glyph', cost: 3, speed: 'swift',
+    text: 'Drain 1 from the enemy Spire for each enemy unit, at most 4.',
+    ops: [{ op: 'drain', to: 'enemySpire', n: { count: 'enemies', mul: 1, max: 4 } }],
+  },
+  {
+    id: 'under-backalleylesson', name: 'Back-Alley Lesson', faction: 'under', type: 'glyph', cost: 4, speed: 'swift',
+    text: 'Each allied unit with Dread strikes an enemy unit.',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'strike', from: { from: 'allies', filter: { kw: 'dread' } }, to: 'target0' }],
+  },
+  {
+    id: 'under-foreclosure', name: 'Foreclosure', faction: 'under', type: 'glyph', cost: 5, speed: 'swift',
+    text: 'Drain 2 from every damaged enemy unit and 2 from the enemy Spire.',
+    ops: [{ op: 'drain', to: { from: 'enemies', filter: { damaged: true } }, n: 2 }, { op: 'drain', to: 'enemySpire', n: 2 }],
+  },
+  {
+    id: 'under-lightsout', name: 'Lights Out', faction: 'under', type: 'glyph', cost: 4, speed: 'ritual',
+    text: 'Allied units gain Dread this round. Resonant: they also gain Corrosive this round.',
+    ops: [
+      { op: 'grant', to: 'allies', kw: ['dread'], dur: 'round' },
+      { op: 'if', cond: { c: 'resonant' }, then: [{ op: 'grant', to: 'allies', kw: ['corrosive'], dur: 'round' }] },
+    ],
+  },
+  {
+    id: 'under-hostiletakeover', name: 'Hostile Takeover', faction: 'under', type: 'glyph', cost: 6, speed: 'ritual',
+    text: 'Destroy an enemy unit. Drain 2 from the enemy Spire.',
+    targets: [{ what: 'unit', side: 'enemy' }],
+    ops: [{ op: 'destroy', to: 'target0' }, { op: 'drain', to: 'enemySpire', n: 2 }],
+  },
 ];

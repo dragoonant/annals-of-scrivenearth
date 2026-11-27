@@ -465,3 +465,339 @@ describe('coil glyphs', () => {
     expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 5, health: 5 });
   });
 });
+
+// ---------- First Light additions: seed-sower (Halcy) and pack hunter (Nyra) ----------
+const saplings = (s: GameState, seat: 0 | 1 = 0) => s.players[seat].line.filter((u) => u.card === 'coil-sapling');
+
+describe('coil heroes (First Light)', () => {
+  it('coil-halcy: Deploy and Dusk each summon a Sapling; Saplings grow at Dawn; not yet ascended at 2 tokens', () => {
+    const s = board({ hand: [['coil-halcy'], []] });
+    play(s, 'coil-halcy');
+    expect(saplings(s).length).toBe(1);
+    expect(st(s, unit(s, 0, 'coil-halcy'))).toMatchObject({ power: 1, health: 3 });
+    nextRound(s); // Dusk: a second Sapling; Dawn: both grow
+    expect(saplings(s).length).toBe(2);
+    for (const p of saplings(s)) expect(st(s, p)).toMatchObject({ power: 1, health: 2 });
+    expect(s.players[0].seen.tokensSummoned).toBe(2);
+    expect(s.players[0].ascended).not.toContain('coil-halcy');
+  });
+
+  it('coil-halcy: ascends on the 7th token; Ascend summons two Saplings and gives every Sapling +2|+2 (plus the +1|+1 aura)', () => {
+    const s = board({ hand: [['coil-halcy'], []], line: [['zz-grunt'], ['zz-grunt']] });
+    s.players[0].seen.tokensSummoned = 6;
+    play(s, 'coil-halcy'); // Deploy Sapling = 7th token
+    expect(s.players[0].ascended).toContain('coil-halcy');
+    expect(saplings(s).length).toBe(3);
+    for (const p of saplings(s)) expect(st(s, p)).toMatchObject({ power: 3, health: 4 }); // 0|1 +2|+2 +1|+1
+    expect(st(s, unit(s, 0, 'coil-halcy'))).toMatchObject({ power: 2, health: 5 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('coil-halcy: ascended face keeps Dusk: summon a Sapling, and its aura gives only Saplings +1|+1', () => {
+    const s = board({ line: [['coil-halcy', 'coil-sapling', 'zz-grunt'], []] });
+    s.players[0].ascended = ['coil-halcy'];
+    expect(st(s, unit(s, 0, 'coil-sapling'))).toMatchObject({ power: 1, health: 2 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(saplings(s).length).toBe(2);
+    expect(st(s, unit(s, 0, 'coil-sapling', 0))).toMatchObject({ power: 2, health: 3 }); // grew at Dawn, +aura
+    expect(st(s, unit(s, 0, 'coil-sapling', 1))).toMatchObject({ power: 2, health: 3 }); // summoned at Dusk, grew at Dawn
+  });
+
+  it('coil-nyra: grows +1|+0 when an enemy unit is destroyed, not when an ally is', () => {
+    const s = board({ hand: [['zz-bolt', 'zz-bolt'], []], line: [['coil-nyra', 'zz-grunt'], ['zz-grunt']] });
+    const n = unit(s, 0, 'coil-nyra');
+    play(s, 'zz-bolt', [unit(s, 1, 'zz-grunt').iid]);
+    pass(s);
+    expect(st(s, n)).toMatchObject({ power: 4, health: 4 });
+    pass(s);
+    play(s, 'zz-bolt', [unit(s, 0, 'zz-grunt').iid]);
+    pass(s);
+    expect(s.players[0].line.length).toBe(1);
+    expect(st(s, n)).toMatchObject({ power: 4, health: 4 });
+    expect(st(s, n).keywords).not.toContain('pierce');
+  });
+
+  it('coil-nyra: ascends on the 6th enemy destroyed; Ascend summons two Pack Wolves and gives every ally +1|+1', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['coil-nyra', 'zz-grunt'], ['zz-filler', 'zz-grunt']] });
+    s.players[0].heroes = ['coil-nyra'];
+    s.players[0].seen.enemiesDied = 5;
+    play(s, 'zz-zap', [unit(s, 1, 'zz-filler').iid]);
+    expect(s.players[0].ascended).toContain('coil-nyra');
+    const wolves = s.players[0].line.filter((u) => u.card === 'coil-packwolf');
+    expect(wolves.length).toBe(2);
+    for (const w of wolves) expect(st(s, w)).toMatchObject({ power: 3, health: 2 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 3, health: 3 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    const n = st(s, unit(s, 0, 'coil-nyra'));
+    expect(n).toMatchObject({ power: 7, health: 6 }); // 5|5, +1|+0 from the base-face trigger already queued, +1|+1
+    expect(n.keywords).toContain('pierce');
+  });
+
+  it('coil-nyra: ascended, an enemy destroyed gives every ally +1|+0 this round only', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['coil-nyra', 'zz-grunt'], ['zz-filler', 'zz-grunt']] });
+    s.players[0].ascended = ['coil-nyra'];
+    play(s, 'zz-zap', [unit(s, 1, 'zz-filler').iid]);
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 3, health: 2 });
+    expect(st(s, unit(s, 0, 'coil-nyra'))).toMatchObject({ power: 6, health: 5 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, unit(s, 0, 'coil-nyra'))).toMatchObject({ power: 5, health: 5 });
+  });
+});
+
+describe('coil units (First Light)', () => {
+  it('coil-furrow-hand: Deploy summons a Sapling that grows +1|+1 each Dawn up to 3|4', () => {
+    const s = board({ hand: [['coil-furrow-hand'], []] });
+    play(s, 'coil-furrow-hand');
+    expect(saplings(s).length).toBe(1);
+    expect(s.players[0].seen.tokensSummoned).toBe(1);
+    expect(saplings(s, 1).length).toBe(0);
+    const p = saplings(s)[0];
+    expect(st(s, p)).toMatchObject({ power: 0, health: 1 });
+    for (const want of [[1, 2], [2, 3], [3, 4], [3, 4]]) {
+      nextRound(s);
+      expect(st(s, p)).toMatchObject({ power: want[0], health: want[1] });
+    }
+  });
+
+  it('coil-thicket-jackal: Assault gives +2|+0 this round only if an enemy unit was destroyed this round', () => {
+    const s = board({ line: [['coil-thicket-jackal'], ['zz-wall']] });
+    attack(s, [unit(s, 0, 'coil-thicket-jackal')]);
+    expect(st(s, unit(s, 0, 'coil-thicket-jackal')).power).toBe(1);
+    const t = board({ hand: [['zz-zap'], []], line: [['coil-thicket-jackal'], ['zz-filler', 'zz-wall']] });
+    play(t, 'zz-zap', [unit(t, 1, 'zz-filler').iid]);
+    const j = unit(t, 0, 'coil-thicket-jackal');
+    expect(st(t, j).power).toBe(1); // nothing until it attacks
+    attack(t, [j]);
+    expect(st(t, j)).toMatchObject({ power: 3, health: 1 });
+    resolveCombat(t);
+    nextRound(t);
+    expect(st(t, j).power).toBe(1);
+  });
+
+  it('coil-carrion-beetle: gains 1 Charge when an enemy unit is destroyed, not when an ally is', () => {
+    const s = board({ hand: [['zz-zap', 'zz-bolt'], []], line: [['coil-carrion-beetle', 'zz-grunt'], ['zz-filler']] });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-filler').iid]);
+    expect(s.players[0].charge).toBe(10); // 10 - 1 + 1
+    play(s, 'zz-bolt', [unit(s, 0, 'zz-grunt').iid]);
+    pass(s);
+    expect(s.players[0].line.length).toBe(1);
+    expect(s.players[0].charge).toBe(8); // 10 - 2, nothing back
+    expect(s.players[1].charge).toBe(10);
+  });
+
+  it('coil-seed-drill: Assault summons a Sapling (it can join the next attack, not this one)', () => {
+    const s = board({ line: [['coil-seed-drill'], []] });
+    attack(s, [unit(s, 0, 'coil-seed-drill')]);
+    expect(saplings(s).length).toBe(1);
+    expect(s.players[0].seen.tokensSummoned).toBe(1);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(19);
+  });
+
+  it('coil-ridgeback: Strike gives a lasting +1|+1 only if an enemy unit was destroyed this round', () => {
+    const s = board({ line: [['coil-ridgeback'], ['zz-wall']] });
+    const r = unit(s, 0, 'coil-ridgeback');
+    attack(s, [r], [[unit(s, 1, 'zz-wall'), r]]);
+    resolveCombat(s);
+    expect(st(s, r)).toMatchObject({ power: 2, health: 2 });
+    const t = board({ line: [['coil-ridgeback'], ['zz-filler']] });
+    const q = unit(t, 0, 'coil-ridgeback');
+    attack(t, [q], [[unit(t, 1, 'zz-filler'), q]]);
+    resolveCombat(t);
+    expect(t.players[1].line.length).toBe(0);
+    expect(st(t, q)).toMatchObject({ power: 3, health: 3 });
+    nextRound(t);
+    expect(st(t, q)).toMatchObject({ power: 3, health: 3 });
+  });
+
+  it('coil-snare-trapper: Deploy deals 1 to the chosen enemy; Resonant deals 2', () => {
+    const s = board({ hand: [['coil-snare-trapper'], []], line: [[], ['zz-ogre', 'zz-grunt']] });
+    play(s, 'coil-snare-trapper', [unit(s, 1, 'zz-ogre').iid]);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+    const r = board({ hand: [['coil-snare-trapper'], []], line: [['coil-aruvi'], ['zz-ogre']] });
+    r.players[0].ascended = ['coil-aruvi'];
+    play(r, 'coil-snare-trapper', [unit(r, 1, 'zz-ogre').iid]);
+    expect(unit(r, 1, 'zz-ogre').dmg).toBe(2);
+  });
+
+  it('coil-grove-keeper: another ally summoned gets +1|+1 only if it is a Sapling', () => {
+    const s = board({ hand: [['coil-furrow-hand'], []], line: [['coil-grove-keeper'], []] });
+    play(s, 'coil-furrow-hand');
+    expect(st(s, saplings(s)[0])).toMatchObject({ power: 1, health: 2 });
+    expect(st(s, unit(s, 0, 'coil-furrow-hand'))).toMatchObject({ power: 1, health: 1 });
+    expect(st(s, unit(s, 0, 'coil-grove-keeper'))).toMatchObject({ power: 2, health: 3 });
+  });
+
+  it('coil-tusk-challenger: Deploy makes it and the chosen enemy strike each other', () => {
+    const s = board({ hand: [['coil-tusk-challenger'], []], line: [['zz-wall'], ['zz-grunt', 'zz-ogre']] });
+    play(s, 'coil-tusk-challenger', [unit(s, 1, 'zz-grunt').iid]);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-ogre']);
+    expect(unit(s, 0, 'coil-tusk-challenger').dmg).toBe(2);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    expect(unit(s, 0, 'zz-wall').dmg).toBe(0);
+  });
+
+  it('coil-bloodtrail: each enemy destroyed makes it strike a random enemy (kills chain); ally deaths do nothing', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['coil-bloodtrail'], ['zz-filler', 'zz-filler']] });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-filler').iid]);
+    expect(s.players[1].line.length).toBe(0); // the second filler was struck for 2
+    expect(unit(s, 0, 'coil-bloodtrail').dmg).toBe(0);
+    const t = board({ hand: [['zz-bolt'], []], line: [['coil-bloodtrail', 'zz-grunt'], ['zz-wall']] });
+    play(t, 'zz-bolt', [unit(t, 0, 'zz-grunt').iid]);
+    pass(t);
+    expect(unit(t, 1, 'zz-wall').dmg).toBe(0);
+  });
+
+  it('coil-ridge-howler: summons a Pack Wolf (2|1) when an enemy unit is destroyed', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['coil-ridge-howler'], ['zz-filler']] });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-filler').iid]);
+    const w = unit(s, 0, 'coil-packwolf');
+    expect(st(s, w)).toMatchObject({ power: 2, health: 1 });
+    expect(s.players[0].seen.tokensSummoned).toBe(1);
+    expect(s.players[1].line.length).toBe(0);
+  });
+
+  it('coil-seed-thresher: Deploy summons a Sapling for each enemy unit, at most 3', () => {
+    const s = board({ hand: [['coil-seed-thresher'], []], line: [[], ['zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt']] });
+    play(s, 'coil-seed-thresher');
+    expect(saplings(s).length).toBe(3);
+    const t = board({ hand: [['coil-seed-thresher'], []], line: [[], ['zz-grunt']] });
+    play(t, 'coil-seed-thresher');
+    expect(saplings(t).length).toBe(1);
+    expect(t.players[0].seen.tokensSummoned).toBe(1);
+  });
+
+  it('coil-horncrown: Assault makes it and the strongest enemy strike each other; Resonant gives Pierce', () => {
+    const s = board({ line: [['coil-horncrown'], ['zz-wall', 'zz-grunt']] });
+    const h = unit(s, 0, 'coil-horncrown');
+    expect(st(s, h).keywords).not.toContain('pierce');
+    attack(s, [h]);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-wall']);
+    expect(h.dmg).toBe(2);
+    const r = board({ line: [['coil-horncrown', 'coil-aruvi'], []] });
+    r.players[0].ascended = ['coil-aruvi'];
+    expect(st(r, unit(r, 0, 'coil-horncrown')).keywords).toContain('pierce');
+  });
+
+  it('coil-bloomwood-shepherd: Deploy summons two Saplings; Saplings (only) have +2|+0', () => {
+    const s = board({ hand: [['coil-bloomwood-shepherd'], []], line: [['zz-grunt'], []] });
+    play(s, 'coil-bloomwood-shepherd');
+    expect(saplings(s).length).toBe(2);
+    for (const p of saplings(s)) expect(st(s, p)).toMatchObject({ power: 2, health: 1 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, unit(s, 0, 'coil-bloomwood-shepherd'))).toMatchObject({ power: 4, health: 6 });
+  });
+
+  it('coil-bramblehulk: Deploy gives it +1|+1 for each other ally (not enemies); Pierce', () => {
+    const s = board({ hand: [['coil-bramblehulk'], []], line: [['zz-grunt', 'zz-grunt', 'zz-wall'], ['zz-grunt']] });
+    play(s, 'coil-bramblehulk');
+    const b = st(s, unit(s, 0, 'coil-bramblehulk'));
+    expect(b).toMatchObject({ power: 8, health: 8 });
+    expect(b.keywords).toContain('pierce');
+  });
+});
+
+describe('coil glyphs (First Light)', () => {
+  it('coil-snaring-vine: the chosen enemy gets -2|+0 this round only', () => {
+    const s = board({ hand: [['coil-snaring-vine'], []], line: [[], ['zz-ogre', 'zz-grunt']] });
+    play(s, 'coil-snaring-vine', [unit(s, 1, 'zz-ogre').iid]);
+    expect(st(s, unit(s, 1, 'zz-ogre'))).toMatchObject({ power: 3, health: 5 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    nextRound(s);
+    expect(st(s, unit(s, 1, 'zz-ogre'))).toMatchObject({ power: 5, health: 5 });
+  });
+
+  it('coil-quickening-rain: every allied Sapling gets a lasting +1|+1 (others do not); Resonant doubles it', () => {
+    const s = board({ hand: [['coil-quickening-rain'], []], line: [['coil-sapling', 'coil-sapling', 'zz-grunt'], ['coil-sapling']] });
+    play(s, 'coil-quickening-rain');
+    for (const p of saplings(s)) expect(st(s, p)).toMatchObject({ power: 1, health: 2 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(st(s, saplings(s, 1)[0])).toMatchObject({ power: 0, health: 1 });
+    const r = board({ hand: [['coil-quickening-rain'], []], line: [['coil-aruvi', 'coil-sapling'], []] });
+    r.players[0].ascended = ['coil-aruvi'];
+    play(r, 'coil-quickening-rain');
+    expect(st(r, saplings(r)[0])).toMatchObject({ power: 2, health: 3 });
+  });
+
+  it('coil-scent-of-blood: every ally +1|+0 this round, +2|+1 if an enemy unit was destroyed this round', () => {
+    const s = board({ hand: [['coil-scent-of-blood'], []], line: [['zz-grunt'], ['zz-grunt']] });
+    play(s, 'coil-scent-of-blood');
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 3, health: 2 });
+    expect(st(s, unit(s, 1, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    const t = board({ hand: [['zz-zap', 'coil-scent-of-blood'], []], line: [['zz-grunt'], ['zz-filler']] });
+    play(t, 'zz-zap', [unit(t, 1, 'zz-filler').iid]);
+    play(t, 'coil-scent-of-blood');
+    expect(st(t, unit(t, 0, 'zz-grunt'))).toMatchObject({ power: 4, health: 3 });
+    nextRound(t);
+    expect(st(t, unit(t, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('coil-compost-heap: destroy your Sapling, gain 3 Charge; it can only target a Sapling', () => {
+    const s = board({ hand: [['coil-compost-heap'], []], line: [['coil-sapling', 'zz-grunt'], []] });
+    const bad = applyAction(s, { type: 'play', iid: s.players[0].hand[0].iid, targets: [unit(s, 0, 'zz-grunt').iid] });
+    expect(bad.ok).toBe(false);
+    play(s, 'coil-compost-heap', [unit(s, 0, 'coil-sapling').iid]);
+    pass(s);
+    expect(saplings(s).length).toBe(0);
+    expect(s.players[0].charge).toBe(12); // 10 - 1 + 3
+  });
+
+  it('coil-run-down: every ally strikes the chosen damaged enemy and takes nothing back; undamaged enemies are not legal', () => {
+    const s = board({ hand: [['coil-run-down'], []], line: [['zz-grunt', 'zz-grunt', 'zz-wall'], ['zz-ogre', 'zz-grunt']] });
+    const bad = applyAction(s, { type: 'play', iid: s.players[0].hand[0].iid, targets: [unit(s, 1, 'zz-ogre').iid] });
+    expect(bad.ok).toBe(false);
+    unit(s, 1, 'zz-ogre').dmg = 1;
+    play(s, 'coil-run-down', [unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-grunt']); // 1 + 2 + 2 = 5
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+    expect(s.players[0].line.every((u) => u.dmg === 0)).toBe(true);
+  });
+
+  it('coil-thorn-volley: each allied Sapling (only) strikes the chosen enemy', () => {
+    const s = board({ hand: [['coil-thorn-volley'], []], line: [['coil-sapling', 'coil-sapling', 'zz-grunt'], ['zz-ogre', 'zz-grunt']] });
+    for (const p of saplings(s)) p.mods.push({ power: 2, health: 2, dur: 'perm' });
+    play(s, 'coil-thorn-volley', [unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(4);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+    expect(s.players[0].line.every((u) => u.dmg === 0)).toBe(true);
+  });
+
+  it('coil-transplant: destroy your Sapling and summon a 5|5 Thornwood (a token and a big summon)', () => {
+    const s = board({ hand: [['coil-transplant'], []], line: [['coil-sapling'], []] });
+    play(s, 'coil-transplant', [unit(s, 0, 'coil-sapling').iid]);
+    pass(s);
+    expect(s.players[0].line.map((u) => u.card)).toEqual(['coil-thornwood']);
+    expect(st(s, unit(s, 0, 'coil-thornwood'))).toMatchObject({ power: 5, health: 5 });
+    expect(s.players[0].seen.tokensSummoned).toBe(1);
+    expect(s.players[0].seen.bigSummoned).toBe(1);
+  });
+
+  it('coil-cull-the-wounded: your strongest ally strikes every damaged enemy unit, not the undamaged ones', () => {
+    const s = board({ hand: [['coil-cull-the-wounded'], []], line: [['zz-grunt', 'zz-ogre'], ['zz-grunt', 'zz-wall', 'zz-ogre']] });
+    unit(s, 1, 'zz-grunt').dmg = 1;
+    unit(s, 1, 'zz-wall').dmg = 1;
+    play(s, 'coil-cull-the-wounded');
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-ogre']); // grunt 1+5, wall 1+5
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    expect(strikes(s).every((e) => e.card === 'zz-ogre')).toBe(true);
+    expect(strikes(s).length).toBe(2);
+  });
+
+  it('coil-sow-the-rooftops: summon three Saplings, then every allied Sapling gets +1|+1', () => {
+    const s = board({ hand: [['coil-sow-the-rooftops'], []], line: [['coil-sapling', 'zz-grunt'], []] });
+    play(s, 'coil-sow-the-rooftops');
+    pass(s);
+    expect(saplings(s).length).toBe(4);
+    for (const p of saplings(s)) expect(st(s, p)).toMatchObject({ power: 1, health: 2 });
+    expect(st(s, unit(s, 0, 'zz-grunt'))).toMatchObject({ power: 2, health: 2 });
+    expect(s.players[0].seen.tokensSummoned).toBe(3);
+  });
+});

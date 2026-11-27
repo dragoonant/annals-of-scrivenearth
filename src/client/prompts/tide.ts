@@ -12,4 +12,15 @@ export const tide: Record<string, string[]> = {
   'tide-unwrite': ['Choose an enemy glyph on the stack to negate'],
   'tide-backwash': ["Choose an enemy unit to return to its owner's hand"],
   'tide-sluiceclose': ['Choose the first enemy unit to put in Stasis', 'Choose the second enemy unit to put in Stasis'],
+  'tide-corra': ['Choose an allied unit to return to your hand', 'Choose an enemy unit to put in Stasis'],
+  'tide-lockhound': ["Choose an enemy unit in Stasis to return to its owner's hand"],
+  'tide-boundvolume': ['Choose an allied unit to get +0|+1 this round for each card in your hand'],
+  'tide-pulloftheweir': ["Choose a unit in combat with 3 or less power to return to its owner's hand"],
+  'tide-mooringline': ['Choose an enemy unit in combat to put in Stasis'],
+  'tide-lockandrelease': ['Choose an allied unit to return to your hand', "Choose an enemy unit to return to its owner's hand"],
+  'tide-sluicesweep': [
+    "Choose the first enemy unit with 3 or less power to return to its owner's hand",
+    "Choose the second enemy unit with 3 or less power to return to its owner's hand",
+  ],
+  'tide-homewardcurrent': ['Choose an allied unit to return to your hand'],
 };

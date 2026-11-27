@@ -90,4 +90,86 @@ export const ember: Subjects = {
     'a roaring wall of orange fire thrown by a ring of brass funnels on a roof, sweeping down a whole street',
     'wide view of a district at dusk, the crystal spires lit amber and enemy machines crumpling'),
 
+  // base set, second wave
+  'ember-torva': s(
+    'a broad-shouldered woman in her late twenties with a shaved head and a burn scar along her jaw, bare scarred arms wrapped in iron-studded leather, a heavy brass knuckle-gauntlet on each fist',
+    'stepping first into a sunken sand ring lit by furnace grates, a crowd of soot-faced workers leaning over the iron rail above'),
+  'ember-torva--ascended': s(
+    'a broad-shouldered woman in her late twenties with a shaved head and a burn scar along her jaw, now in a mantle of riveted black iron plates glowing orange at the seams, both brass gauntlets white-hot',
+    'standing alone in the centre of a cracked sand ring as a ring of enemy machines topples around her, embers spiralling upward'),
+  'ember-yarrow': s(
+    'a tall grey-bearded man in his sixties in a soot-dark engineer coat with brass buttons, a ring of heavy keys at his belt and a long iron spanner over one shoulder',
+    'spinning a big red wheel on a wall of pipes and pressure dials in a roaring furnace hall, steam hissing from the joints'),
+  'ember-yarrow--ascended': s(
+    'a tall grey-bearded man in his sixties, coat thrown open, his forearms sheathed in brass pipework glowing red, a long iron spanner crackling with orange arcs',
+    'atop a gantry above a row of furnaces all blazing white at once, every needle on the dials swung hard to the end'),
+  'ember-valvetapper': s(
+    'a thin young man in patched grey overalls and a leather cap, a small brass drum of bottled orange light strapped to his back and a hand crank at his hip',
+    'kneeling on a slick catwalk to bleed a hissing pipe into the drum, the glow inside brightening'),
+  'ember-ringcrier': s(
+    'a wiry older woman with a cropped white braid and a soot-dark waistcoat, a dented brass bell in one hand and a rag of red cloth tied around her arm',
+    'clanging the bell at the edge of a sand pit as a fighter steps through the gate, workers cheering behind the rail'),
+  'ember-flarebot': s(
+    'a round-bellied brass walker the height of a dog with a cracked glass dome full of sputtering orange fire and short piston legs',
+    'waddling toward an enemy barricade on a foundry dock, flames already leaking from its seams'),
+  'ember-pitbrawler': s(
+    'a lanky young man with a broken nose and taped knuckles, a sleeveless soot-dark vest and a short iron chain wrapped around one forearm',
+    'pointing his chain at a single opponent across a ring of hot sand, the rest of the crowd falling silent'),
+  'ember-gaugewatcher': s(
+    'a stout middle-aged woman with half-moon brass spectacles, a leather apron full of small tools and a long brass listening horn',
+    'pressing the horn to a wall of round pressure dials in a dim boiler room, one needle glowing red'),
+  'ember-scrapreclaimer': s(
+    'a hunched old man with a long grey moustache and thick leather gloves, a sack of broken brass cogs over his shoulder and a hooked iron pole',
+    'fishing a still-glowing machine core out of a heap of wreckage on a foundry floor at night'),
+  'ember-pitpromoter': s(
+    'a heavyset man in his forties in a burgundy tailcoat singed at the cuffs, a brass speaking-trumpet in one hand and a fat purse on his belt',
+    'shouting from a raised iron box as two fighters are shoved toward each other in the sand below'),
+  'ember-rivethurler': s(
+    'a muscular young woman with a thick black ponytail and a leather bracer, a brass sling loaded with glowing hot metal bolts',
+    'whipping the sling over her head on a scaffold, a stream of red-hot bolts flying from the crew at her back'),
+  'ember-meltdowngolem': s(
+    'a hulking iron construct with a cracked chest plate, liquid orange metal dripping from every joint and steam pouring off its shoulders',
+    'lurching across a rail bridge toward an enemy column, the bridge beams sagging and glowing under its weight'),
+  'ember-slaggladiator': s(
+    'a tall black iron construct with a crested helm and a round brass buckler, a short heavy blade glowing orange along the edge',
+    'raising its blade in salute in a smoky sand ring, a fallen enemy machine at its feet'),
+  'ember-steamcondenser': s(
+    'a squat copper tank construct on short thick iron feet with coiled glass tubes along its sides glowing faint orange, a pressure valve on its crown',
+    'drinking in the vapour of a burst pipe in a narrow alley, its glass tubes slowly filling with light'),
+  'ember-pitboss': s(
+    'a big bald man in his fifties with a gold tooth and a thick fur-collared leather coat, rings on every finger and a cigar of glowing ember',
+    'leaning over a high iron balcony to toss a gleaming brass gauntlet down to a fighter in the ring'),
+  'ember-forgemarshal': s(
+    'a stern grey-haired woman in her fifties in heavy soot-dark plate with an orange sash, a long-hafted forge hammer resting on her shoulder',
+    'leading a column of armoured fighters through a forge gate, their spear tips glowing in the heat'),
+  'ember-boilercolossus': s(
+    'an enormous round-bodied iron machine as tall as a warehouse, a ring of chimneys belching fire on its back and a pair of huge piston drills for arms',
+    'bursting through the side of a brick warehouse, a flood of sparks and coal spilling from its open firebox'),
+  'ember-stoketheboiler': s(
+    'a gloved hand shoving a small sputtering brass machine into the open mouth of a roaring firebox, the flames leaping white',
+    'in close view of a cramped stoke-hold lit only by the furnace glare'),
+  'ember-hotrivets': s(
+    'a pair of iron tongs hammering glowing red bolts into the shoulder plate of an armoured fighter, sparks fanning out',
+    'beside a sand ring under a rack of hanging weapons, the fighter bracing for the next bout'),
+  'ember-cheapshot': s(
+    'a brass-knuckled fist striking low from behind a raised shield at an enemy machine locked in a shove',
+    'in the dust and smoke of a crowded fight on a rail yard, an iron cog flying loose'),
+  'ember-shrapneltoss': s(
+    'a small burning brass machine flung end over end, bursting into a spray of glowing iron fragments against an enemy plate',
+    'over a barricade of crates in a narrow foundry lane at night'),
+  'ember-sparkgap': s(
+    'a white-orange arc leaping between a pair of copper spheres on iron posts, a small brass walker hopping out of the spray',
+    'inside a dim lab of coiled cables and glowing jars'),
+  'ember-clearthering': s(
+    'a lone armoured fighter with a glowing iron flail sweeping it round in a full circle, small enemy machines thrown back in every direction',
+    'in the middle of a sand ring ringed by iron grates, the crowd ducking behind the rail'),
+  'ember-overpressure': s(
+    'a huge pressure tank on a rooftop splitting open in a single jet of white-hot steam and fire',
+    'aimed across a canal at a crystal tower, the water below boiling under the blast'),
+  'ember-titlebout': s(
+    'a heavy gold and iron championship belt held high in a gloved fist, the plate on it glowing orange',
+    'above a packed sand ring at night, lanterns swinging on chains and the crowd on its feet'),
+  'ember-moltentorrent': s(
+    'a vast tilting crucible pouring a river of liquid orange metal down a stepped street onto a rank of enemy soldiers',
+    'seen from a bridge at dusk, steam rising from the paving and crystal windows glowing red'),
 };

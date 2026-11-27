@@ -569,3 +569,339 @@ describe('under cards (strict)', () => {
     expect(t.players[0].spire).toBe(10 + 2 + 2);
   });
 });
+
+describe('under cards (First Light additions)', () => {
+  it('under-marrow: Dread; Assault deals 1 to the weakest enemy; 3 kills ascend him and Ascend destroys every damaged enemy', () => {
+    const s = board({ line: [['under-marrow'], ['zz-ogre', 'zz-grunt']] });
+    const m = unit(s, 0, 'under-marrow');
+    expect(st(s, m)).toMatchObject({ power: 2, health: 3 });
+    expect(st(s, m).keywords).toContain('dread');
+    declare(s, m.iid);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(1); // Assault: the grunt is the weakest
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(0);
+    // level: 2 kills so far; the Assault ping finishes a grunt (3rd kill); Ascend destroys the damaged ogre
+    const a = board({ line: [['under-marrow'], ['zz-grunt', 'zz-ogre', 'zz-vanguard']] });
+    a.players[0].heroes = ['under-marrow'];
+    const h = unit(a, 0, 'under-marrow');
+    h.seen.kills = 2;
+    h.dmg = 2;
+    unit(a, 1, 'zz-grunt').dmg = 1;
+    unit(a, 1, 'zz-ogre').dmg = 1;
+    declare(a, h.iid);
+    expect(isAscended(a, 0, 'under-marrow')).toBe(true);
+    expect(cards(a, 1)).toEqual(['zz-vanguard']);
+    expect(h.dmg).toBe(0);
+    expect(st(a, h)).toMatchObject({ power: 4, health: 5 });
+    // ascended Assault deals 2 to the weakest enemy
+    const b = board({ line: [['under-marrow'], ['zz-ogre', 'zz-wall']] });
+    b.players[0].heroes = ['under-marrow'];
+    b.players[0].ascended = ['under-marrow'];
+    declare(b, unit(b, 0, 'under-marrow').iid);
+    expect(unit(b, 1, 'zz-wall').dmg).toBe(2);
+    expect(unit(b, 1, 'zz-ogre').dmg).toBe(0);
+  });
+
+  it('under-marrow: a kill by his Assault counts on his own counter; 1 kill does not ascend him', () => {
+    const s = board({ line: [['under-marrow'], ['zz-grunt', 'zz-ogre']] });
+    s.players[0].heroes = ['under-marrow'];
+    unit(s, 1, 'zz-grunt').dmg = 1;
+    const m = unit(s, 0, 'under-marrow');
+    declare(s, m.iid);
+    expect(cards(s, 1)).toEqual(['zz-ogre']);
+    expect(m.seen.kills).toBe(1);
+    expect(isAscended(s, 0, 'under-marrow')).toBe(false);
+  });
+
+  it('under-penn: Dusk drains 1 per glyph cast this round (at most 2); 10 glyph damage ascends her; Ascend drains 1 per card in hand (at most 4); ascended Dusk drains up to 4', () => {
+    const s = board({ hand: [['zz-zap', 'zz-zap'], []], line: [['under-penn'], ['zz-wall']] });
+    s.players[0].heroes = ['under-penn'];
+    s.players[0].spire = 10;
+    expect(st(s, unit(s, 0, 'under-penn'))).toMatchObject({ power: 2, health: 4 });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    endRound(s);
+    expect(s.players[1].spire).toBe(18);
+    expect(s.players[0].spire).toBe(12);
+    expect(isAscended(s, 0, 'under-penn')).toBe(false);
+    const a = board({ hand: [['zz-zap', 'zz-zap', 'zz-filler', 'zz-filler', 'zz-filler'], []], line: [['under-penn'], ['zz-wall']] });
+    a.players[0].heroes = ['under-penn'];
+    a.players[0].spire = 10;
+    a.players[0].seen.glyphDamage = 8;
+    play(a, 'zz-zap', [unit(a, 1, 'zz-wall').iid]);
+    expect(isAscended(a, 0, 'under-penn')).toBe(false);
+    play(a, 'zz-zap', [unit(a, 1, 'zz-wall').iid]);
+    expect(isAscended(a, 0, 'under-penn')).toBe(true);
+    expect(a.players[1].spire).toBe(17); // 3 cards left in hand
+    expect(a.players[0].spire).toBe(13);
+    expect(st(a, unit(a, 0, 'under-penn'))).toMatchObject({ power: 4, health: 6 });
+    endRound(a);
+    expect(a.players[1].spire).toBe(15); // 2 glyphs this round, 1 drain each
+    expect(a.players[0].spire).toBe(15);
+    const c = board({ hand: [['zz-zap', 'zz-zap', 'zz-zap'], []], line: [['under-penn'], ['zz-wall']] });
+    c.players[0].heroes = ['under-penn'];
+    for (let i = 0; i < 3; i++) play(c, 'zz-zap', [unit(c, 1, 'zz-wall').iid]);
+    endRound(c);
+    expect(c.players[1].spire).toBe(18); // 3 glyphs, but the base face drains at most 2
+  });
+
+  it('under-skimclerk: Dusk deals 1 to the enemy Spire only after 2+ glyphs this round', () => {
+    const one = board({ hand: [['zz-zap'], []], line: [['under-skimclerk'], ['zz-wall']] });
+    play(one, 'zz-zap', [unit(one, 1, 'zz-wall').iid]);
+    endRound(one);
+    expect(one.players[1].spire).toBe(20);
+    const two = board({ hand: [['zz-zap', 'zz-zap'], []], line: [['under-skimclerk'], ['zz-wall']] });
+    play(two, 'zz-zap', [unit(two, 1, 'zz-wall').iid]);
+    play(two, 'zz-zap', [unit(two, 1, 'zz-wall').iid]);
+    endRound(two);
+    expect(two.players[1].spire).toBe(19);
+  });
+
+  it('under-blisterrat: Corrosive destroys its blocker; Unstable destroys it at the end of the round', () => {
+    const s = board({ line: [['under-blisterrat'], ['zz-wall']] });
+    const r = unit(s, 0, 'under-blisterrat');
+    const w = unit(s, 1, 'zz-wall');
+    attack(s, [r], [[w, r]]);
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual([]);
+    expect(cards(s, 0)).toEqual(['under-blisterrat']); // the wall has 0 power
+    endRound(s);
+    expect(cards(s, 0)).toEqual([]);
+  });
+
+  it('under-tollrat: Strike deals 1 more to the enemy Spire, even when blocked', () => {
+    const s = board({ line: [['under-tollrat'], []] });
+    attack(s, [unit(s, 0, 'under-tollrat')]);
+    resolveCombat(s);
+    expect(s.players[1].spire).toBe(18);
+    const b = board({ line: [['under-tollrat'], ['zz-wall']] });
+    const r = unit(b, 0, 'under-tollrat');
+    attack(b, [r], [[unit(b, 1, 'zz-wall'), r]]);
+    resolveCombat(b);
+    expect(unit(b, 1, 'zz-wall').dmg).toBe(1);
+    expect(b.players[1].spire).toBe(19);
+  });
+
+  it('under-kneecapper: Dread; Deploy deals 1 to an enemy unit', () => {
+    const s = board({ hand: [['under-kneecapper'], []], line: [[], ['zz-grunt', 'zz-ogre']] });
+    play(s, 'under-kneecapper', [unit(s, 1, 'zz-ogre').iid]);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(0);
+    expect(st(s, unit(s, 0, 'under-kneecapper')).keywords).toContain('dread');
+  });
+
+  it('under-bagman: Deploy deals 1 to the enemy Spire per glyph cast this round', () => {
+    const s = board({ hand: [['zz-zap', 'zz-zap', 'under-bagman'], []], line: [[], ['zz-wall']] });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    play(s, 'under-bagman');
+    expect(s.players[1].spire).toBe(18);
+    const none = board({ hand: [['under-bagman'], []] });
+    play(none, 'under-bagman');
+    expect(none.players[1].spire).toBe(20);
+  });
+
+  it('under-wireboundthug: Dread; Resonant gives it Corrosive, which destroys its blocker', () => {
+    const s = board({ line: [['under-wireboundthug'], []] });
+    expect(st(s, unit(s, 0, 'under-wireboundthug')).keywords).toContain('dread');
+    expect(st(s, unit(s, 0, 'under-wireboundthug')).keywords).not.toContain('corrosive');
+    const r = board({ line: [['under-wireboundthug', 'under-vex'], ['zz-ogre']] });
+    r.players[0].ascended = ['under-vex'];
+    const t = unit(r, 0, 'under-wireboundthug');
+    expect(st(r, t).keywords).toContain('corrosive');
+    attack(r, [t], [[unit(r, 1, 'zz-ogre'), t]]);
+    resolveCombat(r);
+    expect(cards(r, 1)).toEqual([]);
+  });
+
+  it('under-vattailor: Deploy gives an allied hero Corrosive for good; a non-hero ally cannot be chosen', () => {
+    const s = board({ hand: [['under-vattailor'], []], line: [['under-marrow', 'zz-grunt'], []] });
+    expect(tryPlay(s, 'under-vattailor', [unit(s, 0, 'zz-grunt').iid]).ok).toBe(false);
+    const m = unit(s, 0, 'under-marrow');
+    play(s, 'under-vattailor', [m.iid]);
+    expect(st(s, m).keywords).toContain('corrosive');
+    endRound(s);
+    expect(st(s, m).keywords).toContain('corrosive');
+  });
+
+  it('under-interestcollector: Dusk deals 1 to every damaged enemy unit', () => {
+    const s = board({ line: [['under-interestcollector'], ['zz-ogre', 'zz-wall']] });
+    unit(s, 1, 'zz-ogre').dmg = 1;
+    endRound(s);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(2);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(0);
+  });
+
+  it('under-grudgekeeper: gets +1|+0 for good when an enemy unit is destroyed', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['under-grudgekeeper', 'zz-grunt'], ['zz-grunt']] });
+    unit(s, 1, 'zz-grunt').dmg = 1;
+    play(s, 'zz-zap', [unit(s, 1, 'zz-grunt').iid]);
+    const k = unit(s, 0, 'under-grudgekeeper');
+    expect(st(s, k)).toMatchObject({ power: 3, health: 4 });
+    endRound(s);
+    expect(st(s, k).power).toBe(3);
+  });
+
+  it('under-persuasionengine: Deploy makes an allied Dread unit and an enemy unit strike each other', () => {
+    const s = board({ hand: [['under-persuasionengine'], []], line: [['zz-dread', 'zz-grunt'], ['zz-grunt', 'zz-wall']] });
+    expect(tryPlay(s, 'under-persuasionengine', [unit(s, 0, 'zz-grunt').iid, unit(s, 1, 'zz-grunt').iid]).ok).toBe(false);
+    const d = unit(s, 0, 'zz-dread');
+    play(s, 'under-persuasionengine', [d.iid, unit(s, 1, 'zz-grunt').iid]);
+    expect(cards(s, 1)).toEqual(['zz-wall']);
+    expect(d.dmg).toBe(2);
+    expect(d.seen.kills).toBe(1);
+  });
+
+  it('under-debtassessor: Deploy deals 1 to an enemy unit per card left in hand, at most 3', () => {
+    const s = board({ hand: [['under-debtassessor', 'zz-filler', 'zz-filler', 'zz-filler', 'zz-filler'], []], line: [[], ['zz-ogre']] });
+    play(s, 'under-debtassessor', [unit(s, 1, 'zz-ogre').iid]);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(3);
+  });
+
+  it('under-noticeserver: Deploy destroys a damaged enemy unit only; Resonant gives it Dread', () => {
+    const s = board({ hand: [['under-noticeserver'], []], line: [['under-vex'], ['zz-ogre', 'zz-grunt']] });
+    unit(s, 1, 'zz-ogre').dmg = 1;
+    expect(tryPlay(s, 'under-noticeserver', [unit(s, 1, 'zz-grunt').iid]).ok).toBe(false);
+    play(s, 'under-noticeserver', [unit(s, 1, 'zz-ogre').iid]);
+    expect(cards(s, 1)).toEqual(['zz-grunt']);
+    const n = unit(s, 0, 'under-noticeserver');
+    expect(st(s, n).keywords).not.toContain('dread');
+    s.players[0].ascended = ['under-vex'];
+    expect(st(s, n).keywords).toContain('dread');
+  });
+
+  it('under-taplinecolossus: Siphon; casting a glyph deals 1 to the enemy Spire', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [['under-taplinecolossus'], ['zz-wall']] });
+    play(s, 'zz-zap', [unit(s, 1, 'zz-wall').iid]);
+    expect(s.players[1].spire).toBe(19);
+    const a = board({ line: [['under-taplinecolossus'], []] });
+    a.players[0].spire = 10;
+    attack(a, [unit(a, 0, 'under-taplinecolossus')]);
+    resolveCombat(a);
+    expect(a.players[1].spire).toBe(16);
+    expect(a.players[0].spire).toBe(14);
+  });
+
+  it('under-blackgatejuggernaut: Dread; allied units with Dread have Corrosive, others do not', () => {
+    const s = board({ line: [['under-blackgatejuggernaut', 'under-backalleyenforcer', 'zz-grunt'], ['zz-ogre']] });
+    expect(st(s, unit(s, 0, 'under-blackgatejuggernaut')).keywords).toEqual(expect.arrayContaining(['dread', 'corrosive']));
+    expect(st(s, unit(s, 0, 'zz-grunt')).keywords).not.toContain('corrosive');
+    const e = unit(s, 0, 'under-backalleyenforcer');
+    attack(s, [e], [[unit(s, 1, 'zz-ogre'), e]]);
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual([]);
+  });
+
+  it('under-skimtop: Flash drains 1 from an enemy unit or Spire, 2 if you have cast 2+ glyphs this round', () => {
+    const s = board({ hand: [['under-skimtop'], []] });
+    s.players[0].spire = 10;
+    play(s, 'under-skimtop', ['spire1']);
+    expect(s.players[1].spire).toBe(19);
+    expect(s.players[0].spire).toBe(11);
+    const t = board({ hand: [['zz-zap', 'under-skimtop'], []], line: [[], ['zz-wall', 'zz-ogre']] });
+    t.players[0].spire = 10;
+    play(t, 'zz-zap', [unit(t, 1, 'zz-wall').iid]);
+    play(t, 'under-skimtop', [unit(t, 1, 'zz-ogre').iid]);
+    expect(unit(t, 1, 'zz-ogre').dmg).toBe(2);
+    expect(t.players[0].spire).toBe(12);
+  });
+
+  it('under-calledtoaccount: Flash gives an allied hero Dueler and Corrosive this round; it forces a blocker and destroys it', () => {
+    const s = board({ hand: [['under-calledtoaccount'], []], line: [['under-marrow', 'zz-grunt'], ['zz-wall', 'zz-ogre']] });
+    expect(tryPlay(s, 'under-calledtoaccount', [unit(s, 0, 'zz-grunt').iid]).ok).toBe(false);
+    const m = unit(s, 0, 'under-marrow');
+    play(s, 'under-calledtoaccount', [m.iid]);
+    expect(st(s, m).keywords).toEqual(expect.arrayContaining(['dueler', 'corrosive']));
+    const w = unit(s, 1, 'zz-wall');
+    act(s, { type: 'declare', unit: m.iid, duel: w.iid });
+    act(s, { type: 'attack' });
+    if (s.phase === 'block') act(s, { type: 'blocks' });
+    resolveCombat(s);
+    expect(cards(s, 1)).toEqual(['zz-ogre']);
+    expect(m.seen.kills).toBe(1);
+    endRound(s);
+    expect(st(s, m).keywords).not.toContain('corrosive');
+    expect(st(s, m).keywords).not.toContain('dueler');
+  });
+
+  it('under-protectionfee: Flash drains 1 from every enemy unit and 1 from the enemy Spire', () => {
+    const s = board({ hand: [['under-protectionfee'], []], line: [['zz-grunt'], ['zz-grunt', 'zz-ogre']] });
+    s.players[0].spire = 10;
+    play(s, 'under-protectionfee');
+    expect(unit(s, 1, 'zz-grunt').dmg).toBe(1);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(1);
+    expect(unit(s, 0, 'zz-grunt').dmg).toBe(0);
+    expect(s.players[1].spire).toBe(19);
+    expect(s.players[0].spire).toBe(13);
+  });
+
+  it('under-makeexample: Swift destroys an allied unit and deals its power to an enemy unit', () => {
+    const s = board({ hand: [['under-makeexample'], []], line: [['zz-ogre'], ['zz-wall']] });
+    play(s, 'under-makeexample', [unit(s, 0, 'zz-ogre').iid, unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(cards(s, 0)).toEqual([]);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(5);
+    expect(s.players[0].seen.alliesDied).toBe(1);
+  });
+
+  it('under-streettax: Swift drains 1 from the enemy Spire per enemy unit, at most 4', () => {
+    const s = board({ hand: [['under-streettax'], []], line: [[], ['zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt', 'zz-grunt']] });
+    s.players[0].spire = 10;
+    play(s, 'under-streettax');
+    pass(s);
+    expect(s.players[1].spire).toBe(16);
+    expect(s.players[0].spire).toBe(14);
+    const two = board({ hand: [['under-streettax'], []], line: [[], ['zz-grunt', 'zz-grunt']] });
+    play(two, 'under-streettax');
+    pass(two);
+    expect(two.players[1].spire).toBe(18);
+  });
+
+  it('under-backalleylesson: Swift makes every allied Dread unit strike the chosen enemy unit', () => {
+    const s = board({ hand: [['under-backalleylesson'], []], line: [['zz-dread', 'zz-grunt'], ['zz-wall']] });
+    play(s, 'under-backalleylesson', [unit(s, 1, 'zz-wall').iid]);
+    pass(s);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(3); // the grunt has no Dread
+    const k = board({ hand: [['under-backalleylesson'], []], line: [['zz-dread', 'under-backalleyenforcer'], ['zz-wall']] });
+    play(k, 'under-backalleylesson', [unit(k, 1, 'zz-wall').iid]);
+    pass(k);
+    expect(cards(k, 1)).toEqual([]);
+  });
+
+  it('under-foreclosure: Swift drains 2 from every damaged enemy unit and 2 from the enemy Spire', () => {
+    const s = board({ hand: [['under-foreclosure'], []], line: [[], ['zz-ogre', 'zz-wall']] });
+    s.players[0].spire = 10;
+    unit(s, 1, 'zz-ogre').dmg = 1;
+    play(s, 'under-foreclosure');
+    pass(s);
+    expect(unit(s, 1, 'zz-ogre').dmg).toBe(3);
+    expect(unit(s, 1, 'zz-wall').dmg).toBe(0);
+    expect(s.players[1].spire).toBe(18);
+    expect(s.players[0].spire).toBe(14);
+  });
+
+  it('under-lightsout: Ritual gives allies Dread this round; Resonant adds Corrosive', () => {
+    const s = board({ hand: [['under-lightsout'], []], line: [['zz-grunt'], []] });
+    play(s, 'under-lightsout');
+    pass(s);
+    const g = unit(s, 0, 'zz-grunt');
+    expect(st(s, g).keywords).toContain('dread');
+    expect(st(s, g).keywords).not.toContain('corrosive');
+    endRound(s);
+    expect(st(s, g).keywords).not.toContain('dread');
+    const r = board({ hand: [['under-lightsout'], []], line: [['zz-grunt', 'under-vex'], []] });
+    r.players[0].ascended = ['under-vex'];
+    play(r, 'under-lightsout');
+    pass(r);
+    expect(st(r, unit(r, 0, 'zz-grunt')).keywords).toEqual(expect.arrayContaining(['dread', 'corrosive']));
+  });
+
+  it('under-hostiletakeover: Ritual destroys an enemy unit and drains 2 from the enemy Spire', () => {
+    const s = board({ hand: [['under-hostiletakeover'], []], line: [[], ['zz-ogre']] });
+    s.players[0].spire = 10;
+    play(s, 'under-hostiletakeover', [unit(s, 1, 'zz-ogre').iid]);
+    pass(s);
+    expect(cards(s, 1)).toEqual([]);
+    expect(s.players[1].spire).toBe(18);
+    expect(s.players[0].spire).toBe(12);
+  });
+});

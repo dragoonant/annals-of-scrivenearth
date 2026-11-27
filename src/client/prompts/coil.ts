@@ -7,4 +7,11 @@ export const coil: Record<string, string[]> = {
   'coil-duel-of-thorns': ['Choose your unit for the duel', 'Choose the enemy unit it strikes and is struck by'],
   'coil-lash-out': ['Choose your unit that will strike', 'Choose the enemy unit it strikes'],
   'coil-grafting': ['Choose an ally to get +2|+2 and Mend'],
+  'coil-snare-trapper': ['Choose an enemy unit to take 1 damage (2 if Resonant)'],
+  'coil-tusk-challenger': ['Choose the enemy unit it strikes and is struck by'],
+  'coil-snaring-vine': ['Choose an enemy unit to get -2|+0 this round'],
+  'coil-compost-heap': ['Choose your Sapling to destroy for 3 Charge'],
+  'coil-run-down': ['Choose the damaged enemy unit every ally strikes'],
+  'coil-thorn-volley': ['Choose the enemy unit every allied Sapling strikes'],
+  'coil-transplant': ['Choose your Sapling to replace with a Thornwood'],
 };

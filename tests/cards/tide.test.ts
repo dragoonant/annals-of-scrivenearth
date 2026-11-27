@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { applyAction, attack, board, pass, play, st, unit } from '../helpers';
-import { isAscended } from '../../src/engine/query';
+import { applyAction, attack, board, pass, play, resolveCombat, st, unit } from '../helpers';
+import { costOf, isAscended } from '../../src/engine/query';
 
 type G = ReturnType<typeof board>;
 /** Try to play the first hand card with this id, without requiring success. */
@@ -519,5 +519,287 @@ describe('tide cards (strict)', () => {
     play(e, 'tide-floodtide');
     pass(e);
     expect(e.players[0].hand.length).toBe(1);
+  });
+});
+
+describe('tide cards (First Light additions)', () => {
+  it('tide-sefa: Strike draws 1; 14 cards drawn ascends her, Ascend hits the strongest enemy for the hand size, then Dusk draws', () => {
+    const s = board({ line: [['tide-sefa'], ['zz-wall']] });
+    s.players[0].heroes = ['tide-sefa'];
+    const h = unit(s, 0, 'tide-sefa');
+    expect(st(s, h)).toMatchObject({ power: 2, health: 5 });
+    attack(s, [h], [[unit(s, 1, 'zz-wall'), h]]);
+    resolveCombat(s);
+    expect(s.players[0].hand.length).toBe(1);
+    expect(isAscended(s, 0, 'tide-sefa')).toBe(false);
+
+    const t = board({ hand: [['zz-rite', 'zz-grunt', 'zz-grunt', 'zz-grunt'], []], line: [['tide-sefa'], ['zz-ogre', 'zz-grunt']] });
+    t.players[0].heroes = ['tide-sefa'];
+    t.players[0].seen.cardsDrawn = 13;
+    play(t, 'zz-rite');
+    pass(t); // the Ritual resolves: the 14th card drawn
+    expect(isAscended(t, 0, 'tide-sefa')).toBe(true);
+    expect(t.players[0].hand.length).toBe(4);
+    expect(unit(t, 1, 'zz-ogre').dmg).toBe(4); // Ascend: 4 cards in hand
+    expect(unit(t, 1, 'zz-grunt').dmg).toBe(0);
+    expect(st(t, unit(t, 0, 'tide-sefa'))).toMatchObject({ power: 4, health: 7 });
+    endRound(t); // Dusk draws 1, then the new round draws 1
+    expect(t.players[0].hand.length).toBe(6);
+  });
+
+  it('tide-corra: Deploy returns an ally and freezes an enemy; the 5th return ascends her, Ascend returns small enemies, units cost 1 less', () => {
+    const s = board({ hand: [['tide-corra'], []], line: [['tide-sluicepage'], ['zz-grunt']] });
+    s.players[0].heroes = ['tide-corra'];
+    play(s, 'tide-corra', [unit(s, 0, 'tide-sluicepage').iid, unit(s, 1, 'zz-grunt').iid]);
+    expect(ids(s, 0)).toEqual(['tide-sluicepage']);
+    expect(unit(s, 1, 'zz-grunt').stasis).toBe(true);
+    expect(s.players[0].seen.recalled).toBe(1);
+    expect(isAscended(s, 0, 'tide-corra')).toBe(false);
+    expect(st(s, unit(s, 0, 'tide-corra'))).toMatchObject({ power: 3, health: 4 });
+    expect(costOf(s, 0, 'tide-sluicepage')).toBe(1);
+
+    const t = board({ hand: [['tide-corra'], []], line: [['tide-sluicepage'], ['zz-ogre', 'tide-pearlsentinel']] });
+    t.players[0].heroes = ['tide-corra'];
+    t.players[0].seen.recalled = 4;
+    play(t, 'tide-corra', [unit(t, 0, 'tide-sluicepage').iid, unit(t, 1, 'zz-ogre').iid]);
+    expect(isAscended(t, 0, 'tide-corra')).toBe(true);
+    expect(t.players[1].line.map((u) => u.card)).toEqual(['zz-ogre']);
+    expect(ids(t, 1)).toEqual(['tide-pearlsentinel']);
+    expect(st(t, unit(t, 0, 'tide-corra'))).toMatchObject({ power: 4, health: 6 });
+    expect(costOf(t, 0, 'tide-sluicepage')).toBe(0);
+  });
+
+  it('tide-siltnewt: Shatter draws 1', () => {
+    const s = board({ line: [['zz-ogre'], ['tide-siltnewt']] });
+    const o = unit(s, 0, 'zz-ogre');
+    attack(s, [o], [[unit(s, 1, 'tide-siltnewt'), o]]);
+    resolveCombat(s);
+    expect(s.players[1].line.length).toBe(0);
+    expect(s.players[1].hand.length).toBe(1);
+  });
+
+  it('tide-marginclerk: Deploy grows by the hand size, capped at +2|+2', () => {
+    const one = board({ hand: [['tide-marginclerk', 'zz-grunt'], []] });
+    play(one, 'tide-marginclerk');
+    expect(st(one, unit(one, 0, 'tide-marginclerk'))).toMatchObject({ power: 2, health: 2 });
+    const many = board({ hand: [['tide-marginclerk', 'zz-grunt', 'zz-grunt', 'zz-grunt'], []] });
+    play(many, 'tide-marginclerk');
+    expect(st(many, unit(many, 0, 'tide-marginclerk'))).toMatchObject({ power: 3, health: 3 });
+  });
+
+  it('tide-lockhound: Deploy returns an enemy unit in Stasis only', () => {
+    const s = board({ hand: [['tide-lockhound'], []], line: [[], ['tide-pearlsentinel', 'tide-sluicepage']] });
+    unit(s, 1, 'tide-sluicepage').stasis = true;
+    expect(tryPlay(s, 'tide-lockhound', [unit(s, 1, 'tide-pearlsentinel').iid]).ok).toBe(false);
+    play(s, 'tide-lockhound', [unit(s, 1, 'tide-sluicepage').iid]);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['tide-pearlsentinel']);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].seen.recalled).toBe(1);
+  });
+
+  it('tide-undertowsprite: grows when an ally is summoned only after a return this round', () => {
+    const plain = board({ hand: [['zz-grunt'], []], line: [['tide-undertowsprite'], []] });
+    play(plain, 'zz-grunt');
+    expect(st(plain, unit(plain, 0, 'tide-undertowsprite'))).toMatchObject({ power: 2, health: 2 });
+    const s = board({ hand: [['tide-slipunder'], []], line: [['tide-undertowsprite', 'tide-pearlsentinel'], []] });
+    play(s, 'tide-slipunder', [unit(s, 0, 'tide-pearlsentinel').iid]);
+    play(s, 'tide-pearlsentinel');
+    expect(st(s, unit(s, 0, 'tide-undertowsprite'))).toMatchObject({ power: 3, health: 3 });
+  });
+
+  it('tide-tallyframe: draws 1 when it takes damage and survives', () => {
+    const s = board({ hand: [['zz-zap'], []], line: [[], ['tide-tallyframe']] });
+    play(s, 'zz-zap', [unit(s, 1, 'tide-tallyframe').iid]);
+    expect(unit(s, 1, 'tide-tallyframe').dmg).toBe(1);
+    expect(s.players[1].hand.length).toBe(1);
+  });
+
+  it('tide-reedmarshheron: Spotter blocks an Aerial unit; Resonant gives +1|+2', () => {
+    const s = board({ line: [['zz-aerial'], ['tide-reedmarshheron', 'tide-maren']] });
+    const a = unit(s, 0, 'zz-aerial');
+    const h = unit(s, 1, 'tide-reedmarshheron');
+    expect(st(s, h)).toMatchObject({ power: 2, health: 2 });
+    attack(s, [a], [[h, a]]);
+    expect(s.combat?.pairs[0].blk).toBe(h.iid);
+    s.players[1].ascended = ['tide-maren'];
+    expect(st(s, h)).toMatchObject({ power: 3, health: 4 });
+  });
+
+  it('tide-tidemarkreader: Deploy gives +2|+2 only after a return this round', () => {
+    const plain = board({ hand: [['tide-tidemarkreader'], []] });
+    play(plain, 'tide-tidemarkreader');
+    expect(st(plain, unit(plain, 0, 'tide-tidemarkreader'))).toMatchObject({ power: 2, health: 3 });
+    const s = board({ hand: [['tide-slipunder', 'tide-tidemarkreader'], []], line: [['tide-sluicepage'], []] });
+    play(s, 'tide-slipunder', [unit(s, 0, 'tide-sluicepage').iid]);
+    play(s, 'tide-tidemarkreader');
+    expect(st(s, unit(s, 0, 'tide-tidemarkreader'))).toMatchObject({ power: 4, health: 5 });
+  });
+
+  it('tide-shelfwarden: Dawn gives +1|+0 per card in hand this round, up to +3|+0', () => {
+    const powerAtDawn = (hand: number): number => {
+      const s = board({ hand: [Array<string>(hand).fill('zz-grunt'), []], line: [['tide-shelfwarden'], []] });
+      endRound(s); // the new round draws 1, then Dawn
+      return st(s, unit(s, 0, 'tide-shelfwarden')).power;
+    };
+    expect(powerAtDawn(0)).toBe(2);
+    expect(powerAtDawn(1)).toBe(3);
+    expect(powerAtDawn(5)).toBe(4);
+  });
+
+  it("tide-backflowlancer: Assault returns the weakest enemy to its owner's hand", () => {
+    const s = board({ line: [['tide-backflowlancer'], ['tide-pearlsentinel', 'tide-sluicepage']] });
+    attack(s, [unit(s, 0, 'tide-backflowlancer')]);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['tide-pearlsentinel']);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].seen.recalled).toBe(1);
+  });
+
+  it("tide-weirgolem: Strike returns the unit it fought to its owner's hand", () => {
+    const s = board({ line: [['tide-pearlsentinel'], ['tide-weirgolem']] });
+    const p = unit(s, 0, 'tide-pearlsentinel');
+    const g = unit(s, 1, 'tide-weirgolem');
+    attack(s, [p], [[g, p]]);
+    resolveCombat(s);
+    expect(s.players[0].line.length).toBe(0);
+    expect(ids(s, 0)).toEqual(['tide-pearlsentinel']);
+    expect(g.dmg).toBe(2);
+    expect(s.players[1].seen.recalled).toBe(1);
+  });
+
+  it('tide-brineboundsage: Deploy draws 2 only if an enemy unit is in Stasis', () => {
+    const plain = board({ hand: [['tide-brineboundsage'], []], line: [[], ['zz-grunt']] });
+    play(plain, 'tide-brineboundsage');
+    expect(plain.players[0].hand.length).toBe(0);
+    const s = board({ hand: [['tide-brineboundsage'], []], line: [[], ['zz-grunt']] });
+    unit(s, 1, 'zz-grunt').stasis = true;
+    play(s, 'tide-brineboundsage');
+    expect(s.players[0].hand.length).toBe(2);
+  });
+
+  it('tide-sluicegatebehemoth: Assault puts the strongest enemy in Stasis; Resonant gives +1|+1', () => {
+    const s = board({ line: [['tide-sluicegatebehemoth', 'tide-maren'], ['zz-grunt', 'zz-ogre']] });
+    const b = unit(s, 0, 'tide-sluicegatebehemoth');
+    expect(st(s, b)).toMatchObject({ power: 4, health: 5 });
+    attack(s, [b]);
+    expect(unit(s, 1, 'zz-ogre').stasis).toBe(true);
+    expect(unit(s, 1, 'zz-grunt').stasis).toBe(false);
+    s.players[0].ascended = ['tide-maren'];
+    expect(st(s, b)).toMatchObject({ power: 5, health: 6 });
+  });
+
+  it('tide-floodwallcolossus: Plated takes 1 less; Shatter returns every enemy unit', () => {
+    const z = board({ hand: [['zz-zap'], []], line: [[], ['tide-floodwallcolossus']] });
+    play(z, 'zz-zap', [unit(z, 1, 'tide-floodwallcolossus').iid]);
+    expect(unit(z, 1, 'tide-floodwallcolossus').dmg).toBe(0);
+    const s = board({ line: [['zz-corrosive', 'tide-sluicepage'], ['tide-floodwallcolossus']] });
+    const c = unit(s, 0, 'zz-corrosive');
+    attack(s, [c], [[unit(s, 1, 'tide-floodwallcolossus'), c]]);
+    resolveCombat(s);
+    expect(s.players[1].line.length).toBe(0);
+    expect(s.players[0].line.length).toBe(0);
+    expect(ids(s, 0)).toEqual(['tide-sluicepage']);
+  });
+
+  it('tide-lorewhale: Aerial; Assault draws 2', () => {
+    const s = board({ line: [['tide-lorewhale'], ['zz-ogre']] });
+    const w = unit(s, 0, 'tide-lorewhale');
+    expect(st(s, w).keywords).toContain('aerial');
+    attack(s, [w]);
+    expect(s.phase).toBe('combat'); // the ogre cannot block an Aerial unit
+    expect(s.players[0].hand.length).toBe(2);
+  });
+
+  it('tide-boundvolume: Flash gives +0|+1 this round for each card in hand', () => {
+    const s = board({ hand: [['tide-boundvolume', 'zz-grunt', 'zz-grunt'], []], line: [['zz-grunt'], []] });
+    const g = unit(s, 0, 'zz-grunt');
+    play(s, 'tide-boundvolume', [g.iid]);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 4 });
+    endRound(s);
+    expect(st(s, g)).toMatchObject({ power: 2, health: 2 });
+  });
+
+  it('tide-pulloftheweir: Flash returns a unit in combat with 3 or less power', () => {
+    const s = board({ hand: [[], ['tide-pulloftheweir']], line: [['tide-tidemarkreader', 'zz-ogre'], ['tide-sluicepage', 'zz-wall']] });
+    const r = unit(s, 0, 'tide-tidemarkreader');
+    const o = unit(s, 0, 'zz-ogre');
+    attack(s, [r, o], [[unit(s, 1, 'tide-sluicepage'), r], [unit(s, 1, 'zz-wall'), o]]);
+    pass(s); // the defender now has priority in the combat window
+    expect(tryPlay(s, 'tide-pulloftheweir', [o.iid]).ok).toBe(false);
+    play(s, 'tide-pulloftheweir', [r.iid]);
+    expect(s.players[0].line.map((u) => u.card)).toEqual(['zz-ogre']);
+    expect(ids(s, 0)).toEqual(['tide-tidemarkreader']);
+    expect(s.players[1].seen.recalled).toBe(1);
+  });
+
+  it('tide-mooringline: Flash puts an enemy unit in combat in Stasis and draws 1', () => {
+    const s = board({ hand: [[], ['tide-mooringline']], line: [['zz-ogre', 'zz-grunt'], []] });
+    const o = unit(s, 0, 'zz-ogre');
+    attack(s, [o]);
+    pass(s);
+    expect(tryPlay(s, 'tide-mooringline', [unit(s, 0, 'zz-grunt').iid]).ok).toBe(false);
+    play(s, 'tide-mooringline', [o.iid]);
+    expect(o.stasis).toBe(true);
+    expect(s.players[1].hand.length).toBe(1);
+    expect(s.players[1].spire).toBe(20);
+  });
+
+  it('tide-readthecurrent: Swift draws 1, or 2 after a return this round', () => {
+    const plain = board({ hand: [['tide-readthecurrent'], []] });
+    play(plain, 'tide-readthecurrent');
+    pass(plain);
+    expect(plain.players[0].hand.length).toBe(1);
+    const s = board({ hand: [['tide-slipunder', 'tide-readthecurrent'], []], line: [['tide-sluicepage'], []] });
+    play(s, 'tide-slipunder', [unit(s, 0, 'tide-sluicepage').iid]);
+    play(s, 'tide-readthecurrent');
+    pass(s);
+    expect(s.players[0].hand.length).toBe(3);
+  });
+
+  it('tide-rifflethestacks: Swift draws 2; Resonant draws 3', () => {
+    const plain = board({ hand: [['tide-rifflethestacks'], []], line: [['tide-maren'], []] });
+    play(plain, 'tide-rifflethestacks');
+    pass(plain);
+    expect(plain.players[0].hand.length).toBe(2);
+    const res = board({ hand: [['tide-rifflethestacks'], []], line: [['tide-maren'], []] });
+    res.players[0].ascended = ['tide-maren'];
+    play(res, 'tide-rifflethestacks');
+    pass(res);
+    expect(res.players[0].hand.length).toBe(3);
+  });
+
+  it('tide-lockandrelease: Swift returns an allied unit and an enemy unit', () => {
+    const s = board({ hand: [['tide-lockandrelease'], []], line: [['tide-pearlsentinel'], ['tide-sluicepage']] });
+    play(s, 'tide-lockandrelease', [unit(s, 0, 'tide-pearlsentinel').iid, unit(s, 1, 'tide-sluicepage').iid]);
+    pass(s);
+    expect(ids(s, 0)).toEqual(['tide-pearlsentinel']);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].seen.recalled).toBe(2);
+  });
+
+  it('tide-sluicesweep: Swift returns two enemy units with 3 or less power', () => {
+    const s = board({ hand: [['tide-sluicesweep'], []], line: [[], ['tide-sluicepage', 'tide-pearlsentinel', 'zz-ogre']] });
+    expect(tryPlay(s, 'tide-sluicesweep', [unit(s, 1, 'zz-ogre').iid]).ok).toBe(false);
+    play(s, 'tide-sluicesweep', [unit(s, 1, 'tide-sluicepage').iid, unit(s, 1, 'tide-pearlsentinel').iid]);
+    pass(s);
+    expect(s.players[1].line.map((u) => u.card)).toEqual(['zz-ogre']);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage', 'tide-pearlsentinel']);
+  });
+
+  it('tide-homewardcurrent: Ritual returns an allied unit and draws 2', () => {
+    const s = board({ hand: [['tide-homewardcurrent'], []], line: [['tide-pearlsentinel'], []] });
+    play(s, 'tide-homewardcurrent', [unit(s, 0, 'tide-pearlsentinel').iid]);
+    pass(s);
+    expect(s.players[0].line.length).toBe(0);
+    expect(ids(s, 0)).toEqual(['tide-pearlsentinel', 'zz-filler', 'zz-filler']);
+  });
+
+  it("tide-turnofthelocks: Ritual returns every unit to its owner's hand, then draws 2", () => {
+    const s = board({ hand: [['tide-turnofthelocks'], []], line: [['tide-pearlsentinel'], ['tide-sluicepage', 'zz-ogre']] });
+    play(s, 'tide-turnofthelocks');
+    pass(s);
+    expect(s.players[0].line.length + s.players[1].line.length).toBe(0);
+    expect(ids(s, 0)).toEqual(['tide-pearlsentinel', 'zz-filler', 'zz-filler']);
+    expect(ids(s, 1)).toEqual(['tide-sluicepage']);
+    expect(s.players[0].seen.recalled).toBe(3);
   });
 });

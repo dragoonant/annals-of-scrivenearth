@@ -84,4 +84,95 @@ export const coil: Subjects = {
     'a green-gold tide of leaves and vines rising over a whole line of beasts and soldiers, their armour sprouting crystal',
     'across a wide roof garden with towers rising behind'),
 
+  // ---------- First Light additions ----------
+  'coil-sapling': s(
+    'a small young tree with green-glass leaves and a brass ring around its thin trunk',
+    'pushing up through a crack in a copper rooftop gutter at dawn'),
+  'coil-thornwood': s(
+    'a massive walking tree with a trunk of braided thorny bark, crystal thorns and a canopy of dark leaves',
+    'uprooting itself from a broken planter and stepping onto a plaza, soil falling from its roots'),
+  'coil-packwolf': s(
+    'a lean grey wolf with moss along its back and a green crystal stud on its brow',
+    'loping between chimneys on a slate roof at night, breath steaming'),
+  'coil-halcy': s(
+    'a sturdy freckled woman in her sixties with short grey hair under a wide straw hat, a canvas apron with seed pockets, a brass seed canister on her back',
+    'scattering glowing seeds from her palm across a rooftop terrace as green shoots rise behind her'),
+  'coil-halcy--ascended': s(
+    'a sturdy freckled woman in her sixties with short grey hair crowned by a wreath of glowing leaves, a canvas apron grown over with flowering moss, green light in her hands',
+    'standing in a young forest that has burst up through the roof tiles around her, seedlings rising at her feet'),
+  'coil-nyra': s(
+    'a lean wiry woman in her thirties with braided black hair, a wolf-pelt mantle over bark-plate armour and a short curved hunting spear',
+    'crouching on a gantry above an alley, a pair of grey wolves flanking her, eyes on the prey below'),
+  'coil-nyra--ascended': s(
+    'a lean wiry woman in her thirties with braided black hair, a mantle of glowing green-crystal fur over bark-plate armour, a hunting spear with a crystal blade, scars glowing green',
+    'leading a running pack of wolves across a moonlit bridge of glass, spear raised'),
+  'coil-furrow-hand': s(
+    'a young man in his twenties with rolled sleeves, a canvas satchel of seeds and a small hand trowel',
+    'kneeling to press a seed into a soil-filled crate on a rooftop allotment'),
+  'coil-thicket-jackal': s(
+    'a lean sandy wild dog with large ears and bramble burrs caught in its fur',
+    'slinking out of a hedge of thorny bushes toward a fallen enemy helmet'),
+  'coil-carrion-beetle': s(
+    'a large glossy green-black scarab with a crystal-studded shell and copper-coloured legs',
+    'rolling a ball of mulch past a broken machine casing in a dark garden shed'),
+  'coil-seed-drill': s(
+    'a squat wheeled machine of copper with a hopper of glowing seeds and a row of brass planting spikes',
+    'rolling across a muddy roof field, leaving a line of green sprouts behind it'),
+  'coil-ridgeback': s(
+    'a broad spotted wild dog with a crest of bark plates down its spine and a heavy jaw',
+    'grinning with bared teeth over a knocked-down metal sentry on a scrapyard roof'),
+  'coil-snare-trapper': s(
+    'a weathered woman in her forties in a leaf-patched coat, coils of thorny vine rope over her shoulder',
+    'setting a vine snare between pipes in a misty rooftop orchard'),
+  'coil-grove-keeper': s(
+    'a gentle bearded man in his fifties in a moss-green smock, holding a copper misting can and pruning shears',
+    'tending a row of glowing seedlings in a rooftop nursery under hanging lanterns'),
+  'coil-tusk-challenger': s(
+    'a heavy warthog-like boar with curved crystal tusks and a mane of thorny vines',
+    'squaring off nose to nose against an armoured machine on a narrow rooftop ledge'),
+  'coil-bloodtrail': s(
+    'a long-bodied black panther with green crystal claws and leaf-shaped markings on its flanks',
+    'creeping along a vine-covered pipe, following a line of glowing red drops on the stones below'),
+  'coil-ridge-howler': s(
+    'a shaggy white-maned wolf with bark plating on its chest and a curved crystal horn on its brow',
+    'howling from a chimney top at moonrise as young wolves gather on the roofs around it'),
+  'coil-seed-thresher': s(
+    'a tall machine of riveted copper with spinning brass flails and a hopper spilling glowing seeds',
+    'churning across a field of broken paving, flinging seeds into every crack'),
+  'coil-horncrown': s(
+    'a towering elk cow with a broad crown of branching crystal horns and a bark-plated chest',
+    'lowering her horns to charge a huge armoured beast in a ruined glasshouse'),
+  'coil-bloomwood-shepherd': s(
+    'a very tall old woman with a crook of living wood, a cloak of flowering moss and bark-plated sleeves',
+    'leading a line of young walking trees along a rooftop bridge in the morning mist'),
+  'coil-bramblehulk': s(
+    'a huge hunched bear made of tangled bramble and bark, glowing green crystal in its chest, thorns as long as swords',
+    'crashing through a glass skybridge in a flurry of leaves and shards'),
+  'coil-snaring-vine': s(
+    'a thorny green vine coiling tight around the legs of an armoured soldier',
+    'on a mossy stairway, the soldier stumbling mid-stride'),
+  'coil-quickening-rain': s(
+    'a soft green-gold rain falling on a row of young trees that stretch upward as it lands',
+    'over a terrace of planters at first light, droplets glowing'),
+  'coil-scent-of-blood': s(
+    'a wolf muzzle raised high with nostrils flared, a faint red trail of mist curling toward it',
+    'in tight close view against a rooftop at night, ears pricked'),
+  'coil-compost-heap': s(
+    'a steaming pile of leaves and roots glowing with green-gold light, a copper pitchfork stuck in it',
+    'in the corner of a walled roof garden, warmth rising into the cold air'),
+  'coil-run-down': s(
+    'a pack of wolves bringing down a limping armoured machine',
+    'in a narrow cobbled lane, sparks and leaves flying'),
+  'coil-thorn-volley': s(
+    'a burst of crystal thorns shooting from a row of young trees',
+    'across a courtyard toward a charging armoured knight, the thorns trailing green light'),
+  'coil-transplant': s(
+    'a pair of gloved hands lifting a glowing young tree from a clay pot as its roots swell into a huge trunk',
+    'on a potting bench in a dim tool shed, shelves of clay pots behind'),
+  'coil-cull-the-wounded': s(
+    'a huge bark-plated bear swatting down a limping steel machine',
+    'at the edge of a smoking battlefield on a rooftop, wreckage around it'),
+  'coil-sow-the-rooftops': s(
+    'a flurry of glowing seeds blown on the wind, sprouts bursting from every gutter and tile they touch',
+    'over a long row of slate roofs at sunrise, chimneys wreathed in green'),
 };

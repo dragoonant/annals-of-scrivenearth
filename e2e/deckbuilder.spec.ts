@@ -25,7 +25,7 @@ test('build, save, reload, find it on New game, and play it', async ({ page }) =
   await page.goto(url());
   await page.click('[data-ui=builder]');
   await expect(screen(page)).toHaveAttribute('data-screen', 'builder');
-  await expect(page.locator('.bd-tile')).toHaveCount(150);
+  await expect(page.locator('.bd-tile')).toHaveCount(300);
   expect(await badText(page)).toBeNull();
   // Auto-fill from two factions
   await page.click('[data-ui=b-autofill]');
@@ -136,13 +136,13 @@ test('filters, overwrite and delete each ask once; Save is off while illegal; no
     await page.click('[data-ui=b-faction][data-v=storm]');
     const stormOnly = await page.locator('.bd-tile').count();
     expect(stormOnly).toBeGreaterThan(5);
-    expect(stormOnly).toBeLessThan(40);
+    expect(stormOnly).toBeLessThan(60);
     await page.click('[data-ui=b-type][data-v=hero]');
     const heroes = await page.locator('.bd-tile').count();
     expect(heroes).toBeGreaterThan(0);
     expect(heroes).toBeLessThan(stormOnly);
     await page.click('[data-ui=b-clear]');
-    await expect(page.locator('.bd-tile')).toHaveCount(150);
+    await expect(page.locator('.bd-tile')).toHaveCount(300);
     if (w < 900) await page.click('[data-ui=b-more]');
     await page.click('[data-ui=b-cost][data-v="1"]');
     const cost1 = await page.locator('.bd-tile').count();
@@ -157,7 +157,7 @@ test('filters, overwrite and delete each ask once; Save is off while illegal; no
     expect(await page.evaluate(() => (document.activeElement as HTMLInputElement).selectionEnd! - (document.activeElement as HTMLInputElement).selectionStart!)).toBeGreaterThan(0);
     const drawN = await page.locator('.bd-tile').count();
     expect(drawN).toBeGreaterThan(3);
-    expect(drawN).toBeLessThan(150);
+    expect(drawN).toBeLessThan(300);
     await page.fill('.bd-search', 'zzzzqq');
     await expect(page.locator('.bd-grid .bd-empty')).toContainText('No card matches');
     await page.click('[data-ui=b-clear]');

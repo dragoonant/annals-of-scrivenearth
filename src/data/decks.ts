@@ -182,6 +182,61 @@ export const HAND_BUILT: HandDeck[] = [
   },
 ];
 
+/**
+ * Six premades led by the twelve First Light heroes (PLAN D26), two new heroes each, built from the faction's new cards.
+ * Win rates: BALANCE.md B-5.
+ */
+export const NEW_HERO_DECKS: HandDeck[] = [
+  {
+    name: 'Banner Wing', about: 'Drill a wide line of small wardens and kites, buffing them every round until both captains ascend.',
+    cards: {
+      'prism-tamsin': 3, 'storm-odile': 3,
+      'prism-shieldline-cadet': 3, 'prism-rank-drummer': 2, 'prism-shield-sergeant': 2, 'prism-rampart-herald': 2, 'prism-tier-pikeman': 2, 'prism-cohort-drillmaster': 2, 'prism-gilded-phalanx': 1, 'prism-lock-shields': 2, 'prism-grand-muster': 1,
+      'storm-ribbonkite': 3, 'storm-wingcadet': 2, 'storm-skirmishkite': 2, 'storm-windrigger': 2, 'storm-gyrekite': 2, 'storm-glidetutor': 2, 'storm-aeriecarrier': 1, 'storm-closeechelon': 2, 'storm-flightdrill': 1,
+    },
+  },
+  {
+    name: 'Hunting Lens', about: 'Spotters pick off whatever flies while the pack runs down every wounded enemy.',
+    cards: {
+      'prism-orrin': 3, 'coil-nyra': 3,
+      'prism-glint-scout': 2, 'prism-lens-fitter': 2, 'prism-flak-tripod': 2, 'prism-range-warden': 2, 'prism-lens-battery': 2, 'prism-skylens-bastion': 1, 'prism-steady-aim': 2, 'prism-covering-fire': 2, 'prism-focused-volley': 1,
+      'coil-carrion-beetle': 1, 'coil-thicket-jackal': 2, 'coil-snare-trapper': 3, 'coil-ridgeback': 2, 'coil-tusk-challenger': 2, 'coil-bloodtrail': 2, 'coil-ridge-howler': 2, 'coil-horncrown': 1, 'coil-run-down': 2, 'coil-cull-the-wounded': 1,
+    },
+  },
+  {
+    name: 'Bloodsand Pit', about: 'Force the fights you want: duellists and Dread enforcers grind the enemy Line down one bout at a time.',
+    cards: {
+      'ember-torva': 3, 'under-marrow': 3,
+      'ember-ringcrier': 2, 'ember-pitbrawler': 3, 'ember-pitpromoter': 2, 'ember-slaggladiator': 2, 'ember-pitboss': 2, 'ember-forgemarshal': 1, 'ember-hotrivets': 2, 'ember-cheapshot': 2, 'ember-titlebout': 1,
+      'under-kneecapper': 3, 'under-wireboundthug': 2, 'under-vattailor': 2, 'under-grudgekeeper': 2, 'under-persuasionengine': 2, 'under-noticeserver': 1, 'under-calledtoaccount': 2, 'under-backalleylesson': 2, 'under-blackgatejuggernaut': 1,
+    },
+  },
+  {
+    name: 'Redline Express', about: 'Flood the rails with cheap runners, swing with all of them at once, then attack again.',
+    cards: {
+      'ember-yarrow': 3, 'storm-ness': 3,
+      'ember-flarebot': 3, 'ember-cinderscamp': 2, 'ember-slagsmith': 2, 'ember-meltdowngolem': 2, 'ember-arcwelder': 2, 'ember-steamcondenser': 1, 'ember-boilercolossus': 1, 'ember-sparkgap': 2, 'ember-slagbolt': 2,
+      'storm-tailrunner': 3, 'storm-flagbearer': 2, 'storm-tickettaker': 2, 'storm-veteranrunner': 2, 'storm-switchforeman': 2, 'storm-breakneck': 2, 'storm-bellexpress': 1, 'storm-anchorleg': 2, 'storm-doubledeparture': 1,
+    },
+  },
+  {
+    name: 'Ledger of Tides', about: 'Keep a full hand and a busy round: every glyph you cast taxes the enemy Spire a little more.',
+    cards: {
+      'tide-sefa': 3, 'under-penn': 3,
+      'tide-siltnewt': 2, 'tide-marginclerk': 2, 'tide-tallyframe': 2, 'tide-shelfwarden': 2, 'tide-brineboundsage': 2, 'tide-lorewhale': 1, 'tide-boundvolume': 2, 'tide-readthecurrent': 2, 'tide-rifflethestacks': 2,
+      'under-skimclerk': 2, 'under-bagman': 2, 'under-interestcollector': 2, 'under-debtassessor': 2, 'under-taplinecolossus': 1, 'under-skimtop': 3, 'under-protectionfee': 2, 'under-streettax': 2, 'under-foreclosure': 1,
+    },
+  },
+  {
+    name: 'Tidal Garden', about: 'Replay your best Deploys and send blockers home while a garden of Saplings grows behind them.',
+    cards: {
+      'tide-corra': 3, 'coil-halcy': 3,
+      'tide-lockhound': 2, 'tide-undertowsprite': 2, 'tide-tidemarkreader': 2, 'tide-backflowlancer': 2, 'tide-weirgolem': 2, 'tide-sluicegatebehemoth': 1, 'tide-floodwallcolossus': 1, 'tide-pulloftheweir': 2, 'tide-homewardcurrent': 2, 'tide-lockandrelease': 1,
+      'coil-furrow-hand': 3, 'coil-seed-drill': 2, 'coil-grove-keeper': 2, 'coil-seed-thresher': 2, 'coil-bloomwood-shepherd': 1, 'coil-quickening-rain': 2, 'coil-thorn-volley': 2, 'coil-sow-the-rooftops': 1, 'coil-transplant': 1, 'coil-compost-heap': 1,
+    },
+  },
+];
+
 /** A premade deck; `about` is the one-line plan shown on the New game screen (hand-built decks only). */
 export interface PremadeDeck extends DeckList { about?: string }
 
@@ -189,11 +244,11 @@ const expand = (cards: Record<string, number>): string[] => Object.entries(cards
 
 /**
  * Premade decks: the original six first, in their old order (so `?decks=` indices stay the same), then the twelve
- * hand-built ones. Only decks that pass checkDeck are offered (a deck is never silently patched);
+ * hand-built ones, then the six led by the First Light heroes. Only decks that pass checkDeck are offered (a deck is never silently patched);
  * tests/decks.test.ts fails if any is dropped.
  */
 export function premadeDecks(): PremadeDeck[] {
   const curve: PremadeDeck[] = CURVE.map((d) => ({ name: d.name, cards: expand(d.cards) }));
-  const hand = [BLACKWATER, ...HAND_BUILT].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
+  const hand = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS].map((d) => ({ name: d.name, about: d.about, cards: expand(d.cards) }));
   return [...curve, ...hand].filter((d) => checkDeck(d.cards).ok);
 }

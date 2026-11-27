@@ -13,18 +13,20 @@ const pairs: [FactionId, FactionId][] = [];
 for (let i = 0; i < FACTIONS.length; i++) for (let j = i + 1; j < FACTIONS.length; j++) pairs.push([FACTIONS[i], FACTIONS[j]]);
 
 describe('card pool and decks', () => {
-  it('R-G1 150 collectible cards: 25 per faction with 2 heroes each', () => {
-    const pool = collectible();
-    expect(pool.length).toBe(150);
-    for (const f of FACTIONS) {
+  it('First Light, the base set (docs/SETS.md): 300 collectible cards, 50 per faction with 4 heroes, 28 units, 18 glyphs', () => {
+    const pool = collectible().filter((c) => (c.set ?? 'base') === 'base');
+    expect(pool.length).toBe(300);
+    for (const f of FACTIONS.slice(0, 6)) {
       const mine = pool.filter((c) => c.faction === f);
-      expect(mine.length, f).toBe(25);
-      expect(mine.filter((c) => c.type === 'hero').length, f).toBe(2);
+      expect(mine.length, f).toBe(50);
+      expect(mine.filter((c) => c.type === 'hero').length, f).toBe(4);
+      expect(mine.filter((c) => c.type === 'unit').length, f).toBe(28);
+      expect(mine.filter((c) => c.type === 'glyph').length, f).toBe(18);
     }
   });
-  it('R-G1 every faction pair builds a legal deck, and all 18 premade decks are legal', () => {
+  it('R-G1 every faction pair builds a legal deck, and all 24 premade decks are legal', () => {
     for (const [a, b] of pairs) expect(checkDeck(autoDeck(a, b)).errors, `${a}+${b}`).toEqual([]);
-    expect(premadeDecks().length).toBe(18);
+    expect(premadeDecks().length).toBe(24);
   });
 });
 

@@ -5,4 +5,9 @@ export const storm: Record<string, string[]> = {
   'storm-updraft': ['Choose an ally to get +1|+0 and Aerial this round'],
   'storm-crosswind': ['Choose an enemy unit to put in Stasis'],
   'storm-skyhook': ["Choose an enemy unit to return to its owner's hand"],
+  'storm-ribbonkite': ['Choose an Aerial ally to get +1|+1'],
+  'storm-windrigger': ['Choose an ally: with Aerial it gets +1|+1, without Aerial it gains Aerial'],
+  'storm-anchorleg': ['Choose an ally to get +1|+0 this round (+1|+1 more with 3+ attackers declared this round)'],
+  'storm-sinkingair': ['Choose an enemy unit to get -2|+0 this round'],
+  'storm-steepdive': ['Choose the Aerial ally that strikes', 'Choose the enemy unit it strikes'],
 };

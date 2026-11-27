@@ -87,4 +87,86 @@ export const under: Subjects = {
     'a violet glowing arc of current flowing along a row of cables from broken machines toward a great glass jar',
     'in a pit of wrecked machines, smoke curling under the lamps'),
 
+  // First Light additions
+  'under-marrow': s(
+    'a broad, heavy-shouldered man in his forties with a shaved scarred scalp, a broken nose, a long violet-black leather coat and iron-shod knuckle wraps of fuse wire',
+    'cracking his knuckles at the mouth of a narrow brick passage while a debtor backs away under a buzzing lamp'),
+  'under-marrow--ascended': s(
+    'a broad, heavy-shouldered man in his forties with a shaved scarred scalp, a violet-black armoured longcoat hung with brass collection tags and arms crackling with violet current',
+    'standing alone over a ring of toppled rivals in a flooded junction, cables sparking in the black water around his boots'),
+  'under-penn': s(
+    'a poised woman in her fifties with silver hair in a tight knot, a violet silk high-collared coat, long black gloves and a brass coin-counting ring on every finger',
+    'seated behind a lacquered desk in a smoky back room, sliding a small stack of violet coins across the wood'),
+  'under-penn--ascended': s(
+    'a poised woman in her fifties with silver hair in a tight knot, a violet silk coat trailing glowing cables, a crown of brass coin-chains and violet light pooling in her palms',
+    'presiding from a high balcony over a vast undercity market, violet threads of light rising to her from every stall'),
+  'under-skimclerk': s(
+    'a thin young man in a worn black waistcoat and sleeve garters, a violet eyeshade and quick ink-stained fingers palming a coin',
+    'at a cramped counting desk under a dripping pipe, sliding one coin into his boot while the cashbox stays open'),
+  'under-blisterrat': s(
+    'a mangy black rat with a swollen back of glowing green-violet acid blisters and dripping fangs',
+    'scuttling across a rusted grate as the drops it leaves behind eat smoking holes in the iron'),
+  'under-tollrat': s(
+    'a lean grey rat with a brass ring through its ear and a tiny pouch of coins slung round its neck',
+    'perched on a narrow plank bridge over a drain channel, blocking the way with its teeth bared'),
+  'under-kneecapper': s(
+    'a wiry young woman in a black cap and patched jacket, a short iron bar wrapped in violet wire over her shoulder',
+    'stepping out from behind a steam pipe to swing low at a passing guard in a cramped service tunnel'),
+  'under-bagman': s(
+    'a round-faced man in his forties in a long grey coat, a heavy canvas satchel clinking with coins clutched to his chest',
+    'hurrying up a spiral iron stair inside a pipe shaft, glancing over his shoulder at the dark below'),
+  'under-wireboundthug': s(
+    'a thick-necked man in his twenties, his bare forearms bound in coils of glowing violet cable, a cracked half mask',
+    'leaning against a sparking junction box in a tunnel, flexing so the cables on his arms hum'),
+  'under-vattailor': s(
+    'a stooped old woman with a magnifying loupe, rubber gloves to the elbow and a long apron spattered green, holding a coat dripping with glowing acid',
+    'lowering the coat into a bubbling green-violet vat in a steaming workshop hung with treated garments'),
+  'under-interestcollector': s(
+    'a gaunt man in his sixties in a black frock coat and a tall hat, a brass ticking meter strapped to his wrist',
+    'tapping a cane on a cellar door at dusk, the meter on his wrist glowing brighter with every tick'),
+  'under-grudgekeeper': s(
+    'a scarred heavyset woman in her fifties in a stained leather apron, a string of knotted cords at her belt and a cleaver',
+    'tying another knot in her cord by candlelight in a cellar strung with old weapons taken from the fallen'),
+  'under-persuasionengine': s(
+    'a squat iron machine on clawed legs with a pair of long hydraulic arms ending in clamps, violet coils glowing in its chest',
+    'dragging a struggling armoured soldier toward a waiting brawler in a ring of chain-link inside a pump hall'),
+  'under-debtassessor': s(
+    'a tall narrow man in his forties in a grey suit, violet-lensed spectacles and a brass slide rule, a hand pointed in accusation',
+    'reading the worth of a cowering soldier as violet sparks leap from the rule to the soldier\'s armour in a dim office'),
+  'under-noticeserver': s(
+    'a towering woman in her thirties in a black oilskin coat and a wide-brimmed hat, an iron seal-stamp the size of a hammer in her fist',
+    'bringing the stamp down on a wounded guard\'s breastplate in a dripping archway, a violet brand flaring'),
+  'under-taplinecolossus': s(
+    'a huge hunched machine of black iron with heavy cables plugged into its spine, violet current running down its arms into its fists',
+    'wading through a cistern with its cables trailing back to a city main, siphoning light from the pipes as it walks'),
+  'under-blackgatejuggernaut': s(
+    'an enormous armoured machine of black riveted plates with a furnace-glow violet visor, acid dripping from its iron fists',
+    'smashing through a great iron floodgate as acid-green water pours out around its legs'),
+  'under-skimtop': s(
+    'a gloved hand skimming a thin layer of glowing violet coins off the top of an overflowing strongbox',
+    'in close view on a counting table in a dark back room, lamp smoke curling over the coins'),
+  'under-calledtoaccount': s(
+    'an iron gauntlet with fingers dripping glowing acid, its index finger pointing at a startled armoured guard',
+    'in a narrow tunnel with the guard pinned in a cone of violet light'),
+  'under-protectionfee': s(
+    'a row of small brass collection boxes on a market wall, each glowing violet and pulling threads of light from the stalls around it',
+    'along a crowded undercity arcade under strings of lanterns'),
+  'under-makeexample': s(
+    'a burly man hurled through the air by a violet-crackling grip, crashing into an armoured soldier',
+    'in a lamplit tunnel crossroads, the onlookers flinching back against the walls'),
+  'under-streettax': s(
+    'a brass toll gate across a cobbled tunnel lane, violet light drawn from each passer-by into a glass globe on the gatepost',
+    'in a busy undercity lane at shift change, steam rising from the gutters'),
+  'under-backalleylesson': s(
+    'a pair of masked enforcers in black coats closing on a single armoured soldier from both sides, brass knuckles glinting',
+    'in a cramped dead-end passage between dripping brick walls, a lone lamp flickering above'),
+  'under-foreclosure': s(
+    'a heavy iron chain and padlock snapping shut across a cracked crystal door, violet light wrung out of the wounded guards beside it',
+    'on the front step of a fallen house in the upper tunnels, rain dripping from the eaves'),
+  'under-lightsout': s(
+    'a gloved hand throwing a huge iron breaker lever, every lamp in a tunnel going dark as masked silhouettes move in the gloom',
+    'in a vast switching room with rows of dead lamps and violet eyes glinting in the dark'),
+  'under-hostiletakeover': s(
+    'a heavy brass seal pressed onto a toppled crystal throne, violet wires creeping over it like ivy',
+    'in an emptied guildhall with its doors broken open and the crowd of syndicate masks filing in'),
 };

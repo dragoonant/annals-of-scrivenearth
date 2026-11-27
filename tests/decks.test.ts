@@ -4,12 +4,12 @@ import '../src/data/cards/index';
 import type { FactionId } from '../src/engine/types';
 import { playGame, type Policy } from '../src/ai/arena';
 import { chooseAction } from '../src/ai/ai';
-import { BLACKWATER, collectible, HAND_BUILT, premadeDecks } from '../src/data/decks';
+import { BLACKWATER, collectible, HAND_BUILT, NEW_HERO_DECKS, premadeDecks } from '../src/data/decks';
 import { def } from '../src/engine/query';
 import { checkDeck, FACTIONS } from '../src/engine/validate';
 
 const ai: Policy = (v, seat, rnd) => chooseAction(v, seat, 'normal', rnd);
-const HAND = [BLACKWATER, ...HAND_BUILT];
+const HAND = [BLACKWATER, ...HAND_BUILT, ...NEW_HERO_DECKS];
 const handBuilt = (): ReturnType<typeof premadeDecks> => premadeDecks().filter((d) => HAND.some((h) => h.name === d.name));
 
 describe('premade decks', () => {
@@ -20,6 +20,7 @@ describe('premade decks', () => {
     }
     expect(handBuilt().length).toBe(HAND.length);
     expect(HAND_BUILT.length).toBe(12);
+    expect(NEW_HERO_DECKS.length).toBe(6);
   });
   it('the first six keep their names and old order (?decks= indices rely on it)', () => {
     expect(premadeDecks().slice(0, 6).map((d) => d.name)).toEqual(['Wall of Thorns', 'Foundry Squall', 'Cold Current', 'Skywatch', 'Wildfire Garden', 'Blackwater']);
@@ -43,10 +44,11 @@ describe('premade decks', () => {
     }
     expect([...seen].some((k) => !k.includes('+'))).toBe(true);
   });
-  it('every hero leads at least two premade decks', () => {
+  it('every hero leads a premade deck, and each of the original twelve leads at least two', () => {
+    const originals = new Set(premadeDecks().slice(0, 18).flatMap((d) => d.cards));
     for (const h of collectible().filter((c) => c.type === 'hero')) {
       const n = premadeDecks().filter((d) => d.cards.includes(h.id)).length;
-      expect(n, h.name).toBeGreaterThanOrEqual(2);
+      expect(n, h.name).toBeGreaterThanOrEqual(originals.has(h.id) ? 2 : 1);
     }
   });
   it('hand-built decks use only cards of their own factions and carry at least 14 units', () => {

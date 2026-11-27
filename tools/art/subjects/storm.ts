@@ -86,4 +86,87 @@ export const storm: Subjects = {
   'storm-skyraid': s(
     'a squad of gliders diving in a V formation toward a spire, silver wings flashing',
     'out of a bank of cloud at dusk, a pennant streaming from the lead wing'),
+
+  // ---------- First Light additions ----------
+  'storm-odile': s(
+    'a tall broad-shouldered woman in her forties with close-cropped black hair and a silver streak at the temple, a fitted teal flight coat with brass wing pins, goggles at her throat, a short signal baton',
+    'leading a wedge of gliders through the morning haze, glancing back over her shoulder at the formation'),
+  'storm-odile--ascended': s(
+    'a tall broad-shouldered woman in her forties with close-cropped black hair and a silver streak at the temple, a long silver mantle that opens into a pair of wide feathered wings, teal light running along every pinion',
+    'at the apex of a vast arrowhead of gliders high above the clouds, the whole wedge lit teal behind her'),
+  'storm-ness': s(
+    'a wiry woman in her thirties with a shaved undercut and a long copper braid, a sleeveless teal rail jacket, steel-shod boots and a coiled rail hook on her belt',
+    'sprinting along the roof of a speeding rail car toward the next car, the track curving away below'),
+  'storm-ness--ascended': s(
+    'a wiry woman in her thirties with a shaved undercut and a long copper braid, teal lightning crackling from her steel-shod boots, a long coat streaming behind her, the rail hook glowing white-hot',
+    'running a loop of glowing rail that circles a crystal tower, a bright trail of light following her twice around'),
+  'storm-ribbonkite': s(
+    'a slim diamond kite of teal silk with a long tail of silver streamers, a small brass bell at its nose',
+    'tied to a balcony railing and tugging upward, its streamers wrapping around a passing glider pilot'),
+  'storm-wingcadet': s(
+    'an eager young man of about twenty in an oversized teal flight jacket, a borrowed leather helmet and a slim practice wing',
+    'saluting from a launch ledge as a glider swoops in to land beside him'),
+  'storm-tailrunner': s(
+    'a lanky young woman in her twenties with a sweat-soaked headband, light teal running gear and a mail satchel on her back',
+    'chasing the last car of a departing rail line, one hand reaching for the rear rail'),
+  'storm-skirmishkite': s(
+    'a small sharp-winged fighting kite with a frame of black reed, teal sailcloth and a hooked brass blade at its tail',
+    'darting between pennants on a rooftop line, cutting a rival kite string'),
+  'storm-signaller': s(
+    'a heavyset man in his fifties in a teal station uniform, holding up a pair of lamps with coloured glass shutters',
+    'on a rain-slick station deck at night, swinging the lamps toward a train pulling out'),
+  'storm-windrigger': s(
+    'a nimble woman in her thirties with a tool belt, rigging gloves and a coil of teal cord over one shoulder, fitting a folding sail-wing to a soldier',
+    'in a cramped hangar loft, sailcloth hanging from the rafters and wind gusting through an open hatch'),
+  'storm-gyrekite': s(
+    'a round kite with spiral vanes of silver foil and a teal centre that spins like a pinwheel',
+    'whirling in a tight spiral above a plaza, gusts fanning outward and lifting nearby gliders'),
+  'storm-veteranrunner': s(
+    'a grizzled man in his sixties with a grey handlebar moustache, a patched teal courier coat covered in route badges, a scarred rail hook',
+    'vaulting a gap between two moving rail cars with practised ease'),
+  'storm-mastlookout': s(
+    'a sharp-eyed young woman in her twenties in a teal sailor jacket, a brass telescope at her eye and a harness clipped to a mast',
+    'high in the rigging of an airship mast, pointing toward a speck in the clouds'),
+  'storm-switchforeman': s(
+    'a stout bald man in his fifties with a bushy beard, oil-stained teal overalls and a heavy iron wrench',
+    'throwing a pair of rail switches at once in a smoky rail yard, tracks fanning out behind him'),
+  'storm-glidetutor': s(
+    'a patient white-haired woman in her sixties in a teal instructor coat, steadying the wing of a young pilot with one hand',
+    'on a practice ramp at the edge of a rooftop school, students waiting in line behind'),
+  'storm-breakneck': s(
+    'a reckless grinning man in his twenties with a scarred chin, dented teal armour and a cracked visor, riding a battered silver rail-bike',
+    'leaping the rail-bike off a broken viaduct end, sparks and debris flying around him'),
+  'storm-aeriecarrier': s(
+    'a long silver airship with an open flight deck along its back, teal sails and rows of glider cradles',
+    'cruising through a cloud bank as gliders lift off its deck in pairs'),
+  'storm-bellexpress': s(
+    'a massive black and teal steam-rail locomotive with a great brass bell at its front and glowing lamps',
+    'thundering through a crystal arch at midnight, the brass bell swinging and steam pouring off the rails'),
+  'storm-anchorleg': s(
+    'a gloved hand slapping a brass relay baton into the outstretched palm of a running courier',
+    'at a changeover point on a high rail bridge, the courier already leaning into the sprint'),
+  'storm-sinkingair': s(
+    'a heavy column of grey air pressing down on an enemy soldier, his knees buckling and cloak flattened to the ground',
+    'in a sunken courtyard between towers, dust spreading outward in a ring'),
+  'storm-closeechelon': s(
+    'a staggered diagonal line of gliders flying wingtip to wingtip, a faint teal glow linking their wings',
+    'banking together over a canyon of towers in late afternoon light'),
+  'storm-parceldrop': s(
+    'a wrapped package with a small teal parachute drifting down into a pair of waiting hands',
+    'over a crowded rooftop market, awnings flapping in the wind'),
+  'storm-loopback': s(
+    'a rail line that curls into a tight glowing loop, a courier rail-sled racing round the inside of it',
+    'above a gorge between spires, sparks raining down from the loop'),
+  'storm-steepdive': s(
+    'a glider pilot tucked into a near-vertical dive, wings swept back and a rail hook thrust forward toward an enemy soldier below',
+    'down the sheer face of a tower, the ground rushing up'),
+  'storm-gliderdrop': s(
+    'a pair of winged pilots dropping from the open belly hatch of an airship, wings snapping open',
+    'above a city square at first light, their shadows sweeping over the paving'),
+  'storm-flightdrill': s(
+    'a row of young pilots on a training gantry spreading their silver wings in unison at a whistle',
+    'on a windy academy rooftop with a striped windsock snapping beside them'),
+  'storm-doubledeparture': s(
+    'a pair of silver rail trains leaving a grand station side by side, teal lamps blazing and couriers clinging to the sides',
+    'beneath a vaulted glass roof with steam rolling across the platforms'),
 };

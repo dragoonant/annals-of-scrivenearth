@@ -83,5 +83,89 @@ export const prism: Subjects = {
   'prism-crystal-dawn': s(
     'a flood of gold sunrise rushing through a city of pale crystal, every soldier\'s armour restored and glowing, a cracked spire mending itself',
     'wide view from the top terrace as the first dawn strikes the spires and soldiers rise to their feet'),
+  'prism-tamsin': s(
+    'a lean, upright woman in her late forties with close-cropped grey hair and a hard weathered face, a gold-edged white parade coat over light plate, a short brass baton held level in one hand',
+    'pacing in front of a long rank of young guards on a parade terrace, tapping a shield edge into line as each soldier stiffens'),
+  'prism-tamsin--ascended': s(
+    'a lean, upright woman in her late forties with close-cropped grey hair, white-gold light running along the seams of her heavy plate, a brass baton now crowned with a burning crystal',
+    'standing at the centre of a locked square of shields on a broad terrace, a pale wall of light joining every shield into one'),
+  'prism-orrin': s(
+    'a rangy man in his thirties with sun-dark skin, a narrow moustache and one eye behind a brass sighting monocle, a long lens-rifle of white metal resting on his shoulder plate',
+    'kneeling on a high crystal parapet at dusk, sighting along the rifle at a winged raider crossing the clouds'),
+  'prism-orrin--ascended': s(
+    'a rangy man in his thirties with sun-dark skin and a narrow moustache, his brass monocle blazing white, crystal growing along the barrel of a lens-rifle twice its old length',
+    'firing a beam of gold light straight up from a rooftop gun-loft as burning kites tumble out of the sky above him'),
+  'prism-tier-recruit': s(
+    'a young soldier of about eighteen with a fresh shaved head, an oversized white breastplate and a plain round buckler',
+    'hurrying into line at the end of a row of guards on a windy terrace, still buckling a strap'),
+  'prism-shieldline-cadet': s(
+    'a stocky teenage girl with two tight black braids, a white tabard over chain and a square glass shield almost as wide as her shoulders',
+    'stepping forward to lock her shield against a newcomer\'s at a drill yard gate, a thread of gold light passing between the rims'),
+  'prism-glint-scout': s(
+    'a small walking lens on long white metal legs, a single round gold-rimmed eye and a flared hood of mirrored fins',
+    'perched on a chimney stack at night, flashing a bright pinpoint beam at a gliding kite-rider above the rooftops'),
+  'prism-rank-drummer': s(
+    'a wiry young man with a mop of copper hair, a white and gold jacket and a tall drum of clear crystal slung at his hip',
+    'beating time at the head of a marching column through a crystal arcade, the soldiers behind him in perfect step'),
+  'prism-lens-fitter': s(
+    'a bald older man with thick spectacles pushed up on his forehead, a leather tool roll across his chest and a brass sighting lens in his fingers',
+    'fixing the sighting lens onto a young soldier\'s helmet in a cramped armoury, racks of polished visors on the wall behind'),
+  'prism-shield-sergeant': s(
+    'a barrel-chested man in his forties with a grizzled red beard, dented white plate and a broad kite shield painted with a gold stripe',
+    'bellowing as he leads a short charge down a terrace ramp, the small soldiers at his back surging after him'),
+  'prism-flak-tripod': s(
+    'a squat three-legged gun of white metal with a cluster of short glass barrels and a spinning brass drum',
+    'braced on a flat roof among drying laundry, spraying sparks of gold light into a flock of diving raiders'),
+  'prism-range-warden': s(
+    'a tall woman in her fifties with a silver plait and a long white greatcoat, a brass spyglass raised to one eye and an arm pointing',
+    'calling a target from a watchtower balcony as a gunner beside her swings a lens-rifle toward the sky'),
+  'prism-rampart-herald': s(
+    'a broad young man with a cleft chin, gold-trimmed white plate and a long brass horn curving over his shoulder',
+    'sounding the horn from the top of a battlement at sunset, a gold glow settling over the soldier at his side'),
+  'prism-tier-pikeman': s(
+    'a gaunt man in his thirties with sunken cheeks, a tall pike with a crystal head and a narrow plated helm',
+    'standing in the second rank of a pike block on a terrace bridge, pikes lowered together into a bristling hedge'),
+  'prism-lens-battery': s(
+    'a wide wheeled platform of white crystal carrying a pair of great round lenses on brass arms, cables running to its glowing core',
+    'parked at the corner of a city wall, its lenses throwing bright rings of light over the gunners crouched along the parapet'),
+  'prism-cohort-drillmaster': s(
+    'a heavy-set woman in her fifties with a weathered brown face, a white plate cuirass hung with brass whistles, a long rod of crystal',
+    'pointing the rod at one chosen soldier in a crowded drill hall while the whole company watches and cheers him on'),
+  'prism-skylens-bastion': s(
+    'a squat round tower of armoured white crystal on short brass legs, a great domed lens on its crown glowing amber',
+    'standing guard over a sky-dock at dusk, a column of gold light lancing up into the evening haze'),
+  'prism-muster-bell': s(
+    'a towering bronze and crystal bell walking on heavy legs, a ring of gold light pulsing from its rim',
+    'tolling in the middle of a lantern-lit square as young recruits pour out of every doorway toward it'),
+  'prism-gilded-phalanx': s(
+    'a massive armoured warrior in gold-leafed white full plate with a crested helm, a wall-sized rectangular shield and a short broad spear',
+    'stepping into the front of a long shield wall on a great avenue, the whole line brightening as he joins it'),
+  'prism-steady-aim': s(
+    'a gloved finger resting on the trigger of a white lens-rifle, a brass monocle filling with a bright gold crosshair of light',
+    'in a held breath on a windy rooftop, a gliding raider small and sharp in the lens'),
+  'prism-lock-shields': s(
+    'a row of small round glass bucklers snapping edge to edge, gold light welding their rims into a single bright wall',
+    'in a cobbled lane under a hail of crossbow bolts that spark off the joined rims'),
+  'prism-flak-burst': s(
+    'a bloom of glittering crystal shrapnel opening in the sky, bright gold streaks raking through a flight of kites',
+    'seen from below between rooftops at twilight, torn sailcloth fluttering down over the chimneys'),
+  'prism-covering-fire': s(
+    'a gold beam from a hidden gun-loft striking the raised blade of an attacker in mid swing',
+    'over a skirmish in a narrow market street, a shield bearer below ducking under the shot'),
+  'prism-shoulder-to-shoulder': s(
+    'a pair of armoured shoulders pressed together, gold light pouring from the seam between their pauldrons',
+    'in the crush of a packed shield line at a breached gate, boots braced on wet stone'),
+  'prism-field-glazing': s(
+    'a pair of hands sweeping a brush of liquid gold across a battered breastplate, cracks filling and thickening into new armour',
+    'in a dressing station of canvas and crystal poles behind the lines, wounded soldiers waiting on low benches'),
+  'prism-cut-the-sky': s(
+    'a vast fan of gold beams sweeping across the clouds from a ring of rooftop lenses, burning wings falling in its path',
+    'wide view of the night sky over the upper city, sparks and ash raining onto the terraces'),
+  'prism-focused-volley': s(
+    'a pair of gold beams from separate towers crossing on one armoured raider, its shield cracking apart at the meeting point',
+    'above a smoke-filled canal crossing at dawn, the beams reflected in the water below'),
+  'prism-grand-muster': s(
+    'a great crowd of fresh recruits raising round bucklers together, a single wave of gold light rolling over every rim',
+    'filling the steps of a vast crystal amphitheatre at noon, an officer\'s raised baton at the front'),
 
 };

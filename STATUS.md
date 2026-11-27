@@ -1,59 +1,43 @@
 # Status (rewritten each stage)
 
-## Morning summary (owner), 2026-11-15 night
-**Stage 2 is on `main`.** Every gate passes in one command (`npm run gate`): typecheck, 290 Vitest tests, the
-text-versus-data audit (0 FAIL of 166 card faces), the mutation check (150 of 150 cards caught), the art prompt
-lint, the AI-versus-random bench with seed replay, the build, and 24 Playwright tests.
+## Now, 2026-11-26
+**First Light, the 300-card base set, is done** (PLAN D26, `docs/SETS.md`): each of the six factions has 50 cards
+(4 heroes, 28 units, 18 glyphs), 24 heroes in all. Each new card has its own behaviour test, an art subject and, if
+it takes targets, a prompt line. Six new premades are led by the twelve new heroes, so there are 24 premades in all.
+The five original curve-built premades are frozen as lists so the new cards did not change them.
 
-Play: https://dragoonant.github.io/annals-of-scrivenearth/ (needs the repo public and Pages on `gh-pages`, PLAN D17).
-Screenshots: `docs/screens/stage2-*.jpg` (title, board in combat, inspector, phone landscape, deck builder, setup).
+Gates: typecheck, 461 Vitest tests, the text audit (0 FAIL of 332 card faces), the mutation check (300 of 300
+cards caught), the art prompt lint (341 prompts), the bench and the build pass. Playwright: 24 of 25 pass on this PC;
+the one failure is the machine-dependent full-Line test below (the two deck-builder tests that assumed 150 cards were
+updated).
 
-What changed since you said it was ugly (PLAN D20):
-1. **Real art everywhere**: 175 plates from EVILAEGIS (every card, both faces of each hero, crests, card back, painted
-   title skyline, board backdrop). The triangle sigils are gone wherever a plate exists.
-2. **Board rebuilt**: larger units with faction-lit frames, keyword badges, status marks, hero progress bars, hand
-   fan, targeting lines, a battle row with a per-pair forecast, an effects layer (strikes, shatter, summon, stasis,
-   ward break), the ascension sequence, per-card prompt wording for all 50 targeted cards.
-3. **Deck builder, guided first match (20 steps, ends with Jax ascending), richer end screen with a bug-report file.**
-4. **Generated audio**: 7 music tracks that follow the screen and the match, 30 effects, 12 hero voice lines.
-   The set on `main` is the ElevenLabs render the EVILAEGIS session made at your request (PLAN D23); looping tracks
-   are now seamless. The earlier Audio Studio set is in git history.
-5. **Per-card audit** (your request): three independent reviews, four engine bugs fixed, 53 weak tests rewritten.
-   Summary: `docs/audit/README.md`.
+Balance: BALANCE B-5. Every premade wins 25-76% of AI-versus-AI games; three card numbers changed (Penn, Debt Assessor).
 
-### Questions, in priority order
-1. **Look.** Is the board now in the right direction against Shadowforge, or what still reads as ugly? Name the
-   screen and the thing (PLAN D20 picks were art, flat board, frames and type).
-2. **Sound.** Nothing has been heard by anyone: NOT VERIFIED BY EAR. Please listen in Settings (sound test) and to
-   the music. Brakk's roar is now a sound effect, not a voice line.
-3. **Art misses** I noticed on the sample sheet: Ascended Jax wears a dark shirt (not his teal suit), Ysolde holds a
-   flaming staff (a shield captain), Sluice Close shows soldiers at a gate (not a canal freezing). Re-roll these, or
-   are they fine?
-4. **Tidewardens** lose in AI-versus-AI games (BALANCE B-3). Play Tide once and say whether it feels weak.
+### Next
+- **Expansions** (The Mirror Quarter, The Starward Rise): rules are specified (spec R-K13, R-K14, R-E1 to R-E6) and
+  built and tested on branch `claude/x2-engine` (Mirrorwatch and Orrery Conclave factions, deck-builder set filter);
+  their cards are not written. Waiting on the owner, who asked about a new project with a new art and story direction.
+- **Art and audio for the new cards**: the 150 new cards and 12 new heroes show procedural sigils and have no voice
+  lines; their prompts are ready in `tools/art/out/prompts.json` for the next EVILAEGIS batch.
 
 ## What exists
-- **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`), 150 cards, 12 heroes, three AI tiers (BALANCE B-2).
-- **Decks** (`src/data/decks.ts`): 18 premades covering all 15 faction pairs and two single-faction decks.
-- **Client** (`src/client`): title, learn to play, new game with deck peek, mulligan, board, inspector, stack, hero
-  trackers, log, presentation director, autosave and Continue, deck builder, end screen, settings, how to play.
-- **Art and audio pipelines** (`tools/art`, `tools/audio`, `HANDOFF-GPU.md`); the EVILAEGIS job is finished and the
-  studios are stopped. Its write-up: `docs/handback/gpu.md`.
+- **Rules engine** (`src/engine`, spec `docs/spec/10-rules.md`), 300 cards, 24 heroes, three AI tiers (BALANCE B-2).
+- **Decks** (`src/data/decks.ts`): 24 premades covering all 15 faction pairs and two single-faction decks; every
+  hero leads at least one.
+- **Client** (`src/client`): title, learn to play, new game with deck peek and one-line plans, mulligan, board,
+  inspector, stack, hero trackers, log, presentation director, autosave and Continue, deck builder, end screen,
+  settings, how to play.
+- **Art and audio pipelines** (`tools/art`, `tools/audio`, `HANDOFF-GPU.md`); art subjects are now one file per
+  faction (`tools/art/subjects/`), target prompts one file per faction (`src/client/prompts/`).
 
 ## Not done / known rough edges
-- `e2e/flows.spec.ts` "(d) a full Line" (seed 4) ends in defeat before the Line fills on EVILAEGIS (Windows),
-  four runs in a row, but passes here (Linux container) five runs in a row. The seeded game differs between the two
-  machines; the cause is not found yet (suspects: a timing-dependent path in the client's AI turn loop, or the
-  test's own waiting). The engine replay tests are deterministic on this machine.
-- The bug-report download test fails on EVILAEGIS with a Windows file-permission error (EPERM in `e2e-out`) when run
-  from the project folder, but passes on the same machine and the same commit from a folder under the user's AppData,
-  so the folder is the cause, not the code. (2026-11-26; the full-Line test also failed there on `main` before D25.)
-- My own visual pass was short (`src/client/polish.css`): painted backdrops, frames, unit size. Not yet compared side
-  by side with Shadowforge screenshots (owner rule 21 gate), and the right-hand stack panel is empty most of the time.
-- The board backdrop plate is 640 px wide and is shown blurred; a larger render would look better.
+- `e2e/flows.spec.ts` "(d) a full Line" fails on this Windows PC (it passes on the Linux CI runner); the seeded game
+  differs between machines and the cause is not found.
+- The bug-report download test fails with EPERM in `e2e-out` when run from the project folder on this PC and passes
+  from a folder under AppData: the folder is the cause, not the code.
+- None of the 150 new cards has been played by hand. Hero level bars for the 12 new heroes are estimates.
+- Tide-led and curve-built premades are the weakest group (BALANCE B-4, B-5); Ledger of Tides is the strongest.
+- Card-author wishes not yet built: a filter on random selectors, filtered counts ("for each Aerial ally"), a strike
+  op aimed at a Spire, a condition on a chosen target's keyword, a "this unit killed something" trigger.
 - The combat forecast ignores Strike/Shatter abilities and glyphs cast in the combat window.
-- Touch long-press inspect in the deck builder was not exercised. Phone landscape works but hand cards are small.
-- 18 premade decks (PLAN D25): 12 hand-built, plus five curve-built and Blackwater rebuilt by hand. The two Tide-led
-  decks (Floodgate, Crosscurrent) win about a quarter of AI-versus-AI games and Tithe Wall about 70% (BALANCE B-4);
-  the five curve-built decks are the weakest group. Not playtested by hand.
-- The audit's fixes have not had a second independent review; the mutation check is whole-card, not per clause.
-- Audio and art have had no human review.
+- Audio and art have had no human review; the right-hand stack panel is empty most of the time.
