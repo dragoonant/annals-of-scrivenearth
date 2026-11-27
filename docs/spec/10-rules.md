@@ -117,6 +117,16 @@ Rules that arrive with an expansion (docs/SETS.md). Cards that do not use them a
   X is a unit on a Line or a glyph on the stack. The copy is a fresh card: no damage, buffs or counters. A token is not a
   card and cannot be copied; the copy is skipped and logged. A hand at 10 burns the copy (R-G7).
 - **R-E3 Foe glyph** (set x1). Trigger: the opponent cast a glyph (when it goes on the stack, or resolves at Flash speed).
+- **R-E4 Chart** (set x2). "Chart a unit (N)": look at the top N cards of your deck and draw the first, from the top,
+  that matches; the others stay where they were. No choice is asked (RULING R-S3). Fewer than N cards: look at what
+  there is; an empty deck is not a draw and does not lose. The charted card is hidden from the opponent; the log says
+  how many cards were looked at and whether one was drawn.
+- **R-E5 Unfold** (set x2). A unit (not a hero) may have a condition on its own counters and a second face. When the
+  condition is met on the Line it **Unfolds**: that unit only (not every copy) is fully repaired and uses its second
+  face until it leaves the Line; its **Unfold:** ability fires. A silenced unit does not Unfold. Counter `dawns`: rounds
+  the unit started on the Line.
+- **R-E6 Conjunction** (set x2). A Conjunction bonus applies if this round you have played a unit or hero from hand and
+  cast a glyph (in either order). The unit being played counts as played when its own Deploy checks.
 
 ## Heroes (R-H)
 - **R-H1.** A hero is a unit with a **level condition** and an **Ascended** face.

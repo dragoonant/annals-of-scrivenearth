@@ -8,6 +8,7 @@ import { coil } from './prompts/coil';
 import { under } from './prompts/under';
 import { storm } from './prompts/storm';
 import { mirror } from './prompts/mirror';
+import { orrery } from './prompts/orrery';
 
 /** A piece of a sentence: plain text, or a card name that opens the inspector. */
 export type Seg = string | { card: string; seat?: Seat };
@@ -39,6 +40,7 @@ export const LOG_LINES: Record<string, LineFn> = {
   buff: (e) => [c(e.tcard, e.seat), ` got ${(e.n ?? 0) >= 0 ? '+' : ''}${e.n ?? 0}|${(e.m ?? 0) >= 0 ? '+' : ''}${e.m ?? 0}${e.s === 'round' ? ' for the round' : ''}`, ...via(e), '.'],
   burn: (e) => [c(e.card, e.seat), e.s === 'glimmer' ? ' faded from ' + whose(e.seat) + ' hand (Glimmer).' : ` was burned: ${whose(e.seat)} hand is full.`],
   copy: (e) => ['A copy of ', c(e.card, e.seat), ` went to ${whose(e.seat)} hand`, ...via(e), e.s === 'glimmer' ? ' (Glimmer).' : '.'],
+  chart: (e) => [`${who(e.seat)} charted the top ${e.n ?? 0} ${plural(e.n, 'card', 'cards')}`, ...via(e), (e.m ?? 0) > 0 ? ' and drew one.' : ' and found nothing.'],
   copyToken: (e) => [c(e.card, e.seat), ' is a token and cannot be copied', ...via(e), '.'],
   cast: (e) => [`${who(e.seat)} cast `, c(e.card, e.seat), ` (${e.n ?? 0}).`],
   channel: (e) => [`${who(e.seat)} Channelled `, c(e.card, e.seat), ': repaired and +1|+1.'],
@@ -74,6 +76,7 @@ export const LOG_LINES: Record<string, LineFn> = {
   stasis: (e) => [c(e.tcard, e.seat), ' is in Stasis for the round', ...via(e), '.'],
   strike: (e) => [c(e.card, e.seat), ' struck ', e.tcard ? c(e.tcard, e.seat === 0 ? 1 : 0) : (e.tunit === 'spire0' ? 'your Spire' : "the opponent's Spire"), ` for ${e.n ?? 0}.`],
   summon: (e) => [c(e.card, e.seat), ` joined ${whose(e.seat)} Line.`],
+  unfold: (e) => [c(e.card, e.seat), ' has Unfolded.'],
   unveil: (e) => [c(e.tcard, e.seat), ' struck and is no longer Veiled.'],
   ward: (e) => [c(e.tcard, e.seat), "'s Ward absorbed the damage."],
 };
@@ -119,7 +122,10 @@ export const WORD_HELP: Record<string, string> = {
   Stasis: 'The unit cannot attack or block for the rest of the round.',
   Channel: 'For 1 Charge, discard a spare copy of a hero already on your Line: repair it and give it +1|+1.',
   Glimmer: 'A Glimmer card fades from your hand at the end of the round if you have not played it.',
-  Copy: 'A copy is a new card with the same name: no damage, buffs or counters. A token cannot be copied.'
+  Copy: 'A copy is a new card with the same name: no damage, buffs or counters. A token cannot be copied.',
+  Chart: 'Look at the top cards of your deck and draw the first that matches. The others stay in order.',
+  Unfold: 'Happens when this unit Unfolds: it meets its own condition on the Line and turns to its second face.',
+  Conjunction: 'A bonus that applies if you have played a unit and cast a glyph this round.'
 };
 
 /** Statuses on a unit, explained in the inspector. */
@@ -151,7 +157,7 @@ const SPEC_WORDS = (s: TargetSpec): string => {
 
 /** Optional per-card wording for each target slot. Falls back to a sentence built from the target spec. */
 /** Per-card target prompts, one file per faction in src/client/prompts/ (tests/client-text.test.ts checks every card). */
-export const PLAY_PROMPTS: Record<string, string[]> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror };
+export const PLAY_PROMPTS: Record<string, string[]> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror, ...orrery };
 
 export function targetPrompt(cardId: string, cardName: string, slot: number, total: number, spec: TargetSpec): string {
   const custom = PLAY_PROMPTS[cardId]?.[slot];

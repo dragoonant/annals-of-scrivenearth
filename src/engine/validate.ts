@@ -4,7 +4,7 @@ import type { Ability, CardDef, Cond, FactionId, Keyword, Op, Sel, TargetSpec } 
 import { LIMITS } from './types';
 import { def, hasCard } from './query';
 
-export const FACTIONS: FactionId[] = ['prism', 'ember', 'tide', 'coil', 'under', 'storm', 'mirror'];
+export const FACTIONS: FactionId[] = ['prism', 'ember', 'tide', 'coil', 'under', 'storm', 'mirror', 'orrery'];
 export const KEYWORDS: Keyword[] = [
   'vanguard', 'pierce', 'aerial', 'spotter', 'plated', 'siphon', 'ward', 'dueler', 'dread', 'unstable', 'mend', 'corrosive',
   'veiled', 'reprise',
@@ -61,6 +61,7 @@ export function validateCards(defs: CardDef[]): string[] {
         }
         case 'if': checkCond(op.cond, ctx); sels(op.then, ctx); sels(op.else, ctx); break;
         case 'draw': case 'charge': case 'maxCharge': case 'reserve': case 'rally': break;
+        case 'chart': if (!Number.isInteger(op.n) || op.n < 1 || op.n > 6) e('chart looks at 1 to 6 cards'); break;
         default: checkSel(op.to, ctx);
       }
       if ('to' in op && op.op !== 'negate') {
@@ -103,8 +104,15 @@ export function validateCards(defs: CardDef[]): string[] {
           // allowed, but both faces must then agree on having a targeted deploy or the prompt changes shape
         }
       }
-    } else if (d.level || d.ascended) e('only heroes level up');
-    if (d.abilities?.some((a) => a.on === 'ascend')) e("'ascend' abilities belong on the ascended face");
+    } else if (d.type === 'unit' && (d.level || d.ascended)) { // R-E5 Unfold
+      if (!d.level || !d.ascended) e('a unit that Unfolds needs level and ascended');
+      if (d.level && d.level.who !== 'self') e("a unit's Unfold condition reads its own counters (who: 'self')");
+      if (d.ascended && !d.ascended.text) e('unfolded face needs text');
+      checkAbilities(d.ascended?.abilities);
+      if (d.ascended?.abilities?.some((a) => a.on === 'ascend')) e("a unit Unfolds: use 'unfold', not 'ascend'");
+    } else if (d.level || d.ascended) e('only heroes and units level up');
+    if (d.type === 'hero' && d.ascended?.abilities?.some((a) => a.on === 'unfold')) e("a hero Ascends: use 'ascend', not 'unfold'");
+    if (d.abilities?.some((a) => a.on === 'ascend' || a.on === 'unfold')) e("'ascend' and 'unfold' abilities belong on the second face");
   }
   return errs;
 }

@@ -9,8 +9,9 @@ import { coil } from './coil';
 import { under } from './under';
 import { storm } from './storm';
 import { mirror } from './mirror';
+import { orrery } from './orrery';
 
-export const ALL_CARDS: CardDef[] = [...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror];
+export const ALL_CARDS: CardDef[] = [...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror, ...orrery];
 
 const errors = validateCards(ALL_CARDS);
 if (errors.length) throw new Error(`Card data is invalid:\n${errors.join('\n')}`);

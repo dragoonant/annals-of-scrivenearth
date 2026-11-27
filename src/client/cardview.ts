@@ -1,7 +1,7 @@
 // Card faces, unit tiles, the inspector content. All text goes in through textContent; the only innerHTML
 // is our own generated SVG (art.ts), never card or player data.
 import type { GameState, Keyword, Seat, Unit } from '../engine/types';
-import { costOf, def, face, findUnit, stats } from '../engine/query';
+import { costOf, def, face, findUnit, stats, unitFace } from '../engine/query';
 import type { Face } from '../engine/query';
 import { FACTION_INFO } from '../data/decks';
 import { cardArt, crownSvg, frostSvg, keywordIcon, wardRimSvg, wireArtImg } from './art';
@@ -85,7 +85,7 @@ export interface UnitDisplay {
 }
 export function unitDisplay(view: GameState, u: Unit): UnitDisplay {
   const st = stats(view, u);
-  return { f: face(view, u.owner, u.card), power: st.power, hp: st.hp, max: st.health, keywords: st.keywords, dmg: u.dmg };
+  return { f: unitFace(view, u), power: st.power, hp: st.hp, max: st.health, keywords: st.keywords, dmg: u.dmg };
 }
 
 function statClass(now: number, printed: number): string {
@@ -286,8 +286,8 @@ export function bigCard(o: BigOpts): HTMLElement {
 /** The inspector: the large card, plus both faces and progress for heroes, plus the unit's live statuses. */
 export function inspectorContent(view: GameState | null, seat: Seat, cardId: string, unitIid?: string): HTMLElement {
   const d = def(cardId);
-  const f = face(view, seat, cardId);
   const u = view && unitIid ? findUnit(view, unitIid) : undefined;
+  const f = u ? unitFace(view, u) : face(view, seat, cardId);
   const cost = view ? costOf(view, seat, cardId) : d.cost;
   const root = h('div', { class: 'ins-wrap' });
   const st = u && view ? stats(view, u) : null;
@@ -325,6 +325,19 @@ export function inspectorContent(view: GameState | null, seat: Seat, cardId: str
     } else if (other) {
       sec.append(h('div', { class: 'hs-asc' }, h('b', { text: `Before: ${other.name}` }), h('span', { text: `  ${other.power}/${other.health}` }), h('div', { text: other.text })));
     }
+    root.append(sec);
+  }
+  if (d.type === 'unit' && d.level && d.ascended) { // R-E5 Unfold
+    const n = u?.seen[d.level.stat] ?? 0;
+    const sec = h(
+      'div',
+      { class: 'hero-sec facet' },
+      h('div', { class: 'hs-head', text: f.ascended ? 'Unfolded' : 'Unfolds when' }),
+      h('div', { class: 'hs-text', text: d.level.text }),
+      u ? h('div', { class: `hs-prog ${f.ascended ? 'done' : ''}` }, h('span', { class: 'bar' }, h('span', { class: 'fill', style: { width: `${Math.round((Math.min(n, d.level.n) / d.level.n) * 100)}%` } })), h('span', { class: 'num', text: `${Math.min(n, d.level.n)} / ${d.level.n}` })) : null,
+      h('div', { class: 'hs-note', text: 'Counts only while this unit is on your Line. Only this unit Unfolds.' }),
+    );
+    if (!f.ascended) sec.append(h('div', { class: 'hs-asc' }, h('b', { text: `Unfolded: ${d.ascended.name ?? d.name}` }), h('span', { text: `  ${d.ascended.power}/${d.ascended.health}` }), h('div', { text: d.ascended.text })));
     root.append(sec);
   }
   return root;

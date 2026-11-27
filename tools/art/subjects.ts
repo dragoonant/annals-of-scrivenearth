@@ -7,8 +7,9 @@ import { coil } from './subjects/coil';
 import { under } from './subjects/under';
 import { storm } from './subjects/storm';
 import { mirror } from './subjects/mirror';
+import { orrery } from './subjects/orrery';
 
-export const SUBJECTS: Record<string, Subject> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror };
+export const SUBJECTS: Record<string, Subject> = { ...prism, ...ember, ...tide, ...coil, ...under, ...storm, ...mirror, ...orrery };
 
 const GEM =
   'crisp digital illustration, flat cel shading with hard-edged faceted highlights, clean confident linework, ' +
@@ -22,6 +23,7 @@ export const EXTRA: Record<string, { prompt: string; aspect: '3:2' | '2:3' }> = 
   'crest-coil': { aspect: '3:2', prompt: `a green cut gem with a simple coiled vine and leaf silhouette glowing inside it, ${GEM}` },
   'crest-under': { aspect: '3:2', prompt: `a violet and black cut gem with a simple lit fuse and cable knot silhouette glowing inside it, ${GEM}` },
   'crest-storm': { aspect: '3:2', prompt: `a teal and silver cut gem with a simple spread wing and lightning bolt silhouette glowing inside it, ${GEM}` },
+  'crest-orrery': { aspect: '3:2', prompt: `an indigo and pale silver cut gem with a simple ringed orrery silhouette glowing inside it, ${GEM}` },
   'crest-mirror': { aspect: '3:2', prompt: `a rose and silver cut gem with a simple pair of facing profiles silhouette glowing inside it, ${GEM}` },
   cardback: {
     aspect: '2:3',

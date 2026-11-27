@@ -3,7 +3,7 @@
 // Rule ids (R-...) refer to docs/spec/10-rules.md.
 
 export type Seat = 0 | 1;
-export type FactionId = 'prism' | 'ember' | 'tide' | 'coil' | 'under' | 'storm' | 'mirror';
+export type FactionId = 'prism' | 'ember' | 'tide' | 'coil' | 'under' | 'storm' | 'mirror' | 'orrery';
 export type CardType = 'unit' | 'hero' | 'glyph';
 export type Speed = 'flash' | 'swift' | 'ritual';
 export type CardSet = 'base' | 'x1' | 'x2';
@@ -39,7 +39,8 @@ export type Trigger =
   | 'survive' // this unit took damage and survived
   | 'spireHit' // this unit dealt damage to the enemy Spire
   | 'ascend' // this hero just Ascended while on the Line
-  | 'foeGlyph'; // R-E3 (x1) the opponent cast a glyph
+  | 'foeGlyph' // R-E3 (x1) the opponent cast a glyph
+  | 'unfold'; // R-E5 (x2) this unit just Unfolded while on the Line
 
 /** Who or what an op applies to. Unit selectors only ever return units on a Line. */
 export type Sel =
@@ -107,6 +108,7 @@ export type Cond =
   | { c: 'reserve'; gte: number }
   | { c: 'spire'; who: 'you' | 'foe'; lte?: number; gte?: number }
   | { c: 'hasInitiative' }
+  | { c: 'conjunction' } // R-E6 (x2): this round you played a unit and cast a glyph
   | { c: 'not'; x: Cond };
 
 export type Dur = 'round' | 'perm';
@@ -125,6 +127,7 @@ export type Op =
   | { op: 'summon'; card: string; n?: Amount; who?: 'you' | 'foe' }
   | { op: 'create'; card: string; n?: number; who?: 'you' | 'foe'; glimmer?: boolean } // add to hand (R-E1: optionally Glimmer)
   | { op: 'copy'; of: Sel; who?: 'you' | 'foe'; glimmer?: boolean } // R-E2: a unit's card, or a glyph on the stack (target0/target1), into a hand
+  | { op: 'chart'; n: number; find: ChartFind } // R-E4 (x2): draw the first matching card among the top n of your deck
   | { op: 'charge'; n: Amount } // gain Charge this round (may exceed your maximum)
   | { op: 'maxCharge'; n: number } // permanently raise maximum Charge (cap 10)
   | { op: 'reserve'; n: Amount } // gain Reserve (cap 3)
@@ -188,11 +191,23 @@ export type SeenStat =
   | 'tokensSummoned' // allied tokens that entered your Line
   | 'copiesMade' // cards you copied into a hand (R-E2)
   | 'glimmerPlayed' // Glimmer cards you played (R-E1)
+  | 'unitsPlayed' // units and heroes you played from hand (R-E6)
+  | 'charted' // cards you drew by Chart (R-E4)
   // unit-level only:
   | 'strikes'
   | 'damageDealt'
   | 'survivals'
-  | 'kills';
+  | 'kills'
+  | 'dawns'; // rounds this unit started on the Line (R-E5)
+
+/** What a Chart looks for (R-E4). Every field given must match. */
+export interface ChartFind {
+  type?: 'unit' | 'glyph' | 'hero';
+  maxCost?: number;
+  minCost?: number;
+  tribe?: string;
+  faction?: FactionId;
+}
 
 export interface HeroLevel {
   /** 'you' reads your game-long counter; 'self' reads this hero's own counter while on the Line. */
@@ -235,7 +250,7 @@ export interface CardDef {
   abilities?: Ability[];
   auras?: Aura[];
   costAuras?: CostAura[];
-  // heroes
+  // heroes, and units that Unfold (R-E5: a unit's level is always who: 'self')
   level?: HeroLevel;
   ascended?: CardFace;
   // glyphs
@@ -275,6 +290,8 @@ export interface Unit {
   summonRound: number;
   /** R-K13: this unit has struck, so it is no longer Veiled. */
   unveiled?: boolean;
+  /** R-E5: this unit has Unfolded and uses its second face. */
+  unfolded?: boolean;
 }
 
 export interface HandCard {

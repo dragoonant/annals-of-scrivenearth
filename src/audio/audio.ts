@@ -127,6 +127,7 @@ const VOICES: Record<string, Voice> = {
   maxCharge: (c, o, t) => { tone(c, o, t, 440, 0.3, 0.12, 'triangle', 880); chime(c, o, t + 0.15, 1318.5, 0.4, 0.08); },
   channel: (c, o, t) => { chime(c, o, t, 659.25, 0.5, 0.14); chime(c, o, t + 0.12, 987.77, 0.6, 0.12); },
   pass: (c, o, t) => tone(c, o, t, 330, 0.06, 0.06, 'triangle'),
+  unfold: (c, o, t, e, mine) => VOICES.ascend(c, o, t, e, mine), // R-E5: the same rising sound, without the hero's voice line
   ascend: (c, o, t) => {
     // The big moment: a rising surge, then a chord of struck crystal with a sparkle on top.
     tone(c, o, t, 80, 1.6, 0.3, 'sawtooth', 320);
@@ -142,7 +143,7 @@ const VOICES: Record<string, Voice> = {
 };
 
 /** Log kinds that are deliberately silent. A kind in neither table fails tests/audio-map.test.ts. */
-export const SILENT_KINDS = ['mulligan', 'burn', 'lineFull', 'destroy', 'create', 'reserve', 'combatEnd', 'copy', 'copyToken', 'reprise', 'unveil'];
+export const SILENT_KINDS = ['mulligan', 'burn', 'lineFull', 'destroy', 'create', 'reserve', 'combatEnd', 'copy', 'copyToken', 'reprise', 'unveil', 'chart'];
 export const VOICED_KINDS = Object.keys(VOICES);
 
 // ---------- generated samples (from EVILAEGIS, HANDOFF-GPU.md) ----------

@@ -43,9 +43,10 @@ export interface Face {
 }
 
 /** The face a card shows for this player right now (heroes switch face when Ascended, R-H4). */
-export function face(s: GameState | null, seat: Seat, cardId: string): Face {
+/** A card's current face. A hero reads the player's ascensions (R-H4); a unit reads its own Unfold (R-E5). */
+export function face(s: GameState | null, seat: Seat, cardId: string, unfolded = false): Face {
   const d = def(cardId);
-  const asc = !!s && d.type === 'hero' && !!d.ascended && isAscended(s, seat, cardId);
+  const asc = (!!s && d.type === 'hero' && !!d.ascended && isAscended(s, seat, cardId)) || (unfolded && d.type === 'unit' && !!d.ascended);
   const f: CardFace | CardDef = asc ? d.ascended! : d;
   return {
     name: f.name ?? d.name,
@@ -58,6 +59,11 @@ export function face(s: GameState | null, seat: Seat, cardId: string): Face {
     text: f.text,
     ascended: asc,
   };
+}
+
+/** The face of a unit on a Line (an Unfolded unit uses its second face, R-E5). */
+export function unitFace(s: GameState | null, u: Unit): Face {
+  return face(s, u.owner, u.card, !!u.unfolded);
 }
 
 export function findUnit(s: GameState, iid: string): Unit | undefined {
@@ -78,7 +84,7 @@ export interface Stats {
 }
 
 function baseStats(s: GameState, u: Unit): Stats {
-  const f = face(s, u.owner, u.card);
+  const f = unitFace(s, u);
   let power = f.power;
   let health = f.health;
   const kws = new Set<Keyword>(u.silenced ? [] : f.keywords);
@@ -103,7 +109,7 @@ export function stats(s: GameState, u: Unit): Stats {
     for (const p of s.players) {
       for (const src of p.line) {
         if (src.silenced) continue;
-        for (const a of face(s, src.owner, src.card).auras) {
+        for (const a of unitFace(s, src).auras) {
           if (!!a.filter !== filtered) continue;
           if (!auraHits(s, src, a, u, before)) continue;
           st.power += a.power ?? 0;
@@ -179,6 +185,8 @@ export function evalCond(s: GameState, seat: Seat, c: Cond, self?: Unit): boolea
     }
     case 'hasInitiative':
       return s.initiative === seat;
+    case 'conjunction': // R-E6
+      return (p.seenRound.unitsPlayed ?? 0) >= 1 && (p.seenRound.glyphsCast ?? 0) >= 1;
     case 'not':
       return !evalCond(s, seat, c.x, self);
   }
@@ -218,7 +226,7 @@ export function costOf(s: GameState, seat: Seat, cardId: string): number {
   let c = d.cost;
   for (const u of s.players[seat].line) {
     if (u.silenced) continue;
-    for (const ca of face(s, seat, u.card).costAuras) {
+    for (const ca of unitFace(s, u).costAuras) {
       if (ca.type !== 'any' && (ca.type === 'glyph') !== (d.type === 'glyph')) continue;
       if (ca.cond && !evalCond(s, seat, ca.cond, u)) continue;
       c += ca.n;

@@ -7,8 +7,7 @@ import type {
 } from './types';
 import { LIMITS, spireId } from './types';
 import {
-  budget, costOf, def, evalCond, face, findUnit, hasCard, legalTargets, matches, onLine, other, stats, targetSpecs,
-  whyNotBlock,
+  budget, costOf, def, evalCond, face, findUnit, hasCard, legalTargets, matches, onLine, other, stats, targetSpecs, whyNotBlock, unitFace,
 } from './query';
 import { nextRandom, shuffle } from './rng';
 
@@ -208,7 +207,7 @@ function addToHand(s: GameState, seat: Seat, card: string, o: { glimmer?: boolea
 
 function emit(s: GameState, on: Ability['on'], unit: Unit, trigger?: Unit, targets: string[] = []): void {
   if (unit.silenced || over(s)) return;
-  for (const ability of face(s, unit.owner, unit.card).abilities) {
+  for (const ability of unitFace(s, unit).abilities) {
     if (ability.on === on) queue.push({ unit, ability, trigger, targets });
   }
 }
@@ -258,6 +257,17 @@ function checkAscend(s: GameState): boolean {
         if (face(s, seat, hid).keywords.includes('ward')) u.ward = true;
         emit(s, 'ascend', u);
       }
+    }
+    for (const u of p.line) { // R-E5: a unit Unfolds by its own counters; only that unit changes
+      const d = def(u.card);
+      if (d.type !== 'unit' || !d.level || !d.ascended || u.unfolded || u.silenced) continue;
+      if ((u.seen[d.level.stat] ?? 0) < d.level.n) continue;
+      u.unfolded = true;
+      u.dmg = 0;
+      if (unitFace(s, u).keywords.includes('ward')) u.ward = true;
+      changed = true;
+      log(s, { k: 'unfold', seat, card: u.card, unit: u.iid });
+      emit(s, 'unfold', u);
     }
   }
   return changed;
@@ -526,6 +536,30 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
       }
       return;
     }
+    case 'chart': { // R-E4: no choice is asked; the first match from the top is drawn, the rest stay in order
+      const deck = p.deck;
+      const look = Math.min(op.n, deck.length);
+      let found = -1;
+      for (let i = 0; i < look; i++) {
+        const c = def(deck[deck.length - 1 - i]);
+        const f = op.find;
+        if (f.type && c.type !== f.type) continue;
+        if (f.maxCost !== undefined && c.cost > f.maxCost) continue;
+        if (f.minCost !== undefined && c.cost < f.minCost) continue;
+        if (f.tribe && c.tribe !== f.tribe) continue;
+        if (f.faction && c.faction !== f.faction) continue;
+        found = deck.length - 1 - i;
+        break;
+      }
+      log(s, { k: 'chart', seat: ctx.seat, n: look, m: found >= 0 ? 1 : 0, via: ctx.via });
+      if (found < 0) return;
+      const [card] = deck.splice(found, 1);
+      bump(s, ctx.seat, 'cardsDrawn');
+      bump(s, ctx.seat, 'charted');
+      if (p.hand.length >= LIMITS.hand) { p.scrap.push(card); log(s, { k: 'burn', seat: ctx.seat, card }); return; }
+      p.hand.push({ iid: newId(s, 'h'), card });
+      return;
+    }
     case 'copy': { // R-E2
       const seat = op.who === 'foe' ? other(ctx.seat) : ctx.seat;
       const cards: string[] = [];
@@ -615,6 +649,7 @@ function startRound(s: GameState): void {
   if (over(s)) return;
   for (const seat of [s.initiative, other(s.initiative)] as Seat[]) {
     for (const u of s.players[seat].line) {
+      bumpUnit(u, 'dawns'); // R-E5
       if (u.dmg > 0 && stats(s, u).keywords.includes('mend')) healUnit(s, u, u.dmg, u.card); // R-K11
       emit(s, 'dawn', u);
     }
@@ -993,6 +1028,7 @@ export function applyAction(s: GameState, a: Action): Result {
       s.acted[seat] += 1;
       if (hc.glimmer) bump(s, seat, 'glimmerPlayed');
       if (d.type !== 'glyph') {
+        bump(s, seat, 'unitsPlayed'); // R-E6
         log(s, { k: 'play', seat, card: hc.card, n: cost });
         if (scrapped) {
           scrapped.doomed = true;

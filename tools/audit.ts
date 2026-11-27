@@ -8,7 +8,7 @@ import type { CardDef, CardFace } from '../src/engine/types';
 import { allCards, def, hasCard } from '../src/engine/query';
 import { KEYWORDS } from '../src/engine/validate';
 
-const WORD: Record<string, string> = { deploy: 'Deploy:', shatter: 'Shatter:', strike: 'Strike:', assault: 'Assault:', dawn: 'Dawn:', dusk: 'Dusk:', ascend: 'Ascend:' };
+const WORD: Record<string, string> = { deploy: 'Deploy:', shatter: 'Shatter:', strike: 'Strike:', assault: 'Assault:', dawn: 'Dawn:', dusk: 'Dusk:', ascend: 'Ascend:', unfold: 'Unfold:' };
 const NUMBER_WORDS: Record<string, number> = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, twice: 2, both: 2 };
 
 interface FaceData { id: string; name: string; text: string; data: unknown; keywords: string[]; cost: number; type: string }
@@ -66,6 +66,10 @@ export function auditFace(fd: FaceData): { fails: string[]; warns: string[] } {
   };
   pair('this round', json.includes('"dur":"round"') || json.includes('ThisRound') || json.includes('"c":"seenRound"') || ops.has('rally'), /this round/i.test(text));
   pair('Resonant', json.includes('"c":"resonant"'), /\bResonant\b/.test(text));
+  pair('Conjunction', json.includes('"c":"conjunction"'), /\bConjunction\b/.test(text));
+  pair('Chart', ops.has('chart'), /\bChart\b/.test(text));
+  pair('copy', ops.has('copy'), /\bcop(y|ies)\b/i.test(text));
+  pair('Glimmer', json.includes('"glimmer":true'), /\bGlimmer\b/.test(text));
   pair('Stasis', ops.has('stasis') || json.includes('"stasis":'), /\bStasis\b/.test(text));
   pair('draw', ops.has('draw'), /\bdraws?\b/i.test(text));
   pair('summon', ops.has('summon'), /\bsummon/i.test(text) && !/when you summon|you've summoned|When another ally is summoned/i.test(text) || (ops.has('summon') && /\bsummon/i.test(text)));
