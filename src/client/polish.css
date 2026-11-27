@@ -61,3 +61,12 @@
   content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   box-shadow: inset 0 0 0 0.16rem hsl(var(--hue, 205) 85% 72% / 0.4);
 }
+
+/* R-E1 Glimmer: a card that fades from hand at the end of the round */
+.hand-card.glimmer, .back.glimmer { box-shadow: 0 0 0 2px hsl(330 90% 75% / .85), 0 0 14px hsl(330 90% 70% / .55); }
+.glimmer-tag {
+  position: absolute; left: 50%; bottom: .3rem; transform: translateX(-50%); z-index: 3; pointer-events: none;
+  padding: .05rem .4rem; font: 700 .7rem/1.2 var(--head); letter-spacing: .08em;
+  color: hsl(330 100% 92%); background: hsl(330 60% 22% / .92); border: 1px solid hsl(330 90% 70%);
+}
+.back.glimmer { position: relative; }

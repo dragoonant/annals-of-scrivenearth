@@ -5,7 +5,7 @@ import { other } from './query';
 export function view(s: GameState, seat: Seat): GameState {
   const v = JSON.parse(JSON.stringify(s)) as GameState;
   const foe = v.players[other(seat)];
-  foe.hand = foe.hand.map((h) => ({ iid: h.iid, card: '?' }));
+  foe.hand = foe.hand.map((h) => ({ iid: h.iid, card: '?', ...(h.glimmer ? { glimmer: true } : {}) })); // R-E1: Glimmer is open
   foe.deckList = [];
   for (const p of v.players) p.deck = p.deck.map(() => '?');
   v.rng = 1;

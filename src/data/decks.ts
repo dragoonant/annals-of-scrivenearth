@@ -12,6 +12,7 @@ export const FACTION_INFO: Record<FactionId, { name: string; blurb: string; hue:
   coil: { name: 'Verdant Coil', blurb: 'The rooftop biodomes. Extra Charge and enormous beasts with Pierce.', hue: 135 },
   under: { name: 'Undervolt', blurb: 'The undercity syndicate. Drain, Dread and profit from every unit lost.', hue: 285 },
   storm: { name: 'Stormrail', blurb: 'The sky couriers. Aerial strikes, Vanguard and second attacks.', hue: 180 },
+  mirror: { name: 'Mirrorwatch', blurb: 'The mirror quarter. Copies, Veiled spies and glyphs that come back for more.', hue: 330 },
 };
 
 export function collectible(): CardDef[] {

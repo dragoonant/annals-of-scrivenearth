@@ -277,6 +277,8 @@ const KW_ICON: Record<Keyword, { hue: number; glyph: string }> = {
   unstable: { hue: 58, glyph: '<polyline points="14,4 8,13 13,13 10,20" />' },
   mend: { hue: 140, glyph: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>' },
   corrosive: { hue: 95, glyph: '<line x1="8" y1="5" x2="8" y2="15"/><line x1="12" y1="5" x2="12" y2="19"/><line x1="16" y1="5" x2="16" y2="12"/>' },
+  veiled: { hue: 320, glyph: '<polyline points="4,12 8,8 16,8 20,12" /><polyline points="4,12 8,16 16,16 20,12" stroke-dasharray="2 2"/>' },
+  reprise: { hue: 330, glyph: '<polyline points="16,6 19,9 16,12" /><polyline points="19,9 7,9 5,12" /><polyline points="8,18 5,15 8,12" /><polyline points="5,15 17,15 19,12" />' },
 };
 
 export function keywordIcon(kw: Keyword): string {

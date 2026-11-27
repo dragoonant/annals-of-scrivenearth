@@ -142,7 +142,7 @@ const VOICES: Record<string, Voice> = {
 };
 
 /** Log kinds that are deliberately silent. A kind in neither table fails tests/audio-map.test.ts. */
-export const SILENT_KINDS = ['mulligan', 'burn', 'lineFull', 'destroy', 'create', 'reserve', 'combatEnd'];
+export const SILENT_KINDS = ['mulligan', 'burn', 'lineFull', 'destroy', 'create', 'reserve', 'combatEnd', 'copy', 'copyToken', 'reprise', 'unveil'];
 export const VOICED_KINDS = Object.keys(VOICES);
 
 // ---------- generated samples (from EVILAEGIS, HANDOFF-GPU.md) ----------

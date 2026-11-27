@@ -197,6 +197,15 @@ function summon(s: GameState, seat: Seat, cardId: string, via: string): Unit | n
   return u;
 }
 
+/** A copy or a Reprise card going to a hand (R-E2, R-K14). A full hand burns it (R-G7). */
+function addToHand(s: GameState, seat: Seat, card: string, o: { glimmer?: boolean; plain?: boolean; via: string; kind: 'copy' | 'reprise' }): void {
+  const pl = s.players[seat];
+  if (pl.hand.length >= LIMITS.hand) { pl.scrap.push(card); log(s, { k: 'burn', seat, card }); return; }
+  pl.hand.push({ iid: newId(s, 'h'), card, ...(o.glimmer ? { glimmer: true } : {}), ...(o.plain ? { plain: true } : {}) });
+  if (def(card).type === 'hero' && !pl.heroes.includes(card)) pl.heroes.push(card);
+  log(s, { k: o.kind, seat, card, via: o.via, s: o.glimmer ? 'glimmer' : undefined });
+}
+
 function emit(s: GameState, on: Ability['on'], unit: Unit, trigger?: Unit, targets: string[] = []): void {
   if (unit.silenced || over(s)) return;
   for (const ability of face(s, unit.owner, unit.card).abilities) {
@@ -213,6 +222,10 @@ function strike(s: GameState, from: Unit, to: Hit, power = stats(s, from).power)
   });
   const dealt = damage(s, { seat: from.owner, unit: from, via: from.card }, to, power, true);
   bumpUnit(from, 'strikes');
+  if (!from.unveiled && stats(s, from).keywords.includes('veiled')) { // R-K13
+    from.unveiled = true;
+    log(s, { k: 'unveil', seat: from.owner, tunit: from.iid, tcard: from.card });
+  }
   emit(s, 'strike', from);
   return dealt;
 }
@@ -507,9 +520,26 @@ function runOp(s: GameState, ctx: Ctx, op: Op): void {
       const pl = s.players[seat];
       for (let i = 0; i < (op.n ?? 1); i++) {
         if (pl.hand.length >= LIMITS.hand) { log(s, { k: 'burn', seat, card: op.card }); continue; }
-        pl.hand.push({ iid: newId(s, 'h'), card: op.card });
+        pl.hand.push({ iid: newId(s, 'h'), card: op.card, ...(op.glimmer ? { glimmer: true } : {}) });
         if (def(op.card).type === 'hero' && !pl.heroes.includes(op.card)) pl.heroes.push(op.card);
-        log(s, { k: 'create', seat, card: op.card, via: ctx.via });
+        log(s, { k: 'create', seat, card: op.card, via: ctx.via, s: op.glimmer ? 'glimmer' : undefined });
+      }
+      return;
+    }
+    case 'copy': { // R-E2
+      const seat = op.who === 'foe' ? other(ctx.seat) : ctx.seat;
+      const cards: string[] = [];
+      if (op.of === 'trigger') { if (ctx.trigger) cards.push(ctx.trigger.card); } // last known: the unit may be gone
+      else {
+        const id = op.of === 'target0' ? ctx.targets[0] : op.of === 'target1' ? ctx.targets[1] : undefined;
+        const it = id ? s.stack.find((x) => x.sid === id) : undefined;
+        if (it) cards.push(it.card);
+        else for (const u of unitsOf(resolve(s, ctx, op.of))) cards.push(u.card);
+      }
+      for (const c of cards) {
+        if (def(c).token) { log(s, { k: 'copyToken', seat, card: c, via: ctx.via }); continue; }
+        addToHand(s, seat, c, { glimmer: op.glimmer, via: ctx.via, kind: 'copy' });
+        bump(s, ctx.seat, 'copiesMade');
       }
       return;
     }
@@ -600,6 +630,14 @@ function endRound(s: GameState): void {
   }
   settle(s);
   if (over(s)) return;
+  for (const seat of [s.initiative, other(s.initiative)] as Seat[]) { // R-E1: Glimmer cards fade after Dusk
+    const p = s.players[seat];
+    for (const hc of p.hand.filter((x) => x.glimmer)) {
+      p.hand.splice(p.hand.indexOf(hc), 1);
+      p.scrap.push(hc.card);
+      log(s, { k: 'burn', seat, card: hc.card, s: 'glimmer' });
+    }
+  }
   for (const p of s.players) {
     for (const u of p.line) {
       if (stats(s, u).keywords.includes('unstable')) { // R-K10
@@ -636,6 +674,9 @@ function resolveGlyph(s: GameState, it: StackItem): void {
   } else {
     log(s, { k: 'resolve', seat: it.owner, card: it.card });
     runOps(s, { seat: it.owner, targets: it.targets, via: it.card }, d.ops ?? []);
+    if (!it.plain && d.keywords?.includes('reprise') && !over(s)) { // R-K14
+      addToHand(s, it.owner, it.card, { glimmer: true, plain: true, via: it.card, kind: 'reprise' });
+    }
   }
   s.players[it.owner].scrap.push(it.card);
   settle(s);
@@ -950,6 +991,7 @@ export function applyAction(s: GameState, a: Action): Result {
       bump(s, seat, 'chargeSpent', cost);
       p.hand.splice(p.hand.indexOf(hc), 1);
       s.acted[seat] += 1;
+      if (hc.glimmer) bump(s, seat, 'glimmerPlayed');
       if (d.type !== 'glyph') {
         log(s, { k: 'play', seat, card: hc.card, n: cost });
         if (scrapped) {
@@ -967,7 +1009,8 @@ export function applyAction(s: GameState, a: Action): Result {
       bump(s, seat, 'glyphsCast');
       log(s, { k: 'cast', seat, card: hc.card, n: cost, tunit: targets[0], s: d.speed });
       for (const u of p.line) emit(s, 'glyphCast', u);
-      const item: StackItem = { sid: newId(s, 's'), card: hc.card, owner: seat, targets };
+      for (const u of s.players[other(seat)].line) emit(s, 'foeGlyph', u); // R-E3
+      const item: StackItem = { sid: newId(s, 's'), card: hc.card, owner: seat, targets, ...(hc.plain ? { plain: true } : {}) };
       if (d.speed === 'flash') {
         settle(s); // glyphCast triggers first
         if (!over(s)) resolveGlyph(s, item); // R-P3: resolves at once, the caster keeps priority

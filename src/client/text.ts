@@ -36,7 +36,9 @@ export const LOG_LINES: Record<string, LineFn> = {
   attack: (e) => [`${who(e.seat)} attacked with ${e.n ?? 0} ${plural(e.n, 'unit', 'units')}.`],
   blocks: (e) => [`${who(e.seat)} locked blocks: ${e.n ?? 0} ${plural(e.n, 'attacker', 'attackers')} blocked.`],
   buff: (e) => [c(e.tcard, e.seat), ` got ${(e.n ?? 0) >= 0 ? '+' : ''}${e.n ?? 0}|${(e.m ?? 0) >= 0 ? '+' : ''}${e.m ?? 0}${e.s === 'round' ? ' for the round' : ''}`, ...via(e), '.'],
-  burn: (e) => [c(e.card, e.seat), ` was burned: ${whose(e.seat)} hand is full.`],
+  burn: (e) => [c(e.card, e.seat), e.s === 'glimmer' ? ' faded from ' + whose(e.seat) + ' hand (Glimmer).' : ` was burned: ${whose(e.seat)} hand is full.`],
+  copy: (e) => ['A copy of ', c(e.card, e.seat), ` went to ${whose(e.seat)} hand`, ...via(e), e.s === 'glimmer' ? ' (Glimmer).' : '.'],
+  copyToken: (e) => [c(e.card, e.seat), ' is a token and cannot be copied', ...via(e), '.'],
   cast: (e) => [`${who(e.seat)} cast `, c(e.card, e.seat), ` (${e.n ?? 0}).`],
   channel: (e) => [`${who(e.seat)} Channelled `, c(e.card, e.seat), ': repaired and +1|+1.'],
   charge: (e) => [`${who(e.seat)} gained ${e.n ?? 0} Charge`, ...via(e), '.'],
@@ -60,6 +62,7 @@ export const LOG_LINES: Record<string, LineFn> = {
   pass: (e) => [`${who(e.seat)} passed.`],
   play: (e) => [`${who(e.seat)} played `, c(e.card, e.seat), ` (${e.n ?? 0} Charge).`],
   rally: (e) => [`${who(e.seat)} may attack again`, ...via(e), '.'],
+  reprise: (e) => [c(e.card, e.seat), ` returned to ${whose(e.seat)} hand for one more cast (Reprise, Glimmer).`],
   recall: (e) => [c(e.tcard, e.seat), ` returned to ${whose(e.seat)} hand`, ...via(e), '.'],
   reserve: (e) => [`${who(e.seat)} gained ${e.n ?? 0} Reserve`, ...via(e), '.'],
   resolve: (e) => [c(e.card, e.seat), ' resolved.'],
@@ -70,6 +73,7 @@ export const LOG_LINES: Record<string, LineFn> = {
   stasis: (e) => [c(e.tcard, e.seat), ' is in Stasis for the round', ...via(e), '.'],
   strike: (e) => [c(e.card, e.seat), ' struck ', e.tcard ? c(e.tcard, e.seat === 0 ? 1 : 0) : (e.tunit === 'spire0' ? 'your Spire' : "the opponent's Spire"), ` for ${e.n ?? 0}.`],
   summon: (e) => [c(e.card, e.seat), ` joined ${whose(e.seat)} Line.`],
+  unveil: (e) => [c(e.tcard, e.seat), ' struck and is no longer Veiled.'],
   ward: (e) => [c(e.tcard, e.seat), "'s Ward absorbed the damage."],
 };
 
@@ -97,6 +101,8 @@ export const KEYWORD_HELP: Record<Keyword, { name: string; text: string }> = {
   unstable: { name: 'Unstable', text: 'Destroyed at the end of the round.' },
   mend: { name: 'Mend', text: 'Fully repaired at the start of each round.' },
   corrosive: { name: 'Corrosive', text: 'Any damage it deals to a unit destroys that unit.' },
+  veiled: { name: 'Veiled', text: "The enemy's glyphs and Deploy abilities cannot choose it as a target. It loses Veiled the first time it strikes." },
+  reprise: { name: 'Reprise', text: 'After this glyph resolves, a Glimmer copy of it without Reprise goes to your hand.' },
 };
 
 /** Ability words and statuses, explained in the inspector when the card text uses them. */
@@ -111,6 +117,8 @@ export const WORD_HELP: Record<string, string> = {
   Resonant: 'A bonus that applies while you have an Ascended hero on your Line.',
   Stasis: 'The unit cannot attack or block for the rest of the round.',
   Channel: 'For 1 Charge, discard a spare copy of a hero already on your Line: repair it and give it +1|+1.',
+  Glimmer: 'A Glimmer card fades from your hand at the end of the round if you have not played it.',
+  Copy: 'A copy is a new card with the same name: no damage, buffs or counters. A token cannot be copied.'
 };
 
 /** Statuses on a unit, explained in the inspector. */

@@ -3,7 +3,7 @@
 // Rule ids (R-...) refer to docs/spec/10-rules.md.
 
 export type Seat = 0 | 1;
-export type FactionId = 'prism' | 'ember' | 'tide' | 'coil' | 'under' | 'storm';
+export type FactionId = 'prism' | 'ember' | 'tide' | 'coil' | 'under' | 'storm' | 'mirror';
 export type CardType = 'unit' | 'hero' | 'glyph';
 export type Speed = 'flash' | 'swift' | 'ritual';
 export type CardSet = 'base' | 'x1' | 'x2';
@@ -20,7 +20,9 @@ export type Keyword =
   | 'dread' // R-K9 cannot be blocked by units with 2 or less power
   | 'unstable' // R-K10 destroyed at the end of the round
   | 'mend' // R-K11 heals fully at the start of each round
-  | 'corrosive'; // R-K12 any damage it deals to a unit destroys that unit
+  | 'corrosive' // R-K12 any damage it deals to a unit destroys that unit
+  | 'veiled' // R-K13 (x1) the enemy cannot choose it as a target; lost when it first strikes
+  | 'reprise'; // R-K14 (x1, glyphs) after it resolves, a Glimmer copy without Reprise goes to your hand
 
 /** When a unit ability fires. */
 export type Trigger =
@@ -36,7 +38,8 @@ export type Trigger =
   | 'glyphCast' // you cast a glyph
   | 'survive' // this unit took damage and survived
   | 'spireHit' // this unit dealt damage to the enemy Spire
-  | 'ascend'; // this hero just Ascended while on the Line
+  | 'ascend' // this hero just Ascended while on the Line
+  | 'foeGlyph'; // R-E3 (x1) the opponent cast a glyph
 
 /** Who or what an op applies to. Unit selectors only ever return units on a Line. */
 export type Sel =
@@ -120,7 +123,8 @@ export type Op =
   | { op: 'silence'; to: Sel } // loses abilities, keywords and buffs
   | { op: 'draw'; n: Amount; who?: 'you' | 'foe' }
   | { op: 'summon'; card: string; n?: Amount; who?: 'you' | 'foe' }
-  | { op: 'create'; card: string; n?: number; who?: 'you' | 'foe' } // add to hand
+  | { op: 'create'; card: string; n?: number; who?: 'you' | 'foe'; glimmer?: boolean } // add to hand (R-E1: optionally Glimmer)
+  | { op: 'copy'; of: Sel; who?: 'you' | 'foe'; glimmer?: boolean } // R-E2: a unit's card, or a glyph on the stack (target0/target1), into a hand
   | { op: 'charge'; n: Amount } // gain Charge this round (may exceed your maximum)
   | { op: 'maxCharge'; n: number } // permanently raise maximum Charge (cap 10)
   | { op: 'reserve'; n: Amount } // gain Reserve (cap 3)
@@ -182,6 +186,8 @@ export type SeenStat =
   | 'buffsGiven' // times you gave an allied unit a stat buff (one per unit buffed)
   | 'recalled' // units you returned to a hand, yours or the enemy's
   | 'tokensSummoned' // allied tokens that entered your Line
+  | 'copiesMade' // cards you copied into a hand (R-E2)
+  | 'glimmerPlayed' // Glimmer cards you played (R-E1)
   // unit-level only:
   | 'strikes'
   | 'damageDealt'
@@ -267,12 +273,18 @@ export interface Unit {
   doomed: boolean;
   seen: Partial<Record<SeenStat, number>>;
   summonRound: number;
+  /** R-K13: this unit has struck, so it is no longer Veiled. */
+  unveiled?: boolean;
 }
 
 export interface HandCard {
   iid: string;
   /** Card id, or '?' in a view where it is hidden. */
   card: string;
+  /** R-E1: burned at the end of the round if still in hand. Open information. */
+  glimmer?: boolean;
+  /** R-K14: a Reprise copy; it does not copy itself again. */
+  plain?: boolean;
 }
 
 export interface PlayerState {
@@ -306,6 +318,8 @@ export interface StackItem {
   card: string;
   owner: Seat;
   targets: string[];
+  /** R-K14: cast from a Reprise copy, so it makes no copy of its own. */
+  plain?: boolean;
 }
 
 export interface CombatPair {

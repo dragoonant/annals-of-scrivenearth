@@ -113,6 +113,7 @@ export function stats(s: GameState, u: Unit): Stats {
       }
     }
   }
+  if (u.unveiled) kws.delete('veiled'); // R-K13: lost for good once it has struck
   st.power = Math.max(0, st.power);
   st.hp = st.health - u.dmg;
   st.keywords = [...kws];
@@ -253,6 +254,7 @@ export function legalTargets(s: GameState, seat: Seat, spec: TargetSpec, except?
       if (u.iid === except) continue;
       if (spec.filter && !matches(s, u, spec.filter)) continue;
       if (spec.inCombat && !inCombat(s, u.iid)) continue;
+      if (st !== seat && stats(s, u).keywords.includes('veiled')) continue; // R-K13: the enemy cannot choose it
       out.push(u.iid);
     }
   }

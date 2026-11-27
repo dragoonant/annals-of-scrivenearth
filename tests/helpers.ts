@@ -14,7 +14,7 @@ const TEST_CARDS: CardDef[] = [
   { id: 'zz-rite', name: 'Rite', faction: 'prism', type: 'glyph', cost: 3, speed: 'ritual', token: true, text: 'Draw 1.', ops: [{ op: 'draw', n: 1 }] },
   { id: 'zz-deny', name: 'Deny', faction: 'prism', type: 'glyph', cost: 2, speed: 'swift', token: true, text: 'Negate an enemy glyph.', targets: [{ what: 'glyph', side: 'enemy' }], ops: [{ op: 'negate', to: 'target0' }] },
   { id: 'zz-pump', name: 'Pump', faction: 'prism', type: 'glyph', cost: 1, speed: 'flash', token: true, text: 'Give an ally +0|+3 this round.', targets: [{ what: 'unit', side: 'ally' }], ops: [{ op: 'buff', to: 'target0', health: 3, dur: 'round' }] },
-  ...(['vanguard', 'pierce', 'aerial', 'spotter', 'plated', 'siphon', 'ward', 'dueler', 'dread', 'unstable', 'mend', 'corrosive'] as const).map(
+  ...(['vanguard', 'pierce', 'aerial', 'spotter', 'plated', 'siphon', 'ward', 'dueler', 'dread', 'unstable', 'mend', 'corrosive', 'veiled'] as const).map(
     (kw): CardDef => ({ id: `zz-${kw}`, name: kw, faction: 'prism', type: 'unit', cost: 3, power: 3, health: 3, keywords: [kw], token: true, text: kw }),
   ),
   { id: 'zz-filler', name: 'Filler', faction: 'prism', type: 'unit', cost: 10, power: 1, health: 1, token: true, text: '' },

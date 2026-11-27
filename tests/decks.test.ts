@@ -37,10 +37,11 @@ describe('premade decks', () => {
     const keys = premadeDecks().map((d) => [...d.cards].sort().join(','));
     expect(new Set(keys).size).toBe(keys.length);
   });
-  it('all 15 faction pairs and at least one single-faction deck are offered', () => {
+  it('all 15 pairs of the six base-set factions and at least one single-faction deck are offered', () => {
     const seen = new Set(premadeDecks().map((d) => checkDeck(d.cards).factions.sort().join('+')));
-    for (let i = 0; i < FACTIONS.length; i++) for (let j = i + 1; j < FACTIONS.length; j++) {
-      expect(seen.has([FACTIONS[i], FACTIONS[j]].sort().join('+')), `${FACTIONS[i]}+${FACTIONS[j]}`).toBe(true);
+    const six = FACTIONS.slice(0, 6); // the base set's factions; expansion factions bring their own premades
+    for (let i = 0; i < six.length; i++) for (let j = i + 1; j < six.length; j++) {
+      expect(seen.has([six[i], six[j]].sort().join('+')), `${six[i]}+${six[j]}`).toBe(true);
     }
     expect([...seen].some((k) => !k.includes('+'))).toBe(true);
   });

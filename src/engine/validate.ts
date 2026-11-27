@@ -4,10 +4,13 @@ import type { Ability, CardDef, Cond, FactionId, Keyword, Op, Sel, TargetSpec } 
 import { LIMITS } from './types';
 import { def, hasCard } from './query';
 
-export const FACTIONS: FactionId[] = ['prism', 'ember', 'tide', 'coil', 'under', 'storm'];
+export const FACTIONS: FactionId[] = ['prism', 'ember', 'tide', 'coil', 'under', 'storm', 'mirror'];
 export const KEYWORDS: Keyword[] = [
   'vanguard', 'pierce', 'aerial', 'spotter', 'plated', 'siphon', 'ward', 'dueler', 'dread', 'unstable', 'mend', 'corrosive',
+  'veiled', 'reprise',
 ];
+/** The keywords a glyph may carry (and only a glyph). */
+export const GLYPH_KEYWORDS: Keyword[] = ['reprise'];
 const TRIGGER_UNIT = new Set(['allySummoned', 'allyDied', 'enemyDied']);
 
 export function validateCards(defs: CardDef[]): string[] {
@@ -22,6 +25,7 @@ export function validateCards(defs: CardDef[]): string[] {
     if (!d.text && (d.type === 'glyph' || d.keywords?.length || d.abilities?.length || d.auras?.length)) e('text is required');
     if (!Number.isInteger(d.cost) || d.cost < 0 || d.cost > 12) e('cost must be an integer 0-12');
     for (const k of d.keywords ?? []) if (!KEYWORDS.includes(k)) e(`unknown keyword ${k}`);
+    for (const k of d.keywords ?? []) if ((d.type === 'glyph') !== GLYPH_KEYWORDS.includes(k)) e(`${k} is not a ${d.type} keyword`);
     const sels = (ops: Op[] | undefined, ctx: { targets: TargetSpec[]; unit: boolean; trig?: string }): void => {
       for (const op of ops ?? []) checkOp(op, ctx);
     };
@@ -48,6 +52,7 @@ export function validateCards(defs: CardDef[]): string[] {
           else if (op.op === 'summon' && defs.find((x) => x.id === op.card)!.type === 'glyph') e('cannot summon a glyph');
           break;
         case 'strike': checkSel(op.from, ctx); checkSel(op.to, ctx); break;
+        case 'copy': checkSel(op.of, ctx); break;
         case 'duel': checkSel(op.a, ctx); checkSel(op.b, ctx); break;
         case 'negate': {
           const i = op.to === 'target0' ? 0 : 1;

@@ -594,7 +594,11 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
 
   // opponent hand as card backs
   const backs = h('div', { class: 'opphand' });
-  for (let i = 0; i < opp.hand.length; i++) backs.append(cardBack());
+  for (const hc of opp.hand) {
+    const b = cardBack();
+    if (hc.glimmer) { b.classList.add('glimmer'); b.append(h('span', { class: 'glimmer-tag', text: 'GLIMMER' })); } // R-E1: open information
+    backs.append(b);
+  }
   board.append(backs);
 
   // lines
@@ -693,6 +697,7 @@ export function renderBoard(host: BoardHost, ui: BoardUI): HTMLElement {
     el.style.setProperty('--z', String(i + 1));
     if (playable.has(hc.iid) || channelable.has(hc.iid)) el.classList.add('actable');
     if (ui.armed === hc.iid) el.classList.add('armed');
+    if (hc.glimmer) { el.classList.add('glimmer'); el.append(h('span', { class: 'glimmer-tag', text: 'GLIMMER' })); } // R-E1
     hand.append(el);
   });
   board.append(h('div', { class: 'a-hand' }, hand));
